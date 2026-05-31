@@ -24,7 +24,7 @@ builds, analyzes clean, and shows a two-tab shell (聊天 / 乖乖图) with plac
   - Do not implement any of the four domain interfaces.
 
 ## Acceptance criteria
-- [ ] `flutter run` launches on both an iOS simulator and an Android emulator.
+- [x] `flutter run` launches on both an iOS simulator and an Android emulator. (verified — issue #2)
 - [ ] App shows a bottom navigation with two tabs that switch between two placeholder screens.
 - [ ] Folder structure matches docs/tech-design.md §11.
 - [ ] `dart format .` clean, `flutter analyze` clean, `flutter test` passes (default widget test ok).

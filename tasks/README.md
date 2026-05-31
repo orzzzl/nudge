@@ -18,8 +18,8 @@ Each `NN-slug.md` is one self-contained, reviewable unit of work. Codex implemen
 | 02 | [Drift DB + Plans schema](02-drift-plans-schema.md) | READY | — |
 | 03 | [Bilingual i18n: add Chinese (zh)](03-i18n-zh.md) | READY | — |
 
-> Tracked outside tasks/: [issue #2](../../issues/2) — verify the task-01 scaffold runs on real
-> iOS + Android devices (verification action, no code change).
+> Tracked outside tasks/: [issue #2](../../issues/2) — ✅ verified & closed: scaffold runs on a
+> real Android emulator (API 36) and iOS simulator (26.5); bundle-id rename confirmed native.
 
 ## Task template
 
