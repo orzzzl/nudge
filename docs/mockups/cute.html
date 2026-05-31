@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Nudge 轻推 · 可爱版</title>
+<title>Nudge 下一格 · 可爱版</title>
 <style>
   * { margin:0; padding:0; box-sizing:border-box; -webkit-font-smoothing:antialiased; }
   body {
@@ -66,10 +66,15 @@
   .capsule .t{ font-variant-numeric:tabular-nums; color:#ff9b6a; font-size:15px;}
   .capsule .mini{ background:#fff2e4; border-radius:14px; padding:5px 9px; font-size:11px; color:#c89368;}
 
-  .inputbar{ padding:10px 14px 14px; display:flex; align-items:center; gap:10px; background:#fffdfa;}
-  .field{ flex:1; background:#fff3e8; border:2px solid #ffe3cd; border-radius:24px; padding:11px 16px; font-size:14px; color:#cbb09b; font-weight:600;}
-  .mic{ width:46px; height:46px; border-radius:50%; background:linear-gradient(135deg,#ffb07c,#ff8f57); color:#fff; display:flex; align-items:center; justify-content:center; font-size:20px; flex-shrink:0; box-shadow:0 5px 0 #ef8049; position:relative;}
-  .mic::after{ content:""; position:absolute; inset:-7px; border-radius:50%; border:2px solid #ffcaa6; opacity:.7;}
+  /* fixed-format composer: task name field + duration chips, NO free-form parsing */
+  .composer{ padding:10px 14px 14px; background:#fffdfa; border-top:2px solid #f4e7d8;}
+  .composer-q{ font-size:12px; font-weight:800; color:#a8917f; margin:2px 2px 6px;}
+  .composer-field{ background:#fff3e8; border:2px solid #ffe3cd; border-radius:18px; padding:11px 16px; font-size:14px; color:#cbb09b; font-weight:600; margin-bottom:10px;}
+  .dur-chips{ display:flex; gap:7px; margin-bottom:11px; flex-wrap:wrap;}
+  .dchip{ background:#fff; border:2px solid #ffe0c2; border-radius:15px; padding:6px 12px; font-size:13px; font-weight:800; color:#c89368;}
+  .dchip.on{ background:linear-gradient(135deg,#ffb07c,#ff9b6a); border-color:#ff9b6a; color:#fff; box-shadow:0 3px 0 #f08a55;}
+  .dchip.alt{ color:#b6a395; border-style:dashed;}
+  .start-btn{ text-align:center; background:linear-gradient(135deg,#8ad6a3,#5cc78f); color:#fff; border-radius:18px; padding:12px; font-size:15px; font-weight:800; box-shadow:0 5px 0 #4fb87f;}
 
   .tabbar{ height:66px; background:#fffdfa; border-top:2px solid #f4e7d8; display:flex;}
   .tab{ flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:3px; font-size:11px; color:#cbb6a3; font-weight:800;}
@@ -143,7 +148,7 @@
 </head>
 <body>
 
-  <div class="page-title">Nudge · 轻推 <span>·可爱版</span></div>
+  <div class="page-title">Nudge · 下一格 <span>·可爱版</span></div>
   <div class="page-sub">认识一下吉祥物「团团」🌱 —— 你的自律小搭子</div>
 
   <div class="screens">
@@ -167,7 +172,7 @@
             <div class="bubble ai">嘿嘿，接下来两小时<br>想干点啥呀？🌿</div>
           </div>
 
-          <div class="bubble me">写周报，一个小时</div>
+          <div class="bubble me">写周报 · 1 小时</div>
 
           <div class="ai-row">
             <div class="mascot"><div class="blob sm"><span class="leaf">🌱</span><span class="eye l"></span><span class="eye r"></span><span class="cheek l"></span><span class="cheek r"></span><span class="mouth"></span></div></div>
@@ -179,17 +184,21 @@
             <span class="t">43:21</span>
             <span class="mini">提前搞定 ✓</span>
           </div>
-
-          <div class="time-divider">刚刚</div>
-          <div class="ai-row">
-            <div class="mascot"><div class="blob sm"><span class="leaf">🌱</span><span class="eye l"></span><span class="eye r"></span><span class="cheek l"></span><span class="cheek r"></span><span class="mouth"></span></div></div>
-            <div class="bubble ai">还在写吗？快到点啦，加油鸭 💪</div>
-          </div>
         </div>
 
-        <div class="inputbar">
-          <div class="field">说给团团听…</div>
-          <div class="mic">🎤</div>
+        <!-- fixed format: type a label, tap a duration — no sentence parsing, no AI -->
+        <div class="composer">
+          <div class="composer-q">接下来想干什么？</div>
+          <div class="composer-field">写周报…</div>
+          <div class="composer-q">打算花多久？</div>
+          <div class="dur-chips">
+            <span class="dchip">30 分</span>
+            <span class="dchip on">1 时</span>
+            <span class="dchip">1.5 时</span>
+            <span class="dchip">2 时</span>
+            <span class="dchip alt">自定义</span>
+          </div>
+          <div class="start-btn">开始这一格 ✓</div>
         </div>
 
         <div class="tabbar">
@@ -283,12 +292,12 @@
   <div class="legend">
     <h3>可爱版改了什么 🌱</h3>
     <ul>
-      <li>多了个吉祥物<b>「团团」</b>——一颗会冒芽的小团子，AI 通过它跟你说话，孤独感↓亲切感↑。</li>
+      <li>多了个吉祥物<b>「团团」</b>——一颗会冒芽的小团子，它通过对话气泡陪你，孤独感↓亲切感↑。</li>
       <li><b>团团的心情=你的乖乖度</b>：你越乖它越开心冒星星，你偷懒它会蔫蔫的，比冷冰冰的数字更有牵挂。</li>
       <li>配色换成<b>奶油+抹茶绿+蜜桃橙</b>的马卡龙色，圆角更胖、带糖果厚边阴影。</li>
       <li>结账文案更软：「没动」也是 😴，配「团团不会怪你的」——<b>零负罪感</b>是留存关键。</li>
       <li>右上角 🌙 就是你问的那个入口——一键<b>勿扰</b>，让你合法地懒。</li>
-      <li>麦克风是带光圈的主按钮，「说给团团听」，强化<b>语音优先</b>。</li>
+      <li>建计划<b>不打整句</b>：填个任务名 + 点一下时长按钮，<b>零解析、零 AI</b>，点比打字还快、还不会出错。</li>
     </ul>
   </div>
 

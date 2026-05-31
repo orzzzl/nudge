@@ -31,6 +31,11 @@ A human (the product owner) sets direction. Two AI agents do the building.
 **Rule of thumb:** anything that is *decomposable, well-specified, and mechanical* → Codex.
 Anything requiring a *cross-cutting decision or judgment call* → Claude.
 
+> **Budget fallback:** the product owner's token budget is limited and shared. When Codex is out
+> of budget (or a task is blocking progress), **Claude also implements tasks directly** — Claude
+> is not review-only. In that case Claude self-reviews against the same `AGENTS.md` checklist
+> before merging. Architecture ownership doesn't change; only who types the code does.
+
 ## The loop
 
 1. **Claude** writes a task spec in `tasks/NN-slug.md` using the template in `tasks/README.md`,
