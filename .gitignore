@@ -4,7 +4,8 @@
 build/
 .flutter-plugins
 .flutter-plugins-dependencies
-pubspec.lock        # app (not package): keep loose until we pin deliberately
+# app (not package): keep loose until we pin deliberately
+pubspec.lock
 **/*.g.dart         # generated (drift, freezed, json) — regenerated via build_runner
 **/*.freezed.dart
 coverage/
