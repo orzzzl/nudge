@@ -1,6 +1,6 @@
 # 04 — Domain layer: Plan entity + PlanRepository (over Drift)
 
-- **Status:** READY
+- **Status:** DONE
 - **Owner:** Codex
 - **Blocked by:** — (task 02 merged)
 - **Allowed new deps:** none (drift + flutter_riverpod already present). Do NOT add freezed yet —
