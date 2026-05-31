@@ -14,8 +14,8 @@ Each `NN-slug.md` is one self-contained, reviewable unit of work. Codex implemen
 
 | # | Task | Status | Blocked by |
 |---|------|--------|------------|
-| 01 | [Flutter project scaffold](01-flutter-scaffold.md) | READY | — |
-| 02 | [Drift DB + Plans schema](02-drift-plans-schema.md) | BLOCKED | 01 |
+| 01 | [Flutter project scaffold](01-flutter-scaffold.md) | DONE | — |
+| 02 | [Drift DB + Plans schema](02-drift-plans-schema.md) | READY | — |
 
 ## Task template
 

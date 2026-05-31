@@ -1,6 +1,6 @@
 # 01 — Flutter project scaffold
 
-- **Status:** READY
+- **Status:** DONE
 - **Owner:** Codex
 - **Blocked by:** —
 - **Allowed new deps:** flutter_riverpod, go_router, intl; dev: build_runner, custom_lint, riverpod_lint

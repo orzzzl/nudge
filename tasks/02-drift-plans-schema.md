@@ -1,8 +1,8 @@
 # 02 — Drift database + Plans schema
 
-- **Status:** BLOCKED
+- **Status:** READY
 - **Owner:** Codex
-- **Blocked by:** 01
+- **Blocked by:** — (task 01 merged)
 - **Allowed new deps:** drift, sqlite3_flutter_libs, path_provider, path; dev: drift_dev, build_runner
 
 ## Goal
