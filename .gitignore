@@ -1,0 +1,36 @@
+# Flutter / Dart
+.dart_tool/
+.packages
+build/
+.flutter-plugins
+.flutter-plugins-dependencies
+pubspec.lock        # app (not package): keep loose until we pin deliberately
+**/*.g.dart         # generated (drift, freezed, json) — regenerated via build_runner
+**/*.freezed.dart
+coverage/
+
+# IDE
+.idea/
+.vscode/
+*.iml
+
+# iOS
+ios/Pods/
+ios/.symlinks/
+ios/Flutter/Flutter.framework
+ios/Flutter/Flutter.podspec
+**/*.xcworkspace/xcuserdata/
+
+# Android
+android/.gradle/
+android/local.properties
+android/key.properties
+*.keystore
+*.jks
+
+# macOS
+.DS_Store
+
+# Secrets — never commit
+*.env
+secrets/
