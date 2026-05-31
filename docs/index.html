@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Nudge · 下一格 — Design</title>
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; -webkit-font-smoothing:antialiased; }
+  body {
+    font-family:-apple-system,"PingFang SC","Microsoft YaHei",sans-serif;
+    min-height:100vh; display:flex; align-items:center; justify-content:center; padding:32px;
+    color:#5a4a3f;
+    background:#fff7ef;
+    background-image:
+      radial-gradient(circle at 15% 12%, #ffe9d6 0%, transparent 38%),
+      radial-gradient(circle at 85% 85%, #e2f5e6 0%, transparent 40%),
+      radial-gradient(circle at 70% 25%, #f3e6ff 0%, transparent 32%);
+  }
+  .card {
+    background:#fffdfa; border:2px solid #f4e7d8; border-radius:28px;
+    box-shadow:0 12px 40px rgba(150,110,70,0.12);
+    padding:44px 40px; max-width:520px; width:100%; text-align:center;
+  }
+  .leaf { font-size:42px; }
+  h1 { font-size:30px; font-weight:900; color:#3f7d5c; margin:8px 0 4px; letter-spacing:-0.5px; }
+  h1 span { color:#ff9b6a; }
+  .tagline { color:#b6a395; font-size:15px; font-weight:600; margin-bottom:28px; }
+  .links { display:flex; flex-direction:column; gap:12px; }
+  a.btn {
+    display:block; text-decoration:none; border-radius:18px; padding:15px 18px;
+    font-size:15px; font-weight:800;
+  }
+  a.primary { background:linear-gradient(135deg,#8ad6a3,#5cc78f); color:#fff; box-shadow:0 5px 0 #4fb87f; }
+  a.secondary { background:#fff3e8; border:2px solid #ffe3cd; color:#c89368; }
+  .foot { margin-top:24px; font-size:12px; color:#cbb6a3; font-weight:600; }
+  .foot a { color:#3f7d5c; }
+</style>
+</head>
+<body>
+  <div class="card">
+    <div class="leaf">🌱</div>
+    <h1>Nudge <span>·</span> 下一格</h1>
+    <div class="tagline">给懒人的零负担自律 App — 设计稿</div>
+    <div class="links">
+      <a class="btn primary" href="mockups/cute.html">看可爱版 UI 设计图 →</a>
+      <a class="btn secondary" href="tech-design.md">技术设计文档</a>
+      <a class="btn secondary" href="workflow.md">Claude × Codex 协作流程</a>
+    </div>
+    <div class="foot">源码:<a href="https://github.com/orzzzl/nudge">github.com/orzzzl/nudge</a></div>
+  </div>
+</body>
+</html>
