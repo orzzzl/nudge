@@ -10,7 +10,7 @@ sealed class ChatMessage {
   const ChatMessage();
 }
 
-/// Opening prompt from the 团团 mascot.
+/// Opening prompt from the mascot.
 class GreetingMessage extends ChatMessage {
   const GreetingMessage();
 }
