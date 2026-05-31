@@ -1,0 +1,23 @@
+{
+  "@@locale": "en",
+  "appTitle": "Nudge",
+  "@appTitle": {
+    "description": "Application title."
+  },
+  "chatTabLabel": "Chat",
+  "@chatTabLabel": {
+    "description": "Bottom navigation label for the chat tab."
+  },
+  "statsTabLabel": "Stats",
+  "@statsTabLabel": {
+    "description": "Bottom navigation label for the stats tab."
+  },
+  "chatPlaceholderLabel": "Chat",
+  "@chatPlaceholderLabel": {
+    "description": "Centered placeholder label on the chat screen."
+  },
+  "statsPlaceholderLabel": "Stats",
+  "@statsPlaceholderLabel": {
+    "description": "Centered placeholder label on the stats screen."
+  }
+}
