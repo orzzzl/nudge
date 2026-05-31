@@ -17,6 +17,7 @@ Each `NN-slug.md` is one self-contained, reviewable unit of work. Codex implemen
 | 01 | [Flutter project scaffold](01-flutter-scaffold.md) | DONE | — |
 | 02 | [Drift DB + Plans schema](02-drift-plans-schema.md) | DONE | — |
 | 03 | [Bilingual i18n: add Chinese (zh)](03-i18n-zh.md) | DONE | — |
+| 04 | [Domain: Plan entity + PlanRepository](04-domain-plan-repository.md) | READY | — |
 
 > Tracked outside tasks/: [issue #2](../../issues/2) — ✅ verified & closed: scaffold runs on a
 > real Android emulator (API 36) and iOS simulator (26.5); bundle-id rename confirmed native.
