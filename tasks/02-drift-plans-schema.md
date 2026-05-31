@@ -1,6 +1,6 @@
 # 02 — Drift database + Plans schema
 
-- **Status:** READY
+- **Status:** DONE
 - **Owner:** Codex
 - **Blocked by:** — (task 01 merged)
 - **Allowed new deps:** drift, sqlite3_flutter_libs, path_provider, path; dev: drift_dev, build_runner

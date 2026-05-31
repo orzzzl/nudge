@@ -6,8 +6,13 @@ build/
 .flutter-plugins-dependencies
 # app (not package): keep loose until we pin deliberately
 pubspec.lock
-# NOTE: generated code (drift *.g.dart, freezed, gen_l10n) IS committed on purpose so the repo
-# builds/runs straight from a clean clone without a build_runner step (no CI yet). Do not ignore it.
+# Generated-code policy:
+#  - drift *.g.dart / freezed *.freezed.dart ARE committed (needs an explicit build_runner step;
+#    committing them lets the repo build from a clean clone without that step — no CI yet).
+#  - gen_l10n output is NOT committed: `flutter pub get` auto-regenerates it (generate: true), so
+#    committing it just causes churn and reverts the zh strings to raw CJK. pub get is always the
+#    first step after cloning anyway, so the app still builds.
+lib/l10n/generated/
 coverage/
 
 # IDE
