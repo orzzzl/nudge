@@ -6,8 +6,8 @@ build/
 .flutter-plugins-dependencies
 # app (not package): keep loose until we pin deliberately
 pubspec.lock
-**/*.g.dart         # generated (drift, freezed, json) — regenerated via build_runner
-**/*.freezed.dart
+# NOTE: generated code (drift *.g.dart, freezed, gen_l10n) IS committed on purpose so the repo
+# builds/runs straight from a clean clone without a build_runner step (no CI yet). Do not ignore it.
 coverage/
 
 # IDE
