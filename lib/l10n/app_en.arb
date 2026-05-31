@@ -12,12 +12,87 @@
   "@statsTabLabel": {
     "description": "Bottom navigation label for the stats tab."
   },
-  "chatPlaceholderLabel": "Chat",
-  "@chatPlaceholderLabel": {
-    "description": "Centered placeholder label on the chat screen."
-  },
   "statsPlaceholderLabel": "Stats",
   "@statsPlaceholderLabel": {
     "description": "Centered placeholder label on the stats screen."
+  },
+  "chatGreeting": "Hey — what will you do for the next block? 🌿",
+  "@chatGreeting": {
+    "description": "Opening message from the 团团 mascot on the chat screen."
+  },
+  "composerTaskHint": "e.g. write the weekly report",
+  "@composerTaskHint": {
+    "description": "Placeholder text in the task-name input field."
+  },
+  "composerDurationLabel": "How long?",
+  "@composerDurationLabel": {
+    "description": "Label above the duration chips."
+  },
+  "durationChipLabel": "{minutes} min",
+  "@durationChipLabel": {
+    "description": "Label for a duration chip, in minutes.",
+    "placeholders": {
+      "minutes": { "type": "int" }
+    }
+  },
+  "startButton": "Start this block",
+  "@startButton": {
+    "description": "Button that creates the plan and starts the countdown."
+  },
+  "planConfirmation": "Okay — \"{title}\" for {minutes} min. I'll nudge you. 👉",
+  "@planConfirmation": {
+    "description": "Mascot confirmation bubble after a plan is created.",
+    "placeholders": {
+      "title": { "type": "String" },
+      "minutes": { "type": "int" }
+    }
+  },
+  "capsuleCheckIn": "Check in",
+  "@capsuleCheckIn": {
+    "description": "Button on the running-plan capsule to open the check-in sheet."
+  },
+  "capsuleTimeUp": "Time's up",
+  "@capsuleTimeUp": {
+    "description": "Shown on the capsule when the remaining time reaches zero."
+  },
+  "checkInTitle": "How did it go?",
+  "@checkInTitle": {
+    "description": "Heading of the check-in sheet."
+  },
+  "checkInTaskLine": "\"{title}\" · {minutes} min",
+  "@checkInTaskLine": {
+    "description": "Subheading on the check-in sheet showing the plan being checked in.",
+    "placeholders": {
+      "title": { "type": "String" },
+      "minutes": { "type": "int" }
+    }
+  },
+  "checkInDone": "Done",
+  "@checkInDone": {
+    "description": "Check-in option: the plan was completed."
+  },
+  "checkInPartial": "Some",
+  "@checkInPartial": {
+    "description": "Check-in option: the plan was partially done."
+  },
+  "checkInMissed": "Nope",
+  "@checkInMissed": {
+    "description": "Check-in option: the plan was not done."
+  },
+  "checkInReassure": "Whatever you pick — the next block is a fresh start. 🌱",
+  "@checkInReassure": {
+    "description": "Non-judgmental reassurance line on the check-in sheet."
+  },
+  "resultDone": "Logged as done. ✅",
+  "@resultDone": {
+    "description": "Result bubble after checking in as done."
+  },
+  "resultPartial": "Logged as partial. 🍃",
+  "@resultPartial": {
+    "description": "Result bubble after checking in as partial."
+  },
+  "resultMissed": "Logged — no worries, next block is fresh. 😴",
+  "@resultMissed": {
+    "description": "Result bubble after checking in as missed."
   }
 }
