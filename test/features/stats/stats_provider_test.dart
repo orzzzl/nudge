@@ -8,7 +8,7 @@ import 'package:nudge/domain/plan_repository.dart';
 import 'package:nudge/features/stats/stats_providers.dart';
 
 void main() {
-  test('watches the current week once and maps stream updates', () async {
+  test('watches all history once and maps stream updates', () async {
     final repository = _FakePlanRepository();
     final container = ProviderContainer(
       overrides: [
@@ -32,7 +32,9 @@ void main() {
     await container.pump();
 
     expect(repository.watchPlansInRangeCalls, 1);
-    expect(repository.lastStart, DateTime(2026, 6));
+    // Queries from a local sentinel before any plan exists up to this week's end
+    // (unbounded streak); aggregateStats still slices the current week out.
+    expect(repository.lastStart, DateTime(2000));
     expect(repository.lastEnd, DateTime(2026, 6, 8));
     expect(container.read(statsSummaryProvider).value?.plannedMinutes, 30);
 

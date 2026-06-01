@@ -9,11 +9,13 @@ final statsNowProvider = Provider<DateTime>((ref) {
 
 final statsSummaryProvider = StreamProvider<StatsSummary>((ref) {
   final now = ref.watch(statsNowProvider);
-  final weekStart = statsWeekStart(now);
-  final weekEnd = weekStart.add(const Duration(days: 7));
+  final weekEnd = statsWeekStart(now).add(const Duration(days: 7));
   final repository = ref.watch(planRepositoryProvider);
 
+  // The streak is unbounded, so query from before any plan can exist up to this
+  // week's end; aggregateStats slices the current week back out for the chart /
+  // ledger. DateTime(2000) is a LOCAL sentinel — all date math stays local.
   return repository
-      .watchPlansInRange(start: weekStart, end: weekEnd)
+      .watchPlansInRange(start: DateTime(2000), end: weekEnd)
       .map((plans) => aggregateStats(plans, now));
 });

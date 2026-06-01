@@ -106,6 +106,42 @@ void main() {
 
     expect(summary.streakDays, 3);
   });
+
+  test('streak carries across the Monday boundary', () {
+    // now = Monday 2026-06-08; run is Fri+Sat+Sun (previous week) + Mon (today).
+    // The old week-bounded streak would reset to 1 on Monday; unbounded = 4.
+    final summary = aggregateStats([
+      _plan(id: 1, startAt: DateTime(2026, 6, 5, 9)),
+      _plan(id: 2, startAt: DateTime(2026, 6, 6, 9)),
+      _plan(id: 3, startAt: DateTime(2026, 6, 7, 9)),
+      _plan(id: 4, startAt: DateTime(2026, 6, 8, 9)),
+    ], DateTime(2026, 6, 8, 12));
+
+    expect(summary.streakDays, 4);
+  });
+
+  test('a gap does not connect two separate runs', () {
+    // Mon/Tue active, Wed empty, then today (Fri). Only today's run counts.
+    final summary = aggregateStats([
+      _plan(id: 1, startAt: DateTime(2026, 6, 1, 9)),
+      _plan(id: 2, startAt: DateTime(2026, 6, 2, 9)),
+      _plan(id: 3, startAt: DateTime(2026, 6, 5, 9)),
+    ], DateTime(2026, 6, 5, 12));
+
+    expect(summary.streakDays, 1);
+  });
+
+  test('streak counts a run longer than two weeks', () {
+    // 16 consecutive days ending today (crosses two Monday boundaries).
+    final plans = [
+      for (var i = 0; i < 16; i++)
+        _plan(id: i + 1, startAt: DateTime(2026, 5, 20 + i, 9)),
+    ];
+
+    final summary = aggregateStats(plans, DateTime(2026, 6, 4, 12));
+
+    expect(summary.streakDays, 16);
+  });
 }
 
 Plan _plan({
