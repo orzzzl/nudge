@@ -1,6 +1,6 @@
 # 11 — Active-plan persistence (survive app restart)
 
-- **Status:** READY
+- **Status:** DONE (reviewed by Claude; merged in PR #10)
 - **Owner:** Codex
 - **Blocked by:** 04 (extends the repository interface)
 - **Allowed new deps:** none

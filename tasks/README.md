@@ -28,7 +28,7 @@ Each `NN-slug.md` is one self-contained, reviewable unit of work. Codex implemen
 | 05 | [Build-plan + check-in core loop (chat UI)](05-build-plan-checkin-ui.md) | DONE | — |
 | 06 | [乖乖图 / Stats tab](06-stats-guai-chart.md) | DONE | — |
 | 12 | [CI (GitHub Actions)](12-ci-github-actions.md) | DONE | — |
-| 11 | [Active-plan persistence](11-active-plan-persistence.md) | READY (dispatched to Codex) | — |
+| 11 | [Active-plan persistence](11-active-plan-persistence.md) | DONE | — |
 
 ## Backlog — planned MVP tasks
 
