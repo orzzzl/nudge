@@ -28,9 +28,9 @@
   "@statsLoadError": {
     "description": "Error message shown when stats fail to load."
   },
-  "statsPlannedHoursLabel": "Planned time",
+  "statsPlannedHoursLabel": "Planned this week",
   "@statsPlannedHoursLabel": {
-    "description": "Label for the hero planned-time metric."
+    "description": "Label for the hero planned-time metric (current week total)."
   },
   "statsPlannedHoursValue": "{hours} h",
   "@statsPlannedHoursValue": {

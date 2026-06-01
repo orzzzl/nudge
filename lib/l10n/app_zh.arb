@@ -7,7 +7,7 @@
   "statsScreenTitle": "本周",
   "statsScreenSubtitle": "认真开始过的每一格,都算数。",
   "statsLoadError": "乖乖图加载失败。",
-  "statsPlannedHoursLabel": "计划时间",
+  "statsPlannedHoursLabel": "本周计划时间",
   "statsPlannedHoursValue": "{hours} 小时",
   "statsPlannedHoursCaption": "这是你认真安排过的时间,不是完美分数。",
   "statsStreakValue": "连续 {days} 天",
