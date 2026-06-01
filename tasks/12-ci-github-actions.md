@@ -1,6 +1,6 @@
 # 12 — CI (GitHub Actions)
 
-- **Status:** PLANNED (provisional — finalized to READY right before dispatch)
+- **Status:** DONE (implemented by Claude; merged in PR #7)
 - **Owner:** Codex, or Claude if Codex is low on budget (Codex reviews)
 - **Blocked by:** — (independent; valuable early to protect `main`)
 - **Allowed new deps:** none (CI config only)

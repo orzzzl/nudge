@@ -27,20 +27,19 @@ Each `NN-slug.md` is one self-contained, reviewable unit of work. Codex implemen
 | 04 | [Domain: Plan entity + PlanRepository](04-domain-plan-repository.md) | DONE | — |
 | 05 | [Build-plan + check-in core loop (chat UI)](05-build-plan-checkin-ui.md) | DONE | — |
 | 06 | [乖乖图 / Stats tab](06-stats-guai-chart.md) | DONE | — |
+| 12 | [CI (GitHub Actions)](12-ci-github-actions.md) | DONE | — |
 
 ## Backlog — planned MVP tasks
 
 Scope is known; the `.md` spec gets written right before dispatch (PLANNED → READY). Numbers are
 stable IDs — the rows below are in **recommended run order** (Codex-reviewed), not numeric order.
 
-**Order:** 12 → 11 → 07 → 08 → 10 → 09. Key constraints: **11 before 07/08** (they need its
-`getActivePlan`/`getPlanById` repo reads — otherwise a notification tapped after cold start can't
-open the right plan), and **09 after 06** (mood is derived from the stats). 12 is independent —
-do it early to protect everything after it.
+**Remaining order:** 11 → 07 → 08 → 10 → 09 (12 and 06 are done). Key constraints: **11 before
+07/08** (they need its `getActivePlan`/`getPlanById` repo reads — otherwise a notification tapped
+after cold start can't open the right plan), and **09 after 06** (mood is derived from the stats).
 
 | # | Task | What it adds | Depends on |
 |---|------|--------------|------------|
-| 12 | [CI (GitHub Actions)](12-ci-github-actions.md) | format/analyze/test on every PR so `main` stays green automatically. | — |
 | 11 | [Active-plan persistence](11-active-plan-persistence.md) | Restore the running plan on launch; adds the `getActivePlan`/`getPlanById` repo reads that 07/08 rely on. | 04 |
 | 07 | [Local notifications (`Notifier` seam)](07-local-notifications.md) | Schedule/cancel an on-device reminder at `endAt`; on tap, emit the `planId` (does NOT open the UI). iOS + Android exact-alarm + timezone. | 05 |
 | 08 | [Auto check-in at time-up](08-auto-checkin-timeup.md) | Open the check-in automatically when the block ends (in-app) and when the notification is tapped (loads the plan via 11's `getPlanById`). | 07, 11 |
