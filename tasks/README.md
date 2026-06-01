@@ -30,6 +30,7 @@ Each `NN-slug.md` is one self-contained, reviewable unit of work. Codex implemen
 | 12 | [CI (GitHub Actions)](12-ci-github-actions.md) | DONE | — |
 | 11 | [Active-plan persistence](11-active-plan-persistence.md) | DONE | — |
 | 07 | [Local notifications (reminder seam)](07-local-notifications.md) | DONE | — |
+| 08 | [Auto check-in at time-up](08-auto-checkin-timeup.md) | READY | — |
 
 ## Backlog — planned MVP tasks
 
