@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -8,11 +10,29 @@ import 'widgets/check_in_sheet.dart';
 import 'widgets/countdown_capsule.dart';
 import 'widgets/plan_composer.dart';
 
-class ChatScreen extends ConsumerWidget {
+class ChatScreen extends ConsumerStatefulWidget {
   const ChatScreen({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<ChatScreen> createState() => _ChatScreenState();
+}
+
+class _ChatScreenState extends ConsumerState<ChatScreen> {
+  bool _isCheckInSheetOpen = false;
+
+  @override
+  Widget build(BuildContext context) {
+    ref.listen<Plan?>(chatControllerProvider.select((s) => s.pendingCheckIn), (
+      _,
+      plan,
+    ) {
+      if (plan == null || _isCheckInSheetOpen) {
+        return;
+      }
+
+      unawaited(_openPendingCheckIn(plan));
+    });
+
     final state = ref.watch(chatControllerProvider);
     final controller = ref.read(chatControllerProvider.notifier);
 
@@ -46,6 +66,26 @@ class ChatScreen extends ConsumerWidget {
         ),
       ),
     );
+  }
+
+  Future<void> _openPendingCheckIn(Plan plan) async {
+    _isCheckInSheetOpen = true;
+    final controller = ref.read(chatControllerProvider.notifier);
+
+    try {
+      final status = await showCheckInSheet(context, plan: plan);
+      if (!mounted) {
+        return;
+      }
+      if (status != null) {
+        await controller.checkIn(status);
+      }
+    } finally {
+      if (mounted) {
+        controller.consumePendingCheckIn();
+      }
+      _isCheckInSheetOpen = false;
+    }
   }
 
   Future<void> _checkIn(BuildContext context, WidgetRef ref, Plan plan) async {

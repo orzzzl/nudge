@@ -121,7 +121,7 @@ void main() {
     expect(find.text(l10n.capsuleCheckIn), findsNothing);
   });
 
-  testWidgets('restores an expired active plan as time up', (tester) async {
+  testWidgets('auto-prompts a restored expired plan once', (tester) async {
     final l10n = AppLocalizationsEn();
     await repository.createPlan(
       title: 'Expired report',
@@ -135,7 +135,20 @@ void main() {
 
     expect(find.text('Expired report'), findsOneWidget);
     expect(find.text(l10n.capsuleTimeUp), findsOneWidget);
+    expect(find.text(l10n.checkInTitle), findsOneWidget);
+
+    await tester.tapAt(const Offset(10, 10));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 300));
+
     expect(find.text(l10n.checkInTitle), findsNothing);
+    expect(find.text(l10n.capsuleCheckIn), findsOneWidget);
+
+    await tester.tap(find.text(l10n.capsuleCheckIn));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 300));
+
+    expect(find.text(l10n.checkInTitle), findsOneWidget);
   });
 }
 

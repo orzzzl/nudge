@@ -6,8 +6,7 @@ import '../../../domain/plan.dart';
 import '../../../l10n/generated/app_localizations.dart';
 
 /// Always-visible capsule for the running plan: title, a live mm:ss countdown,
-/// and a check-in button. The countdown is display-only; check-in is initiated
-/// by the user (early check-in is allowed — no auto-fire yet).
+/// and a check-in button. Automatic time-up prompting lives in the controller.
 class CountdownCapsule extends StatefulWidget {
   const CountdownCapsule({
     required this.plan,

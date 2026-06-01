@@ -42,29 +42,58 @@ class ResultMessage extends ChatMessage {
 }
 
 class ChatState {
-  const ChatState({required this.messages, required this.activePlan});
+  const ChatState({
+    required this.messages,
+    required this.activePlan,
+    required this.pendingCheckIn,
+  });
 
   final List<ChatMessage> messages;
   final Plan? activePlan;
+  final Plan? pendingCheckIn;
 
   ChatState copyWith({
     List<ChatMessage>? messages,
     Plan? activePlan,
+    Plan? pendingCheckIn,
     bool clearActivePlan = false,
+    bool clearPendingCheckIn = false,
   }) {
     return ChatState(
       messages: messages ?? this.messages,
       activePlan: clearActivePlan ? null : (activePlan ?? this.activePlan),
+      pendingCheckIn: clearPendingCheckIn
+          ? null
+          : (pendingCheckIn ?? this.pendingCheckIn),
     );
   }
 }
 
 class ChatController extends Notifier<ChatState> {
+  Timer? _checkInTimer;
+  StreamSubscription<int>? _checkInTapSubscription;
+  int? _lastPromptedPlanId;
+
   @override
   ChatState build() {
-    unawaited(_restoreActivePlan());
+    _checkInTapSubscription = _reminderScheduler.onCheckInTapped.listen((
+      planId,
+    ) {
+      unawaited(_promptCheckInById(planId));
+    });
+    ref.onDispose(() {
+      _checkInTimer?.cancel();
+      unawaited(_checkInTapSubscription?.cancel() ?? Future<void>.value());
+    });
 
-    return const ChatState(messages: [GreetingMessage()], activePlan: null);
+    unawaited(_restoreActivePlan());
+    unawaited(_restoreInitialTappedPlan());
+
+    return const ChatState(
+      messages: [GreetingMessage()],
+      activePlan: null,
+      pendingCheckIn: null,
+    );
   }
 
   PlanRepository get _repository => ref.read(planRepositoryProvider);
@@ -79,6 +108,58 @@ class ChatController extends Notifier<ChatState> {
     }
 
     state = state.copyWith(activePlan: restoredPlan);
+    _armCheckInTimer(restoredPlan);
+  }
+
+  Future<void> _restoreInitialTappedPlan() async {
+    final planId = await _reminderScheduler.takeInitialTappedPlanId();
+    if (!ref.mounted || planId == null) {
+      return;
+    }
+
+    await _promptCheckInById(planId);
+  }
+
+  Future<void> _promptCheckInById(int planId) async {
+    final plan = await _repository.getPlanById(planId);
+    if (!ref.mounted || plan == null) {
+      return;
+    }
+
+    _promptCheckIn(plan);
+  }
+
+  void _armCheckInTimer(Plan plan) {
+    _checkInTimer?.cancel();
+    _checkInTimer = null;
+
+    if (plan.status != PlanStatus.running) {
+      return;
+    }
+
+    final delay = plan.endAt.difference(DateTime.now());
+    if (delay <= Duration.zero) {
+      _promptCheckIn(plan);
+      return;
+    }
+
+    _checkInTimer = Timer(delay, () => _promptCheckIn(plan));
+  }
+
+  void _promptCheckIn(Plan plan) {
+    final planId = plan.id;
+    if (planId == null ||
+        planId == _lastPromptedPlanId ||
+        plan.status != PlanStatus.running) {
+      return;
+    }
+
+    _lastPromptedPlanId = planId;
+    state = state.copyWith(pendingCheckIn: plan);
+  }
+
+  void consumePendingCheckIn() {
+    state = state.copyWith(clearPendingCheckIn: true);
   }
 
   /// Create a running plan from the fixed-format input and start its block now.
@@ -107,6 +188,7 @@ class ChatController extends Notifier<ChatState> {
       ],
       activePlan: plan,
     );
+    _armCheckInTimer(plan);
 
     final planId = plan.id;
     if (planId != null) {
@@ -120,7 +202,7 @@ class ChatController extends Notifier<ChatState> {
 
   /// Record the outcome of the active plan and clear it for the next one.
   Future<void> checkIn(PlanStatus status) async {
-    final plan = state.activePlan;
+    final plan = state.pendingCheckIn ?? state.activePlan;
     final id = plan?.id;
     if (id == null) {
       return;
@@ -128,13 +210,18 @@ class ChatController extends Notifier<ChatState> {
 
     await _repository.checkIn(id: id, status: status);
     await _reminderScheduler.cancel(id);
+    if (state.activePlan?.id == id) {
+      _checkInTimer?.cancel();
+      _checkInTimer = null;
+    }
 
     state = state.copyWith(
       messages: [
         ...state.messages,
         ResultMessage(status: status),
       ],
-      clearActivePlan: true,
+      clearActivePlan: state.activePlan?.id == id,
+      clearPendingCheckIn: true,
     );
   }
 }

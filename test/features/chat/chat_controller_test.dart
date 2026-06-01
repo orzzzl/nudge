@@ -1,5 +1,7 @@
 import 'dart:async';
 
+// ignore: depend_on_referenced_packages
+import 'package:fake_async/fake_async.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:nudge/app/providers.dart';
@@ -95,6 +97,158 @@ void main() {
     expect(repository.checkedInStatus, PlanStatus.done);
     expect(scheduler.canceledPlanIds, [10]);
   });
+
+  test('auto-prompts when the active plan reaches its end time', () {
+    fakeAsync((async) {
+      final repository = _ControllerRepository();
+      final scheduler = _RecordingReminderScheduler();
+      final container = _container(repository, scheduler);
+
+      unawaited(
+        container
+            .read(chatControllerProvider.notifier)
+            .createPlan(title: 'Focus block', durationMin: 1, locale: 'en'),
+      );
+      async.flushMicrotasks();
+
+      expect(container.read(chatControllerProvider).pendingCheckIn, isNull);
+
+      async.elapse(const Duration(minutes: 1));
+
+      expect(container.read(chatControllerProvider).pendingCheckIn?.id, 10);
+
+      container.dispose();
+      unawaited(scheduler.dispose());
+      async.flushMicrotasks();
+    });
+  });
+
+  test(
+    'prompts immediately when a restored active plan is already past end',
+    () {
+      fakeAsync((async) {
+        final plan = _plan(
+          id: 20,
+          title: 'Expired plan',
+          durationMin: 1,
+          startAt: DateTime.now().subtract(const Duration(minutes: 5)),
+        );
+        final repository = _ControllerRepository(activePlan: plan);
+        final scheduler = _RecordingReminderScheduler();
+        final container = _container(repository, scheduler);
+
+        container.read(chatControllerProvider);
+        async.flushMicrotasks();
+
+        final state = container.read(chatControllerProvider);
+        expect(state.activePlan?.id, 20);
+        expect(state.pendingCheckIn?.id, 20);
+
+        container.dispose();
+        unawaited(scheduler.dispose());
+        async.flushMicrotasks();
+      });
+    },
+  );
+
+  test('prompts for a warm notification tap by loading the plan', () {
+    fakeAsync((async) {
+      final plan = _plan(id: 30, title: 'Tapped plan', startAt: DateTime.now());
+      final repository = _ControllerRepository(plans: [plan]);
+      final scheduler = _RecordingReminderScheduler();
+      final container = _container(repository, scheduler);
+
+      container.read(chatControllerProvider);
+      scheduler.emitTap(30);
+      async.flushMicrotasks();
+
+      expect(repository.requestedPlanIds, [30]);
+      expect(container.read(chatControllerProvider).pendingCheckIn, plan);
+
+      container.dispose();
+      unawaited(scheduler.dispose());
+      async.flushMicrotasks();
+    });
+  });
+
+  test('prompts for a cold-start notification tap by loading the plan', () {
+    fakeAsync((async) {
+      final plan = _plan(
+        id: 40,
+        title: 'Cold-start plan',
+        startAt: DateTime.now(),
+      );
+      final repository = _ControllerRepository(plans: [plan]);
+      final scheduler = _RecordingReminderScheduler(initialTappedPlanId: 40);
+      final container = _container(repository, scheduler);
+
+      container.read(chatControllerProvider);
+      async.flushMicrotasks();
+
+      expect(repository.requestedPlanIds, [40]);
+      expect(container.read(chatControllerProvider).pendingCheckIn, plan);
+      expect(scheduler.initialTappedPlanId, isNull);
+
+      container.dispose();
+      unawaited(scheduler.dispose());
+      async.flushMicrotasks();
+    });
+  });
+
+  test('does not prompt the same plan more than once', () {
+    fakeAsync((async) {
+      final plan = _plan(
+        id: 50,
+        title: 'Once-only plan',
+        startAt: DateTime.now(),
+      );
+      final repository = _ControllerRepository(plans: [plan]);
+      final scheduler = _RecordingReminderScheduler();
+      final container = _container(repository, scheduler);
+      final controller = container.read(chatControllerProvider.notifier);
+
+      scheduler.emitTap(50);
+      async.flushMicrotasks();
+      expect(container.read(chatControllerProvider).pendingCheckIn?.id, 50);
+
+      controller.consumePendingCheckIn();
+      expect(container.read(chatControllerProvider).pendingCheckIn, isNull);
+
+      scheduler.emitTap(50);
+      async.flushMicrotasks();
+      expect(repository.requestedPlanIds, [50, 50]);
+      expect(container.read(chatControllerProvider).pendingCheckIn, isNull);
+
+      container.dispose();
+      unawaited(scheduler.dispose());
+      async.flushMicrotasks();
+    });
+  });
+
+  test('does not prompt when the tapped plan is already checked in', () {
+    fakeAsync((async) {
+      final plan = _plan(
+        id: 60,
+        title: 'Done plan',
+        startAt: DateTime.now(),
+        status: PlanStatus.done,
+      );
+      final repository = _ControllerRepository(plans: [plan]);
+      final scheduler = _RecordingReminderScheduler();
+      final container = _container(repository, scheduler);
+
+      container.read(chatControllerProvider);
+      scheduler.emitTap(60);
+      async.flushMicrotasks();
+
+      expect(repository.requestedPlanIds, [60]);
+      expect(container.read(chatControllerProvider).pendingCheckIn, isNull);
+
+      container.dispose();
+      unawaited(scheduler.dispose());
+      async.flushMicrotasks();
+    });
+  });
 }
 
 class _DelayedRestoreRepository implements PlanRepository {
@@ -159,10 +313,38 @@ class _DelayedRestoreRepository implements PlanRepository {
   }
 }
 
+ProviderContainer _container(
+  PlanRepository repository,
+  ReminderScheduler scheduler,
+) {
+  return ProviderContainer(
+    overrides: [
+      planRepositoryProvider.overrideWithValue(repository),
+      reminderSchedulerProvider.overrideWithValue(scheduler),
+    ],
+  );
+}
+
 class _ControllerRepository implements PlanRepository {
+  _ControllerRepository({this.activePlan, List<Plan> plans = const []}) {
+    final activePlan = this.activePlan;
+    if (activePlan?.id != null) {
+      _plansById[activePlan!.id!] = activePlan;
+    }
+    for (final plan in plans) {
+      final id = plan.id;
+      if (id != null) {
+        _plansById[id] = plan;
+      }
+    }
+  }
+
   Plan? createdPlan;
+  Plan? activePlan;
   int? checkedInId;
   PlanStatus? checkedInStatus;
+  final requestedPlanIds = <int>[];
+  final _plansById = <int, Plan>{};
 
   @override
   Future<Plan> createPlan({
@@ -178,6 +360,8 @@ class _ControllerRepository implements PlanRepository {
       startAt: startAt,
       locale: locale,
     );
+    activePlan = createdPlan;
+    _plansById[createdPlan!.id!] = createdPlan!;
 
     return createdPlan!;
   }
@@ -190,16 +374,25 @@ class _ControllerRepository implements PlanRepository {
   }) async {
     checkedInId = id;
     checkedInStatus = status;
+    final plan = _plansById[id];
+    if (plan != null) {
+      final updatedPlan = plan.copyWith(status: status, note: note);
+      _plansById[id] = updatedPlan;
+      if (activePlan?.id == id) {
+        activePlan = updatedPlan;
+      }
+    }
   }
 
   @override
   Future<Plan?> getActivePlan() async {
-    return null;
+    return activePlan;
   }
 
   @override
   Future<Plan?> getPlanById(int id) async {
-    return id == createdPlan?.id ? createdPlan : null;
+    requestedPlanIds.add(id);
+    return _plansById[id];
   }
 
   @override
@@ -217,6 +410,8 @@ class _ControllerRepository implements PlanRepository {
 }
 
 class _RecordingReminderScheduler implements ReminderScheduler {
+  _RecordingReminderScheduler({this.initialTappedPlanId});
+
   final _tapController = StreamController<int>.broadcast();
   final scheduled = <_ScheduledReminder>[];
   final canceledPlanIds = <int>[];
@@ -237,6 +432,10 @@ class _RecordingReminderScheduler implements ReminderScheduler {
     required DateTime at,
   }) async {
     scheduled.add(_ScheduledReminder(planId: planId, title: title, at: at));
+  }
+
+  void emitTap(int planId) {
+    _tapController.add(planId);
   }
 
   @override
@@ -270,6 +469,7 @@ Plan _plan({
   int durationMin = 60,
   required DateTime startAt,
   String locale = 'en',
+  PlanStatus status = PlanStatus.running,
 }) {
   return Plan(
     id: id,
@@ -277,7 +477,7 @@ Plan _plan({
     durationMin: durationMin,
     startAt: startAt,
     endAt: startAt.add(Duration(minutes: durationMin)),
-    status: PlanStatus.running,
+    status: status,
     note: null,
     locale: locale,
     createdAt: startAt,
