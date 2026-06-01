@@ -33,8 +33,8 @@ Each `NN-slug.md` is one self-contained, reviewable unit of work. Codex implemen
 | 08 | [Auto check-in at time-up](08-auto-checkin-timeup.md) | DONE | — |
 | 10 | [Settings + 勿扰](10-settings-dnd.md) | DONE | — |
 | 09 | [团团 mascot + PetRenderer seam](09-pet-rive.md) | DONE | — |
-| 13 | [On-device DB smoke test (CI hardening)](13-ondevice-db-smoke.md) | READY | — |
-| 14 | [Cute theme foundation (palette + fonts + candy primitives)](14-cute-theme-foundation.md) | READY | — |
+| 13 | [On-device DB smoke test (CI hardening)](13-ondevice-db-smoke.md) | READY (dispatched to Codex 2026-06-01) | — |
+| 14 | [Cute theme foundation (palette + fonts + candy primitives)](14-cute-theme-foundation.md) | IN_PROGRESS (Claude — role swap) | — |
 | 15 | [Cute skin across screens](15-cute-screens-skin.md) | PLANNED | 14 |
 | 16 | [团团 character art (CustomPaint mascot)](16-tuantuan-character-art.md) | PLANNED | 09 |
 
