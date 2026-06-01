@@ -84,12 +84,19 @@ StatsSummary aggregateStats(List<Plan> plans, DateTime now) {
       .where((plan) => statsDayStart(plan.startAt) == today)
       .toList();
 
+  // The streak is unbounded: any local calendar day with >=1 planned block (any
+  // outcome) counts. Built from ALL plans, not just this week, so it carries
+  // across week/month boundaries.
+  final activeDays = <DateTime>{
+    for (final plan in plans) statsDayStart(plan.startAt),
+  };
+
   return StatsSummary(
     weekStart: weekStart,
     weekEnd: weekEnd,
     plannedMinutes: plannedMinutes,
     completionRate: checkedInCount == 0 ? 0 : completionScore / checkedInCount,
-    streakDays: _calculateStreak(plannedByDay, today, weekStart),
+    streakDays: _calculateStreak(activeDays, today),
     dailyPlannedMinutes: List.unmodifiable(dailyPlannedMinutes),
     todaysPlans: List.unmodifiable(todaysPlans),
   );
@@ -104,27 +111,23 @@ DateTime statsDayStart(DateTime value) {
   return DateTime(value.year, value.month, value.day);
 }
 
-int _calculateStreak(
-  Map<DateTime, int> plannedByDay,
-  DateTime today,
-  DateTime weekStart,
-) {
-  var cursor = today;
-
+int _calculateStreak(Set<DateTime> activeDays, DateTime today) {
   // A plan-free today does not break the streak until the day ends, so count
   // backward from yesterday in that case.
-  if ((plannedByDay[today] ?? 0) == 0) {
-    cursor = today.subtract(const Duration(days: 1));
-  }
+  var cursor = activeDays.contains(today) ? today : _previousDay(today);
 
   var streak = 0;
-  while (!cursor.isBefore(weekStart)) {
-    if ((plannedByDay[cursor] ?? 0) == 0) {
-      break;
-    }
+  while (activeDays.contains(cursor)) {
     streak += 1;
-    cursor = cursor.subtract(const Duration(days: 1));
+    cursor = _previousDay(cursor);
   }
 
   return streak;
+}
+
+// The previous calendar day at local midnight. Built from y/m/(d-1) rather than
+// subtract(Duration(days: 1)) so it stays exactly on local midnight across DST
+// transitions (24h arithmetic would land an hour off and miss an activeDays key).
+DateTime _previousDay(DateTime day) {
+  return DateTime(day.year, day.month, day.day - 1);
 }
