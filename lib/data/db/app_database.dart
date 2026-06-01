@@ -62,6 +62,24 @@ class PlansDao extends DatabaseAccessor<AppDatabase> with _$PlansDaoMixin {
     );
   }
 
+  Future<Plan?> getActivePlan() {
+    final query = select(plans)
+      ..where((plan) => plan.status.equals('running'))
+      ..orderBy([
+        (plan) => OrderingTerm.desc(plan.startAt),
+        (plan) => OrderingTerm.desc(plan.id),
+      ])
+      ..limit(1);
+
+    return query.getSingleOrNull();
+  }
+
+  Future<Plan?> getPlanById(int id) {
+    final query = select(plans)..where((plan) => plan.id.equals(id));
+
+    return query.getSingleOrNull();
+  }
+
   Stream<List<Plan>> watchPlansForDay(DateTime day) {
     final start = DateTime(day.year, day.month, day.day);
     final end = start.add(const Duration(days: 1));

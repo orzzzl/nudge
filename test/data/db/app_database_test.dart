@@ -43,6 +43,38 @@ void main() {
     expect(plans.single.note, 'Finished');
   });
 
+  test('gets the latest running plan and plan by id', () async {
+    final earlyId = await plansDao.insertPlan(
+      _planCompanion(
+        title: 'Earlier plan',
+        startAt: _day.add(const Duration(hours: 8)),
+      ),
+    );
+    final latestId = await plansDao.insertPlan(
+      _planCompanion(
+        title: 'Latest running plan',
+        startAt: _day.add(const Duration(hours: 11)),
+      ),
+    );
+    final doneId = await plansDao.insertPlan(
+      _planCompanion(
+        title: 'Done plan',
+        startAt: _day.add(const Duration(hours: 12)),
+      ),
+    );
+    await plansDao.updateStatusAndNoteById(id: doneId, status: 'done');
+
+    final activePlan = await plansDao.getActivePlan();
+    final earlyPlan = await plansDao.getPlanById(earlyId);
+    final missingPlan = await plansDao.getPlanById(999);
+
+    expect(activePlan?.id, latestId);
+    expect(activePlan?.title, 'Latest running plan');
+    expect(earlyPlan?.id, earlyId);
+    expect(earlyPlan?.title, 'Earlier plan');
+    expect(missingPlan, isNull);
+  });
+
   test('watch by day emits updated results reactively', () async {
     final expectation = expectLater(
       plansDao.watchPlansForDay(_day),

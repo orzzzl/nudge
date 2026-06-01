@@ -57,6 +57,20 @@ class PlanRepositoryImpl implements PlanRepository {
   }
 
   @override
+  Future<Plan?> getActivePlan() async {
+    final row = await _plansDao.getActivePlan();
+
+    return row == null ? null : _mapRow(row);
+  }
+
+  @override
+  Future<Plan?> getPlanById(int id) async {
+    final row = await _plansDao.getPlanById(id);
+
+    return row == null ? null : _mapRow(row);
+  }
+
+  @override
   Stream<List<Plan>> watchPlansForDay(DateTime day) {
     return _plansDao.watchPlansForDay(day).map(_mapRows);
   }

@@ -110,6 +110,40 @@ void main() {
     expect(plans.single.title, 'Inside range');
   });
 
+  test('getActivePlan returns the latest running plan or null', () async {
+    final earlierPlan = await createPlan(
+      title: 'Earlier running plan',
+      startAt: _day.add(const Duration(hours: 8)),
+    );
+    final latestPlan = await createPlan(
+      title: 'Latest running plan',
+      startAt: _day.add(const Duration(hours: 10)),
+    );
+    final donePlan = await createPlan(
+      title: 'Later checked-in plan',
+      startAt: _day.add(const Duration(hours: 11)),
+    );
+    await repository.checkIn(id: donePlan.id!, status: PlanStatus.done);
+
+    final activePlan = await repository.getActivePlan();
+
+    expect(activePlan, latestPlan);
+
+    await repository.checkIn(id: latestPlan.id!, status: PlanStatus.missed);
+    await repository.checkIn(id: earlierPlan.id!, status: PlanStatus.partial);
+
+    expect(await repository.getActivePlan(), isNull);
+  });
+
+  test('getPlanById returns a domain plan or null', () async {
+    final plan = await createPlan(title: 'Find me');
+
+    final foundPlan = await repository.getPlanById(plan.id!);
+
+    expect(foundPlan, plan);
+    expect(await repository.getPlanById(999), isNull);
+  });
+
   test('PlanStatus values round-trip through DB text', () async {
     for (final (index, status) in PlanStatus.values.indexed) {
       final plan = await createPlan(

@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../app/providers.dart';
@@ -59,10 +61,21 @@ class ChatState {
 class ChatController extends Notifier<ChatState> {
   @override
   ChatState build() {
+    unawaited(_restoreActivePlan());
+
     return const ChatState(messages: [GreetingMessage()], activePlan: null);
   }
 
   PlanRepository get _repository => ref.read(planRepositoryProvider);
+
+  Future<void> _restoreActivePlan() async {
+    final restoredPlan = await _repository.getActivePlan();
+    if (restoredPlan == null || state.activePlan != null) {
+      return;
+    }
+
+    state = state.copyWith(activePlan: restoredPlan);
+  }
 
   /// Create a running plan from the fixed-format input and start its block now.
   Future<void> createPlan({
