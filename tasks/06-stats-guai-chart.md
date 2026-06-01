@@ -41,7 +41,7 @@ reward showing up to plan, not perfection.
     streak, per-day buckets, ledger.
 - out:
   - No date-range picker / month view; no charting dependency; no editing/deleting plans.
-  - Don't change the domain/DAO. (A read-only convenience query on the repo is OK if needed.)
+  - Don't change the domain / repository / DAO — use the existing `watchPlansInRange` ONLY.
 
 ## Acceptance criteria
 - [ ] Hero shows planned **hours** (not completion %); completion rate counts partial as 0.5 and

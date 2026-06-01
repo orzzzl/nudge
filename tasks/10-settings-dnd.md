@@ -3,7 +3,9 @@
 - **Status:** PLANNED (provisional — finalized to READY right before dispatch)
 - **Owner:** Codex, or Claude if Codex is low on budget (Codex reviews)
 - **Blocked by:** 03 (i18n), 05
-- **Allowed new deps:** shared_preferences (or reuse Drift for a small settings store — decide at spec time)
+- **Allowed new deps:** `shared_preferences` (settings store) + `package_info_plus` (read version).
+  Decided: settings go in shared_preferences (a few key-values; Drift would be overkill), and the
+  About version is read at runtime via package_info_plus (don't hard-code it).
 
 ## Goal
 Add the ⚙️/🌙 entry and a minimal settings surface: a do-not-disturb toggle, a manual language
@@ -12,11 +14,11 @@ override (zh / en / follow system), and a basic about section.
 ## Scope
 - in:
   - A settings entry (icon in the chat app bar) → a settings screen.
-  - A small persisted settings store (survives restart).
+  - A small persisted settings store on `shared_preferences` (survives restart), behind a provider.
   - **Do-not-disturb** toggle — for now it just stores the preference (it will gate future
     re-engagement notifications; the per-plan reminder from task 07 stays user-controllable).
   - **Language override** — zh / en / system; drives `MaterialApp.locale` live.
-  - **About** — app name, version.
+  - **About** — app name + version read at runtime via `package_info_plus` (not hard-coded).
   - i18n for all settings strings.
   - Tests: settings store round-trip + the language override switching locale.
 - out:

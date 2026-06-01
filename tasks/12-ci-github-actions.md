@@ -27,3 +27,7 @@ depending on someone running the checks locally.
 - Because `lib/l10n/generated/` is gitignored, `flutter pub get` must run before analyze/test — it
   does, so no extra step. Drift `*.g.dart` is committed, so no build_runner step is needed in CI.
 - Use the official `subosito/flutter-action` (or equivalent) pinned by version.
+- **`pubspec.lock`**: currently gitignored (apps usually commit it for reproducible CI). Not a
+  blocker — CI resolves fresh each run. When dispatching this task, decide whether to also start
+  committing `pubspec.lock` (recommended for an app) so CI is fully reproducible; if so, flip the
+  `.gitignore` line in the same PR.

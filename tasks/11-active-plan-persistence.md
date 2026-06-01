@@ -4,6 +4,9 @@
 - **Owner:** Codex, or Claude if Codex is low on budget (Codex reviews)
 - **Blocked by:** 04 (extends the repository interface)
 - **Allowed new deps:** none
+- **Sequencing:** do this BEFORE 07/08 — they need the repo reads this task adds (load a plan by id
+  / find the active plan), otherwise a notification tapped after cold start has no way to open the
+  right plan.
 
 ## Goal
 Today the active (running) plan lives only in in-memory `ChatController` state, so killing the app
@@ -12,9 +15,11 @@ its block already ended).
 
 ## Scope
 - in:
-  - Extend `PlanRepository` with an active-plan query, e.g. `Future<Plan?> getActivePlan()` /
-    `Stream<Plan?> watchActivePlan()` returning the latest plan with status `running`
-    (interface change — Claude reviews the seam).
+  - Extend `PlanRepository` with two read methods (interface change — Claude reviews the seam):
+    - `Future<Plan?> getActivePlan()` (and/or `Stream<Plan?> watchActivePlan()`) — the latest plan
+      with status `running`.
+    - `Future<Plan?> getPlanById(int id)` — needed by task 08 to open the right plan when a
+      notification is tapped.
   - On `ChatController` build, load the active plan and restore `activePlan` (rebuild the capsule).
   - If the restored plan's `endAt` is already past, coordinate with task 08 to prompt check-in.
 - out:

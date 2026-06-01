@@ -20,11 +20,14 @@ a local notification at its `endAt`; tapping it deep-links to that plan's check-
     Android 13+ `POST_NOTIFICATIONS`; `SCHEDULE_EXACT_ALARM` where applicable).
   - Wire it into the flow: schedule on plan create, cancel on check-in. (Coordinate with the chat
     controller via a provider; do not break the task-04 seam.)
-  - Tap → deep-link to the check-in for that plan (go_router route or a pending-action provider).
+  - On tap → **emit a pending check-in action carrying the `planId`** (a provider/stream). This
+    task does NOT open the check-in UI and does NOT load the plan — task 08 consumes the pending
+    action and task 11 provides `getPlanById`. Keep the responsibility boundary clean.
   - Android manifest + iOS AppDelegate plumbing.
 - out:
   - No remote/FCM/push (post-MVP, China needs vendor channels). No re-engagement nudges.
-  - Just the per-plan end-of-block reminder.
+  - Does NOT open the check-in sheet (task 08) and does NOT query plans (task 11).
+  - Just: schedule/cancel the per-plan reminder + surface the tapped `planId`.
 
 ## Acceptance criteria (draft)
 - [ ] Scheduling + cancel go through the `Notifier` interface; callers don't import the plugin.

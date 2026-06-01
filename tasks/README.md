@@ -30,19 +30,27 @@ Each `NN-slug.md` is one self-contained, reviewable unit of work. Codex implemen
 
 ## Backlog — planned MVP tasks
 
-Scope is known; the `.md` spec gets written right before dispatch. Rough order, not locked.
+Scope is known; the `.md` spec gets written right before dispatch (PLANNED → READY). Numbers are
+stable IDs — the rows below are in **recommended run order** (Codex-reviewed), not numeric order.
+
+**Order:** 12 → 11 → 07 → 08 → 10 → 09. Key constraints: **11 before 07/08** (they need its
+`getActivePlan`/`getPlanById` repo reads — otherwise a notification tapped after cold start can't
+open the right plan), and **09 after 06** (mood is derived from the stats). 12 is independent —
+do it early to protect everything after it.
 
 | # | Task | What it adds | Depends on |
 |---|------|--------------|------------|
-| 07 | [Local notifications (`Notifier` seam)](07-local-notifications.md) | Schedule an on-device notification at a plan's `endAt`; tapping it deep-links to check-in. Android exact-alarm + iOS + timezone. No remote/push (post-MVP). | 05 |
-| 08 | [Auto check-in at time-up](08-auto-checkin-timeup.md) | When the countdown hits 0 (in-app and via the notification), surface the check-in sheet automatically, not only on the capsule button. | 07 |
-| 09 | [团团 mascot with Rive (`PetRenderer` seam)](09-pet-rive.md) | Replace the 🌱 emoji with the Rive state-machine character; mood (happy/neutral/sad) driven by recent completion. | 05 |
-| 10 | [Settings + 勿扰](10-settings-dnd.md) | The ⚙️/🌙 entry: do-not-disturb toggle, manual language override, basic about. | 05 |
-| 11 | [Active-plan persistence](11-active-plan-persistence.md) | On launch, restore the running plan (capsule / prompt check-in) instead of losing it — today it lives only in in-memory `ChatController` state. | 04 |
-| 12 | [CI (GitHub Actions)](12-ci-github-actions.md) | Run `dart format --set-exit-if-changed`, `flutter analyze`, `flutter test` on every PR so `main` stays green without manual local checks. | — |
+| 12 | [CI (GitHub Actions)](12-ci-github-actions.md) | format/analyze/test on every PR so `main` stays green automatically. | — |
+| 11 | [Active-plan persistence](11-active-plan-persistence.md) | Restore the running plan on launch; adds the `getActivePlan`/`getPlanById` repo reads that 07/08 rely on. | 04 |
+| 07 | [Local notifications (`Notifier` seam)](07-local-notifications.md) | Schedule/cancel an on-device reminder at `endAt`; on tap, emit the `planId` (does NOT open the UI). iOS + Android exact-alarm + timezone. | 05 |
+| 08 | [Auto check-in at time-up](08-auto-checkin-timeup.md) | Open the check-in automatically when the block ends (in-app) and when the notification is tapped (loads the plan via 11's `getPlanById`). | 07, 11 |
+| 10 | [Settings + 勿扰](10-settings-dnd.md) | ⚙️ entry: DND toggle, language override, about. `shared_preferences` + `package_info_plus`. | 05 |
+| 09 | [团团 mascot + PetRenderer seam](09-pet-rive.md) | The `PetRenderer` seam + mood-driven mascot widget (emoji/`CustomPaint`). Real Rive `.riv` deferred to a designer-gated follow-up. | 06 |
 
 ## Later — post-MVP, not yet scoped
 
+- Real animated 团团 `.riv` art — swap it in behind the task-09 `PetRenderer` seam. Needs a
+  designer-made Rive asset (Codex can't author a `.riv` binary), so it's gated on art, not code.
 - Pet customization (换色 / 配饰) — the `PetConfigs` table already exists for this.
 - Re-engagement nudges ("3h with no plan", morning prompt) — needs 07; must stay non-naggy.
 - Cloud sync + accounts (China/US region-split), app-store release prep, optional LLM intent parsing.
