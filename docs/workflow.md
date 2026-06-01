@@ -68,6 +68,14 @@ trade an audit gate for speed; code keeps the gate.
 - PR description must link the task file and tick the Definition-of-done checklist from `AGENTS.md`.
 - `main` is always green (format + analyze + test pass).
 
+## Device-verify
+
+Host tests prove logic, not that the app runs on a device (native libs, notifications, real
+navigation, locale switch, on-device rendering). After a DB/plugin/dep change, or to close out a
+user-facing feature, run a manual pass on the emulator. The full step-by-step is in
+[`docs/device-verify.md`](device-verify.md) — boot the AVD, `flutter run`, drive with
+`adb input` + screenshots, and use the clock trick for the time-up/notification paths.
+
 ## What Claude reviews for
 
 1. **Correctness** — does it meet the acceptance criteria and handle edge cases?
