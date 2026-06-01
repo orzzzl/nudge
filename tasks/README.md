@@ -33,12 +33,15 @@ Each `NN-slug.md` is one self-contained, reviewable unit of work. Codex implemen
 | 08 | [Auto check-in at time-up](08-auto-checkin-timeup.md) | DONE | — |
 | 10 | [Settings + 勿扰](10-settings-dnd.md) | DONE | — |
 | 09 | [团团 mascot + PetRenderer seam](09-pet-rive.md) | DONE | — |
+| 13 | [On-device DB smoke test (CI hardening)](13-ondevice-db-smoke.md) | READY | — |
 
-## Backlog — planned MVP tasks
+## Backlog — post-MVP, scoped
 
-🎉 **All MVP tasks (01–12) are DONE and merged to a green main.** The backlog is empty — only the
-"Later" post-MVP follow-ups below remain. Each is scoped; write its `NN-slug.md` spec (PLANNED →
-READY) right before dispatch.
+🎉 **All MVP tasks (01–12) are DONE and merged to a green main.** Post-MVP work is pulled from the
+"Later" list below; each gets its `NN-slug.md` spec (PLANNED → READY) right before dispatch. Stable
+IDs continue from 13.
+
+- **13** — [On-device DB smoke test](13-ondevice-db-smoke.md) — READY, see table above.
 
 ## Later — post-MVP, not yet scoped
 
@@ -46,10 +49,9 @@ READY) right before dispatch.
   designer-made Rive asset (Codex can't author a `.riv` binary), so it's gated on art, not code.
 - Multi-week streak — task 06's streak caps at the current week (single-week query). Compute it
   over a wider window so a run spanning the Monday boundary still counts. Small, isolated.
-- On-device DB smoke test — host unit tests + CI run on the dev machine's sqlite3, so they can't
-  catch native-lib problems (e.g. the `sqlite3_flutter_libs` 0.6.0+eol crash fixed in PR #9). Add an
-  `integration_test` that opens the real DB on an emulator in CI, or at least a documented
-  "run on a device after DB-touching changes" check.
+- ~~On-device DB smoke test~~ — **scoped as [task 13](13-ondevice-db-smoke.md) (READY).** (The
+  "run on a device after DB-touching changes" half is already documented in
+  [`docs/device-verify.md`](../docs/device-verify.md); task 13 adds the automated CI emulator check.)
 - Notification permission re-check — task 07's `_requestPermissions` caches its result, so denying
   notifications once skips all reminders for the session even if granted later in settings. Only
   cache a granted result (re-check when not granted). Small polish.
