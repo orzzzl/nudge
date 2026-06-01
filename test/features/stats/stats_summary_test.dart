@@ -50,15 +50,6 @@ void main() {
     expect(summary.completionRate, 0.5);
     expect(summary.completionPercent, 50);
     expect(summary.streakDays, 1);
-    expect(summary.dailyPlannedMinutes.map((day) => day.plannedMinutes), [
-      60,
-      30,
-      0,
-      60,
-      0,
-      0,
-      0,
-    ]);
     expect(summary.todaysPlans.map((plan) => plan.title), [
       'Earlier today',
       'Later today',
@@ -141,6 +132,135 @@ void main() {
     final summary = aggregateStats(plans, DateTime(2026, 6, 4, 12));
 
     expect(summary.streakDays, 16);
+  });
+
+  test('streak rule B: a fully missed/abandoned day does not extend it', () {
+    final summary = aggregateStats([
+      _plan(id: 1, startAt: DateTime(2026, 6, 3, 9), status: PlanStatus.done),
+      _plan(id: 2, startAt: DateTime(2026, 6, 4, 9), status: PlanStatus.missed),
+    ], DateTime(2026, 6, 4, 12));
+
+    // Today is only a miss → doesn't count; counts back from 6/3 (done) = 1.
+    expect(summary.streakDays, 1);
+  });
+
+  test('streak rule B: a running plan keeps the day active', () {
+    final summary = aggregateStats([
+      _plan(
+        id: 1,
+        startAt: DateTime(2026, 6, 4, 9),
+        status: PlanStatus.running,
+      ),
+    ], DateTime(2026, 6, 4, 12));
+
+    expect(summary.streakDays, 1);
+  });
+
+  group('buildStatsSeries', () {
+    test('week range = 7 daily buckets ending today, hours + completion', () {
+      final now = DateTime(2026, 6, 4, 12);
+      final series = buildStatsSeries(
+        [
+          _plan(
+            id: 1,
+            startAt: DateTime(2026, 6, 2, 9),
+            durationMin: 30,
+            status: PlanStatus.done,
+          ),
+          _plan(
+            id: 2,
+            startAt: DateTime(2026, 6, 2, 11),
+            durationMin: 90,
+            status: PlanStatus.partial,
+          ),
+          _plan(
+            id: 3,
+            startAt: DateTime(2026, 6, 4, 8),
+            status: PlanStatus.missed,
+          ),
+          _plan(
+            id: 4,
+            startAt: DateTime(2026, 6, 4, 9),
+            status: PlanStatus.abandoned,
+          ),
+        ],
+        StatsRange.week,
+        now,
+      );
+
+      expect(series.length, 7);
+      expect(series.first.start, DateTime(2026, 5, 29)); // today - 6
+      expect(series.last.start, DateTime(2026, 6, 4));
+
+      final jun2 = series.firstWhere((p) => p.start == DateTime(2026, 6, 2));
+      expect(jun2.plannedHours, 2.0); // 30 + 90 min
+      expect(jun2.completionRate, 1.0); // done + partial both complete
+
+      final jun4 = series.firstWhere((p) => p.start == DateTime(2026, 6, 4));
+      expect(jun4.completionRate, 0.0); // missed + abandoned
+
+      final jun1 = series.firstWhere((p) => p.start == DateTime(2026, 6, 1));
+      expect(jun1.plannedHours, 0);
+      expect(jun1.completionRate, isNull); // no plans → line gaps
+    });
+
+    test('partial counts as complete, abandoned as a miss', () {
+      final series = buildStatsSeries(
+        [
+          _plan(
+            id: 1,
+            startAt: DateTime(2026, 6, 4, 9),
+            status: PlanStatus.partial,
+          ),
+          _plan(
+            id: 2,
+            startAt: DateTime(2026, 6, 4, 10),
+            status: PlanStatus.abandoned,
+          ),
+        ],
+        StatsRange.week,
+        DateTime(2026, 6, 4, 12),
+      );
+
+      expect(
+        series.last.completionRate,
+        0.5,
+      ); // 1 partial / (partial+abandoned)
+    });
+
+    test('month range = 30 daily buckets ending today', () {
+      final series = buildStatsSeries(
+        [],
+        StatsRange.month,
+        DateTime(2026, 6, 4),
+      );
+      expect(series.length, 30);
+      expect(series.first.start, DateTime(2026, 5, 6));
+      expect(series.last.start, DateTime(2026, 6, 4));
+    });
+
+    test('all-time uses monthly buckets from the first plan to now', () {
+      final series = buildStatsSeries(
+        [
+          _plan(
+            id: 1,
+            startAt: DateTime(2026, 3, 15, 9),
+            status: PlanStatus.done,
+          ),
+        ],
+        StatsRange.all,
+        DateTime(2026, 6, 4, 12),
+      );
+
+      expect(series.map((p) => p.start), [
+        DateTime(2026, 3),
+        DateTime(2026, 4),
+        DateTime(2026, 5),
+        DateTime(2026, 6),
+      ]);
+      expect(series.first.plannedHours, 1.0);
+      expect(series.first.completionRate, 1.0);
+    });
   });
 }
 

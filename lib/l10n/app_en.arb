@@ -74,6 +74,28 @@
       }
     }
   },
+  "statsHoursChartTitle": "Planned hours",
+  "@statsHoursChartTitle": {
+    "description": "Title for the planned-hours line chart."
+  },
+  "statsCompletionRateTitle": "Completion rate",
+  "@statsCompletionRateTitle": {
+    "description": "Title for the completion-rate line chart."
+  },
+  "statsRangeWeek": "1W",
+  "@statsRangeWeek": { "description": "Chart range: last week." },
+  "statsRangeMonth": "1M",
+  "@statsRangeMonth": { "description": "Chart range: last month." },
+  "statsRangeYtd": "YTD",
+  "@statsRangeYtd": { "description": "Chart range: year to date." },
+  "statsRangeFiveYears": "5Y",
+  "@statsRangeFiveYears": { "description": "Chart range: last five years." },
+  "statsRangeAll": "All",
+  "@statsRangeAll": { "description": "Chart range: all time." },
+  "statsChartEmpty": "No data in this range yet",
+  "@statsChartEmpty": {
+    "description": "Empty state shown when a chart range has no data."
+  },
   "statsTodayLedgerTitle": "Today",
   "@statsTodayLedgerTitle": {
     "description": "Title for today's plans ledger."
