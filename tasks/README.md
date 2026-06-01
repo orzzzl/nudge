@@ -29,7 +29,7 @@ Each `NN-slug.md` is one self-contained, reviewable unit of work. Codex implemen
 | 06 | [乖乖图 / Stats tab](06-stats-guai-chart.md) | DONE | — |
 | 12 | [CI (GitHub Actions)](12-ci-github-actions.md) | DONE | — |
 | 11 | [Active-plan persistence](11-active-plan-persistence.md) | DONE | — |
-| 07 | [Local notifications (reminder seam)](07-local-notifications.md) | READY (dispatched to Codex) | — |
+| 07 | [Local notifications (reminder seam)](07-local-notifications.md) | DONE | — |
 
 ## Backlog — planned MVP tasks
 
@@ -55,6 +55,9 @@ stable IDs — the rows below are in **recommended run order** (Codex-reviewed),
   catch native-lib problems (e.g. the `sqlite3_flutter_libs` 0.6.0+eol crash fixed in PR #9). Add an
   `integration_test` that opens the real DB on an emulator in CI, or at least a documented
   "run on a device after DB-touching changes" check.
+- Notification permission re-check — task 07's `_requestPermissions` caches its result, so denying
+  notifications once skips all reminders for the session even if granted later in settings. Only
+  cache a granted result (re-check when not granted). Small polish.
 - Pet customization (换色 / 配饰) — the `PetConfigs` table already exists for this.
 - Re-engagement nudges ("3h with no plan", morning prompt) — needs 07; must stay non-naggy.
 - Cloud sync + accounts (China/US region-split), app-store release prep, optional LLM intent parsing.

@@ -1,6 +1,6 @@
 # 07 — Local notifications (the reminder seam)
 
-- **Status:** READY
+- **Status:** DONE (reviewed by Claude + verified on-device; merged in PR #11)
 - **Owner:** Codex (Claude does the on-device verification)
 - **Blocked by:** 05
 - **Allowed new deps:** flutter_local_notifications, timezone, flutter_timezone
