@@ -52,6 +52,10 @@ after cold start can't open the right plan), and **09 after 06** (mood is derive
   designer-made Rive asset (Codex can't author a `.riv` binary), so it's gated on art, not code.
 - Multi-week streak — task 06's streak caps at the current week (single-week query). Compute it
   over a wider window so a run spanning the Monday boundary still counts. Small, isolated.
+- On-device DB smoke test — host unit tests + CI run on the dev machine's sqlite3, so they can't
+  catch native-lib problems (e.g. the `sqlite3_flutter_libs` 0.6.0+eol crash fixed in PR #9). Add an
+  `integration_test` that opens the real DB on an emulator in CI, or at least a documented
+  "run on a device after DB-touching changes" check.
 - Pet customization (换色 / 配饰) — the `PetConfigs` table already exists for this.
 - Re-engagement nudges ("3h with no plan", morning prompt) — needs 07; must stay non-naggy.
 - Cloud sync + accounts (China/US region-split), app-store release prep, optional LLM intent parsing.
