@@ -36,7 +36,7 @@ Each `NN-slug.md` is one self-contained, reviewable unit of work. Codex implemen
 | 13 | [On-device DB smoke test (CI hardening)](13-ondevice-db-smoke.md) | DONE (PR #15) | — |
 | 14 | [Cute theme foundation (palette + fonts + candy primitives)](14-cute-theme-foundation.md) | DONE (PR #16) | — |
 | 15 | [Cute skin across screens](15-cute-screens-skin.md) | PLANNED | 14 |
-| 16 | [团团 character art (CustomPaint mascot)](16-tuantuan-character-art.md) | PLANNED | 09 |
+| 16 | [团团 character art (CustomPaint mascot)](16-tuantuan-character-art.md) | READY (dispatched to Codex 2026-06-01) | 09 |
 
 ## Backlog — post-MVP, scoped
 
