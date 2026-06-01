@@ -1,14 +1,18 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:nudge/l10n/generated/app_localizations.dart';
 
 import 'app_router.dart';
 import 'app_theme.dart';
+import 'providers.dart';
 
-class NudgeApp extends StatelessWidget {
+class NudgeApp extends ConsumerWidget {
   const NudgeApp({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    ref.watch(reminderSchedulerInitializationProvider);
+
     return MaterialApp.router(
       onGenerateTitle: (context) => AppLocalizations.of(context).appTitle,
       routerConfig: appRouter,

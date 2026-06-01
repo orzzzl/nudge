@@ -10,9 +10,11 @@ dependencies:
   drift: ^2.31.0
   flutter:
     sdk: flutter
+  flutter_local_notifications: 19.5.0
   flutter_localizations:
     sdk: flutter
   flutter_riverpod: ^3.1.0
+  flutter_timezone: 5.0.1
   go_router: ^17.2.3
   intl: ^0.20.2
   path: ^1.9.1
@@ -21,6 +23,7 @@ dependencies:
   # 0.6.0+eol is an end-of-life stub with NO libsqlite3.so, which crashes the app
   # on-device the first time it touches the database (host-only tests don't catch it).
   sqlite3_flutter_libs: ^0.5.42
+  timezone: 0.10.1
 
 dev_dependencies:
   flutter_test:
