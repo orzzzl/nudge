@@ -38,7 +38,7 @@ Each `NN-slug.md` is one self-contained, reviewable unit of work. Codex implemen
 | 15 | [Cute skin across screens](15-cute-screens-skin.md) | DONE (PR #18) | 14 |
 | 16 | [团团 character art (CustomPaint mascot)](16-tuantuan-character-art.md) | DONE (PR #17) | 09 |
 | 17 | [Unbounded (multi-week) streak](17-multi-week-streak.md) | DONE (PR #19) | 06 |
-| 18 | [乖乖图 v2: line charts + range switcher (+streak rule B)](18-stats-line-charts.md) | IN_PROGRESS (Claude) | 06, 17 |
+| 18 | [乖乖图 v2: line charts + range switcher (+streak rule B)](18-stats-line-charts.md) | IN_REVIEW (PR #22, Claude — Codex reviews) | 06, 17 |
 
 ## Backlog — post-MVP, scoped
 

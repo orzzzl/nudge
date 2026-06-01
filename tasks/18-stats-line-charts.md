@@ -1,6 +1,6 @@
 # 18 — 乖乖图 v2: hand-drawn line charts + range switcher (+ streak rule B)
 
-- **Status:** IN_PROGRESS (Claude — role swap)
+- **Status:** IN_REVIEW (PR #22, Claude — Codex reviews)
 - **Owner:** Claude (Codex reviews)
 - **Blocked by:** 06 (stats), 17 (streak) — DONE.
 - **Allowed new deps:** none — charts are hand-drawn with `CustomPaint` (owner's call, no `fl_chart`).
