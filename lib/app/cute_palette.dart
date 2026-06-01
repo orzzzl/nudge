@@ -1,0 +1,61 @@
+import 'package:flutter/material.dart';
+
+/// The "macaron" palette, lifted verbatim from the approved mockup
+/// `docs/mockups/cute.html`. This is the single source of truth for color —
+/// the theme, the candy primitives, and (in tasks 15/16) every screen pull
+/// from here, so no widget hard-codes a hex at the call site.
+abstract final class CuteColors {
+  // Backdrop.
+  static const cream = Color(0xFFFFF7EF); // page background
+  static const blobPeach = Color(0xFFFFE9D6); // gradient blob
+  static const blobMatcha = Color(0xFFE2F5E6); // gradient blob
+  static const blobLavender = Color(0xFFF3E6FF); // gradient blob
+
+  // Surfaces.
+  static const surface = Color(0xFFFFFDFA); // cards, sheets, bars
+  static const white = Color(0xFFFFFFFF);
+
+  // Matcha green family (brand).
+  static const matcha = Color(0xFF3F7D5C); // brand / primary text
+  static const matchaVivid = Color(0xFF2E9E6B); // emphasis
+  static const matchaGradientTop = Color(0xFF8AD6A3);
+  static const matchaGradientBottom = Color(0xFF5CC78F);
+  static const matchaCandyShadow = Color(0xFF4FB87F); // hard offset shadow
+
+  // Peach family (secondary / "me" accents).
+  static const peachGradientTop = Color(0xFFFFB07C);
+  static const peachGradientBottom = Color(0xFFFF9B6A);
+  static const peachCandyShadow = Color(0xFFF08A55);
+
+  // Text.
+  static const textBrown = Color(0xFF5A4A3F); // body
+  static const textMuted = Color(0xFFB6A395);
+  static const textMuted2 = Color(0xFFA8917F);
+  static const textFaint = Color(0xFFCDB9A8);
+  static const textFaint2 = Color(0xFFC4B09C);
+
+  // Borders.
+  static const borderCream = Color(0xFFF4E7D8);
+  static const borderPeach = Color(0xFFFFE0C2);
+  static const borderPeach2 = Color(0xFFFFE3CD);
+  static const borderMint = Color(0xFFC4EBD1);
+  static const borderNeutral = Color(0xFFEADFD2);
+
+  // Tinted fills.
+  static const mintConfirm = Color(0xFFEAFAF0); // confirm bg / active tab pill
+  static const fieldBg = Color(0xFFFFF3E8);
+  static const fieldBg2 = Color(0xFFFFF2E4); // gear button bg
+  static const gearShadow = Color(0xFFF0DDCA);
+
+  // Gradients used widely enough to name once.
+  static const matchaGradient = LinearGradient(
+    begin: Alignment.topLeft,
+    end: Alignment.bottomRight,
+    colors: [matchaGradientTop, matchaGradientBottom],
+  );
+  static const peachGradient = LinearGradient(
+    begin: Alignment.topLeft,
+    end: Alignment.bottomRight,
+    colors: [peachGradientTop, peachGradientBottom],
+  );
+}
