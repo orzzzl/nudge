@@ -90,6 +90,16 @@ class _EmptyPlanRepository implements PlanRepository {
   }
 
   @override
+  Future<Plan?> getActivePlan() async {
+    return null;
+  }
+
+  @override
+  Future<Plan?> getPlanById(int id) async {
+    return null;
+  }
+
+  @override
   Stream<List<Plan>> watchPlansForDay(DateTime day) {
     return Stream.value(const []);
   }

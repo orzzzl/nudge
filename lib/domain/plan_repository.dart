@@ -14,6 +14,10 @@ abstract class PlanRepository {
     String? note,
   });
 
+  Future<Plan?> getActivePlan();
+
+  Future<Plan?> getPlanById(int id);
+
   Stream<List<Plan>> watchPlansForDay(DateTime day);
 
   Stream<List<Plan>> watchPlansInRange({

@@ -89,6 +89,16 @@ class _StaticPlanRepository implements PlanRepository {
   }
 
   @override
+  Future<Plan?> getActivePlan() {
+    throw UnimplementedError();
+  }
+
+  @override
+  Future<Plan?> getPlanById(int id) {
+    throw UnimplementedError();
+  }
+
+  @override
   Stream<List<Plan>> watchPlansForDay(DateTime day) {
     throw UnimplementedError();
   }

@@ -5,15 +5,18 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:nudge/app/providers.dart';
 import 'package:nudge/data/db/app_database.dart' as db;
 import 'package:nudge/data/repositories/plan_repository_impl.dart';
+import 'package:nudge/domain/plan_repository.dart';
 import 'package:nudge/features/chat/chat_screen.dart';
 import 'package:nudge/l10n/generated/app_localizations.dart';
 import 'package:nudge/l10n/generated/app_localizations_en.dart';
 
 void main() {
   late db.AppDatabase database;
+  late PlanRepository repository;
 
   setUp(() {
     database = db.AppDatabase.forTesting(NativeDatabase.memory());
+    repository = PlanRepositoryImpl(database.plansDao);
   });
 
   tearDown(() async {
@@ -23,11 +26,7 @@ void main() {
   Future<void> pumpChat(WidgetTester tester) async {
     await tester.pumpWidget(
       ProviderScope(
-        overrides: [
-          planRepositoryProvider.overrideWithValue(
-            PlanRepositoryImpl(database.plansDao),
-          ),
-        ],
+        overrides: [planRepositoryProvider.overrideWithValue(repository)],
         child: const MaterialApp(
           localizationsDelegates: AppLocalizations.localizationsDelegates,
           supportedLocales: AppLocalizations.supportedLocales,
@@ -83,5 +82,51 @@ void main() {
     expect(find.text(l10n.resultDone), findsOneWidget);
     expect(find.text(l10n.startButton), findsOneWidget);
     expect(find.text(l10n.capsuleCheckIn), findsNothing);
+  });
+
+  testWidgets('restores an active plan and checks it in', (tester) async {
+    final l10n = AppLocalizationsEn();
+    await repository.createPlan(
+      title: 'Continue report',
+      durationMin: 60,
+      startAt: DateTime.now().subtract(const Duration(minutes: 10)),
+      locale: 'en',
+    );
+
+    await pumpChat(tester);
+    await tester.pump(const Duration(milliseconds: 50));
+
+    expect(find.text('Continue report'), findsOneWidget);
+    expect(find.text(l10n.capsuleCheckIn), findsOneWidget);
+    expect(find.text(l10n.startButton), findsNothing);
+
+    await tester.tap(find.text(l10n.capsuleCheckIn));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 300));
+    await tester.tap(find.text(l10n.checkInDone));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 50));
+    await tester.pumpAndSettle();
+
+    expect(find.text(l10n.resultDone), findsOneWidget);
+    expect(find.text(l10n.startButton), findsOneWidget);
+    expect(find.text(l10n.capsuleCheckIn), findsNothing);
+  });
+
+  testWidgets('restores an expired active plan as time up', (tester) async {
+    final l10n = AppLocalizationsEn();
+    await repository.createPlan(
+      title: 'Expired report',
+      durationMin: 1,
+      startAt: DateTime.now().subtract(const Duration(minutes: 5)),
+      locale: 'en',
+    );
+
+    await pumpChat(tester);
+    await tester.pump(const Duration(milliseconds: 50));
+
+    expect(find.text('Expired report'), findsOneWidget);
+    expect(find.text(l10n.capsuleTimeUp), findsOneWidget);
+    expect(find.text(l10n.checkInTitle), findsNothing);
   });
 }
