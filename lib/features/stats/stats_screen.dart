@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:nudge/l10n/generated/app_localizations.dart';
 
+import '../../app/cute_palette.dart';
+import '../../app/widgets/candy.dart';
 import '../../domain/plan.dart';
 import '../pet/pet_mood.dart';
 import '../pet/pet_view.dart';
@@ -102,10 +104,11 @@ class _PlannedHoursHero extends StatelessWidget {
 
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.all(18),
+      padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: theme.colorScheme.primaryContainer,
-        borderRadius: BorderRadius.circular(8),
+        gradient: CuteColors.matchaGradient,
+        borderRadius: BorderRadius.circular(26),
+        boxShadow: candyShadow(CuteColors.matchaCandyShadow, dy: 8),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -120,7 +123,7 @@ class _PlannedHoursHero extends StatelessWidget {
                     Text(
                       localizations.statsPlannedHoursLabel,
                       style: theme.textTheme.labelLarge?.copyWith(
-                        color: theme.colorScheme.onPrimaryContainer,
+                        color: CuteColors.white,
                       ),
                     ),
                     const SizedBox(height: 8),
@@ -129,8 +132,8 @@ class _PlannedHoursHero extends StatelessWidget {
                         summary.plannedHours.toStringAsFixed(1),
                       ),
                       style: theme.textTheme.displaySmall?.copyWith(
-                        color: theme.colorScheme.onPrimaryContainer,
-                        fontWeight: FontWeight.w800,
+                        color: CuteColors.white,
+                        fontWeight: FontWeight.w900,
                       ),
                     ),
                   ],
@@ -143,7 +146,8 @@ class _PlannedHoursHero extends StatelessWidget {
           Text(
             localizations.statsPlannedHoursCaption,
             style: theme.textTheme.bodyMedium?.copyWith(
-              color: theme.colorScheme.onPrimaryContainer,
+              color: CuteColors.white,
+              fontWeight: FontWeight.w700,
             ),
           ),
         ],
@@ -162,22 +166,24 @@ class _StreakChip extends StatelessWidget {
     final localizations = AppLocalizations.of(context);
     final theme = Theme.of(context);
 
+    // Sits on the green hero, so it's the mockup's white hero pill (🔥 + amber
+    // text), not the standalone amber streak row (our layout has no such row).
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
       decoration: BoxDecoration(
-        color: theme.colorScheme.surface,
-        borderRadius: BorderRadius.circular(8),
+        color: CuteColors.white,
+        borderRadius: BorderRadius.circular(16),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          const Text('🔥'),
+          const Text('🔥', style: TextStyle(fontSize: 14)),
           const SizedBox(width: 6),
           Text(
             localizations.statsStreakValue(days),
             style: theme.textTheme.labelLarge?.copyWith(
-              color: theme.colorScheme.onSurface,
-              fontWeight: FontWeight.w700,
+              color: CuteColors.streakText,
+              fontWeight: FontWeight.w800,
             ),
           ),
         ],
@@ -203,7 +209,8 @@ class _WeeklyBars extends StatelessWidget {
         Text(
           localizations.statsWeeklyChartTitle,
           style: theme.textTheme.titleMedium?.copyWith(
-            fontWeight: FontWeight.w700,
+            color: CuteColors.textMuted2,
+            fontWeight: FontWeight.w800,
           ),
         ),
         const SizedBox(height: 12),
@@ -271,21 +278,34 @@ class _DayBar extends StatelessWidget {
                 width: 20,
                 height: barHeight,
                 decoration: BoxDecoration(
-                  color: plannedMinutes == 0
-                      ? theme.colorScheme.surfaceContainerHighest
-                      : theme.colorScheme.primary,
-                  borderRadius: BorderRadius.circular(6),
+                  gradient: plannedMinutes == 0
+                      ? null
+                      : CuteColors.matchaGradient,
+                  color: plannedMinutes == 0 ? CuteColors.barFaint : null,
+                  borderRadius: BorderRadius.circular(10),
+                  boxShadow: candyShadow(
+                    plannedMinutes == 0
+                        ? CuteColors.barFaintShadow
+                        : CuteColors.matchaCandyShadow,
+                    dy: 3,
+                  ),
                 ),
               ),
             ),
           ),
-          const SizedBox(height: 8),
-          Text(label, style: theme.textTheme.labelMedium),
+          const SizedBox(height: 10),
+          Text(
+            label,
+            style: theme.textTheme.labelMedium?.copyWith(
+              color: CuteColors.textFaint2,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
           const SizedBox(height: 2),
           Text(
             localizations.statsBarMinutes(plannedMinutes),
             style: theme.textTheme.labelSmall?.copyWith(
-              color: theme.colorScheme.onSurfaceVariant,
+              color: CuteColors.textFaint2,
             ),
           ),
         ],
@@ -313,13 +333,17 @@ class _CompletionBar extends StatelessWidget {
               child: Text(
                 localizations.statsCompletionTitle,
                 style: theme.textTheme.titleMedium?.copyWith(
-                  fontWeight: FontWeight.w700,
+                  color: CuteColors.textMuted2,
+                  fontWeight: FontWeight.w800,
                 ),
               ),
             ),
             Text(
               localizations.statsCompletionPercent(summary.completionPercent),
-              style: theme.textTheme.labelLarge,
+              style: theme.textTheme.labelLarge?.copyWith(
+                color: CuteColors.matchaVivid,
+                fontWeight: FontWeight.w800,
+              ),
             ),
           ],
         ),
@@ -329,7 +353,8 @@ class _CompletionBar extends StatelessWidget {
           child: LinearProgressIndicator(
             minHeight: 12,
             value: summary.completionRate.clamp(0, 1),
-            backgroundColor: theme.colorScheme.surfaceContainerHighest,
+            color: CuteColors.matchaGradientBottom,
+            backgroundColor: CuteColors.borderCream,
           ),
         ),
       ],
@@ -353,7 +378,8 @@ class _TodayLedger extends StatelessWidget {
         Text(
           localizations.statsTodayLedgerTitle,
           style: theme.textTheme.titleMedium?.copyWith(
-            fontWeight: FontWeight.w700,
+            color: CuteColors.textMuted2,
+            fontWeight: FontWeight.w800,
           ),
         ),
         const SizedBox(height: 10),
@@ -361,15 +387,34 @@ class _TodayLedger extends StatelessWidget {
           Text(
             localizations.statsTodayLedgerEmpty,
             style: theme.textTheme.bodyMedium?.copyWith(
-              color: theme.colorScheme.onSurfaceVariant,
+              color: CuteColors.textMuted,
+              fontWeight: FontWeight.w600,
             ),
           )
         else
-          for (final plan in plans)
-            Padding(
-              padding: const EdgeInsets.only(bottom: 8),
-              child: _LedgerRow(plan: plan),
+          CandyCard(
+            color: CuteColors.white,
+            padding: EdgeInsets.zero,
+            radius: 20,
+            child: Column(
+              children: [
+                for (final (index, plan) in plans.indexed)
+                  DecoratedBox(
+                    decoration: BoxDecoration(
+                      border: index == plans.length - 1
+                          ? null
+                          : const Border(
+                              bottom: BorderSide(
+                                color: CuteColors.rowDivider,
+                                width: 2,
+                              ),
+                            ),
+                    ),
+                    child: _LedgerRow(plan: plan),
+                  ),
+              ],
             ),
+          ),
       ],
     );
   }
@@ -388,17 +433,18 @@ class _LedgerRow extends StatelessWidget {
       context,
     ).formatTimeOfDay(TimeOfDay.fromDateTime(plan.startAt));
 
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-      decoration: BoxDecoration(
-        color: theme.colorScheme.surfaceContainerHighest,
-        borderRadius: BorderRadius.circular(8),
-      ),
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
       child: Row(
         children: [
           SizedBox(
             width: 64,
-            child: Text(time, style: theme.textTheme.labelMedium),
+            child: Text(
+              time,
+              style: theme.textTheme.labelMedium?.copyWith(
+                color: CuteColors.textFaint2,
+              ),
+            ),
           ),
           Expanded(
             child: Text(
@@ -406,6 +452,7 @@ class _LedgerRow extends StatelessWidget {
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
               style: theme.textTheme.bodyMedium?.copyWith(
+                color: CuteColors.textBrown,
                 fontWeight: FontWeight.w600,
               ),
             ),
@@ -413,12 +460,16 @@ class _LedgerRow extends StatelessWidget {
           const SizedBox(width: 8),
           Text(
             localizations.durationChipLabel(plan.durationMin),
-            style: theme.textTheme.labelMedium,
+            style: theme.textTheme.labelMedium?.copyWith(
+              color: CuteColors.textFaint2,
+            ),
           ),
           const SizedBox(width: 8),
           Text(
             '${_statusEmoji(plan.status)} ${_statusLabel(localizations, plan.status)}',
-            style: theme.textTheme.labelMedium,
+            style: theme.textTheme.labelMedium?.copyWith(
+              color: CuteColors.textBrown,
+            ),
           ),
         ],
       ),

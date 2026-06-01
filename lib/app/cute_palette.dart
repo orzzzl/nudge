@@ -44,8 +44,29 @@ abstract final class CuteColors {
   // Tinted fills.
   static const mintConfirm = Color(0xFFEAFAF0); // confirm bg / active tab pill
   static const fieldBg = Color(0xFFFFF3E8);
-  static const fieldBg2 = Color(0xFFFFF2E4); // gear button bg
+  static const fieldBg2 = Color(
+    0xFFFFF2E4,
+  ); // gear button bg / capsule mini-chip
   static const gearShadow = Color(0xFFF0DDCA);
+
+  // Chip / capsule peach-brown ink (duration chips, capsule mini-chip text).
+  static const chipBrown = Color(0xFFC89368);
+
+  // Capsule hard shadow (mockup `.capsule box-shadow:0 5px 0 #ffe9d6` == blobPeach).
+  static const capsuleShadow = blobPeach;
+
+  // Faint weekly bar (a day with no planned time) + its hard shadow.
+  static const barFaint = Color(0xFFECE3D8);
+  static const barFaintShadow = Color(0xFFE0D4C5);
+
+  // Streak pill (amber) — bg / border / hard shadow / text.
+  static const streakBg = Color(0xFFFFF3E0);
+  static const streakBorder = Color(0xFFFFE0B3);
+  static const streakShadow = Color(0xFFFFECD1);
+  static const streakText = Color(0xFFE08A2E);
+
+  // Ledger row divider (mockup `.li border-bottom #f7efe5`).
+  static const rowDivider = Color(0xFFF7EFE5);
 
   // Gradients used widely enough to name once.
   static const matchaGradient = LinearGradient(
