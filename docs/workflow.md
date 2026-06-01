@@ -47,6 +47,20 @@ Anything requiring a *cross-cutting decision or judgment call* → Claude.
 4. **Codex** addresses comments on the same branch until Claude approves.
 5. **Human** (or Claude, if delegated) merges to `main`. Task status → `DONE`.
 
+## What goes through a PR (merge-gate policy)
+
+The PR + review gate exists to catch **code** problems (correctness, build breakage, seam/arch
+violations) before they reach `main`. So:
+
+- **Code changes → always a PR + review** (Codex's work, and Claude's when Claude implements).
+- **Architect docs/specs/bookkeeping → committed directly to `main`** by Claude: `tasks/*.md`,
+  `docs/`, task-status updates, `.gitignore`/policy notes, CI-less config. These have no second
+  reviewer in this two-agent setup (both agents authenticate as the same GitHub account, so GitHub
+  blocks self-approval anyway), can't break the build, and are trivially revertible.
+
+Chosen by the product owner (2026-06-01). Not Google-style "every change is a reviewed CL" — docs
+trade an audit gate for speed; code keeps the gate.
+
 ## Branch & PR conventions
 
 - Branch: `task/<NN>-<slug>` for tasks; `arch/<slug>` for Claude's architecture commits.
