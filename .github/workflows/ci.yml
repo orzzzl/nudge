@@ -1,0 +1,35 @@
+name: CI
+
+# Runs the same checks the agents run locally, on every PR and on main, so green
+# status stops depending on someone remembering to run them by hand.
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: subosito/flutter-action@v2
+        with:
+          # Pinned to match local dev (Dart 3.12). Bump deliberately, not "latest".
+          flutter-version: 3.44.0
+          channel: stable
+          cache: true
+
+      # `flutter pub get` also regenerates the gitignored gen_l10n output (generate: true).
+      # Drift *.g.dart is committed, so no build_runner step is needed here.
+      - name: Install dependencies
+        run: flutter pub get
+
+      - name: Format
+        run: dart format --output=none --set-exit-if-changed .
+
+      - name: Analyze
+        run: flutter analyze
+
+      - name: Test
+        run: flutter test
