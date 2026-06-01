@@ -37,6 +37,7 @@ Each `NN-slug.md` is one self-contained, reviewable unit of work. Codex implemen
 | 14 | [Cute theme foundation (palette + fonts + candy primitives)](14-cute-theme-foundation.md) | DONE (PR #16) | — |
 | 15 | [Cute skin across screens](15-cute-screens-skin.md) | DONE (PR #18) | 14 |
 | 16 | [团团 character art (CustomPaint mascot)](16-tuantuan-character-art.md) | DONE (PR #17) | 09 |
+| 17 | [Unbounded (multi-week) streak](17-multi-week-streak.md) | IN_PROGRESS (Claude — role swap) | 06 |
 
 ## Backlog — post-MVP, scoped
 
@@ -61,8 +62,7 @@ but still on stock Material 3 (a bare teal seed); the cute "macaron" skin was ne
 - Real **animated** 团团 `.riv` art — swap it in behind the task-09 `PetView` seam, *after* task 16's
   static `CustomPaint` mascot. Needs a designer-made Rive asset (Codex can't author a `.riv` binary),
   so it's gated on art, not code.
-- Multi-week streak — task 06's streak caps at the current week (single-week query). Compute it
-  over a wider window so a run spanning the Monday boundary still counts. Small, isolated.
+- ~~Multi-week streak~~ — **scoped as [task 17](17-multi-week-streak.md) (unbounded, local-time).**
 - ~~On-device DB smoke test~~ — **scoped as [task 13](13-ondevice-db-smoke.md) (READY).** (The
   "run on a device after DB-touching changes" half is already documented in
   [`docs/device-verify.md`](../docs/device-verify.md); task 13 adds the automated CI emulator check.)
