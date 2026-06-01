@@ -132,7 +132,13 @@ just `adb shell settings put global auto_time 1` and toggle airplane mode, or si
 
 ---
 
-## 5. Feature checklists (the three unverified since task 07)
+## 5. Feature checklists (08 / 09 / 10)
+
+> **Verified ✅ (2026-06-01, main `7dd23c4`, Android `nudge_test` API 36):** all of 08 (warm/cold/
+> restore-past-end/dismiss-debounce/pick-status), 09 (mascot sad→happy), and 10 (zh live+persist,
+> DND persist, About version) PASS on device. See the
+> [commit comment](https://github.com/orzzzl/nudge/commit/7dd23c453b738f9505cdab43728915ea9f840923#commitcomment-187144362).
+> Re-run these after any change to those features.
 
 ### Task 08 — auto check-in at time-up
 1. **Notification tap (warm):** On the Chat tab, type a task name, leave duration at 30, tap the
