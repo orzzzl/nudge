@@ -2,6 +2,8 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 
+import '../../../app/cute_palette.dart';
+import '../../../app/widgets/candy.dart';
 import '../../../domain/plan.dart';
 import '../../../l10n/generated/app_localizations.dart';
 
@@ -59,10 +61,12 @@ class _CountdownCapsuleState extends State<CountdownCapsule> {
     return Padding(
       padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
       child: Container(
-        padding: const EdgeInsets.fromLTRB(16, 10, 10, 10),
+        padding: const EdgeInsets.fromLTRB(16, 8, 8, 8),
         decoration: BoxDecoration(
-          color: theme.colorScheme.surfaceContainerHighest,
+          color: CuteColors.white,
+          border: Border.all(color: CuteColors.borderPeach, width: 2),
           borderRadius: BorderRadius.circular(24),
+          boxShadow: candyShadow(CuteColors.capsuleShadow),
         ),
         child: Row(
           children: [
@@ -75,13 +79,16 @@ class _CountdownCapsuleState extends State<CountdownCapsule> {
                     widget.plan.title,
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
-                    style: theme.textTheme.titleSmall,
+                    style: theme.textTheme.titleSmall?.copyWith(
+                      color: CuteColors.textBrown,
+                    ),
                   ),
                   const SizedBox(height: 2),
                   Text(
                     isUp ? l10n.capsuleTimeUp : _formatRemaining(remaining),
-                    style: theme.textTheme.bodyMedium?.copyWith(
-                      color: theme.colorScheme.primary,
+                    style: theme.textTheme.titleSmall?.copyWith(
+                      color: CuteColors.peachGradientBottom,
+                      fontWeight: FontWeight.w800,
                       fontFeatures: const [FontFeature.tabularFigures()],
                     ),
                   ),
@@ -89,9 +96,32 @@ class _CountdownCapsuleState extends State<CountdownCapsule> {
               ),
             ),
             const SizedBox(width: 8),
-            FilledButton.tonal(
-              onPressed: widget.onCheckIn,
-              child: Text(l10n.capsuleCheckIn),
+            // Soft mini-chip (mockup `.capsule .mini`), not a Material button.
+            Material(
+              color: Colors.transparent,
+              child: InkWell(
+                onTap: widget.onCheckIn,
+                borderRadius: BorderRadius.circular(14),
+                child: Ink(
+                  decoration: BoxDecoration(
+                    color: CuteColors.fieldBg2,
+                    borderRadius: BorderRadius.circular(14),
+                  ),
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 9,
+                    ),
+                    child: Text(
+                      l10n.capsuleCheckIn,
+                      style: theme.textTheme.labelMedium?.copyWith(
+                        color: CuteColors.chipBrown,
+                        fontWeight: FontWeight.w800,
+                      ),
+                    ),
+                  ),
+                ),
+              ),
             ),
           ],
         ),

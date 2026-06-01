@@ -3,6 +3,8 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../app/cute_palette.dart';
+import '../../app/widgets/candy.dart';
 import '../../domain/plan.dart';
 import '../../l10n/generated/app_localizations.dart';
 import '../pet/pet_mood.dart';
@@ -103,6 +105,10 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
   }
 }
 
+/// The three mockup bubble looks: the user's peach gradient (`me`), the
+/// mascot's white greeting/result (`ai`), and the mint plan confirmation.
+enum _BubbleStyle { me, ai, confirm }
+
 /// Renders one [ChatMessage] variant as a localized, sender-aligned bubble.
 class _MessageBubble extends StatelessWidget {
   const _MessageBubble({required this.message, required this.mood});
@@ -115,40 +121,83 @@ class _MessageBubble extends StatelessWidget {
     final l10n = AppLocalizations.of(context);
     final theme = Theme.of(context);
 
-    final (isUser, text) = switch (message) {
-      GreetingMessage() => (false, l10n.chatGreeting),
+    final (style, text) = switch (message) {
+      GreetingMessage() => (_BubbleStyle.ai, l10n.chatGreeting),
       UserPlanMessage(:final title, :final minutes) => (
-        true,
+        _BubbleStyle.me,
         '$title · ${l10n.durationChipLabel(minutes)}',
       ),
       ConfirmationMessage(:final title, :final minutes) => (
-        false,
+        _BubbleStyle.confirm,
         l10n.planConfirmation(title, minutes),
       ),
-      ResultMessage(:final status) => (false, _resultText(l10n, status)),
+      ResultMessage(:final status) => (
+        _BubbleStyle.ai,
+        _resultText(l10n, status),
+      ),
+    };
+
+    final isUser = style == _BubbleStyle.me;
+    const round = Radius.circular(22);
+    const tight = Radius.circular(7);
+
+    final decoration = switch (style) {
+      // me — peach gradient, white text, tightened bottom-right, candy shadow.
+      _BubbleStyle.me => BoxDecoration(
+        gradient: CuteColors.peachGradient,
+        borderRadius: const BorderRadius.only(
+          topLeft: round,
+          topRight: round,
+          bottomLeft: round,
+          bottomRight: tight,
+        ),
+        boxShadow: candyShadow(CuteColors.peachCandyShadow, dy: 4),
+      ),
+      // ai — white, cream border, tightened bottom-left.
+      _BubbleStyle.ai => BoxDecoration(
+        color: CuteColors.white,
+        border: Border.all(color: CuteColors.borderNeutral, width: 2),
+        borderRadius: const BorderRadius.only(
+          topLeft: round,
+          topRight: round,
+          bottomLeft: tight,
+          bottomRight: round,
+        ),
+      ),
+      // confirm — mint bg + mint border + green text.
+      _BubbleStyle.confirm => BoxDecoration(
+        color: CuteColors.mintConfirm,
+        border: Border.all(color: CuteColors.borderMint, width: 2),
+        borderRadius: const BorderRadius.only(
+          topLeft: round,
+          topRight: round,
+          bottomLeft: tight,
+          bottomRight: round,
+        ),
+      ),
+    };
+
+    final textColor = switch (style) {
+      _BubbleStyle.me => CuteColors.white,
+      _BubbleStyle.ai => CuteColors.textBrown,
+      _BubbleStyle.confirm => CuteColors.matcha,
     };
 
     final bubble = Container(
       constraints: const BoxConstraints(maxWidth: 280),
-      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-      decoration: BoxDecoration(
-        color: isUser
-            ? theme.colorScheme.primary
-            : theme.colorScheme.surfaceContainerHighest,
-        borderRadius: BorderRadius.circular(18),
-      ),
+      padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 11),
+      decoration: decoration,
       child: Text(
         text,
         style: theme.textTheme.bodyMedium?.copyWith(
-          color: isUser
-              ? theme.colorScheme.onPrimary
-              : theme.colorScheme.onSurface,
+          color: textColor,
+          fontWeight: FontWeight.w600,
         ),
       ),
     );
 
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 4),
+      padding: const EdgeInsets.symmetric(vertical: 5),
       child: Row(
         mainAxisAlignment: isUser
             ? MainAxisAlignment.end

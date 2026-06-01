@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:nudge/app/providers.dart';
+import 'package:nudge/app/widgets/candy.dart';
 import 'package:nudge/data/db/app_database.dart' as db;
 import 'package:nudge/data/repositories/plan_repository_impl.dart';
 import 'package:nudge/domain/plan_repository.dart';
@@ -57,7 +58,7 @@ void main() {
     // Greeting is shown and the start button is disabled until a title exists.
     expect(find.text(l10n.chatGreeting), findsOneWidget);
     expect(
-      tester.widget<FilledButton>(find.byType(FilledButton)).onPressed,
+      tester.widget<CandyButton>(find.byType(CandyButton)).onPressed,
       isNull,
     );
 
