@@ -1,6 +1,6 @@
 # 09 — 团团 mascot: PetRenderer seam + mood widget (Rive art deferred)
 
-- **Status:** READY
+- **Status:** DONE
 - **Owner:** Codex, or Claude if Codex is low on budget (Codex reviews)
 - **Blocked by:** 06 (needs the stats/mood data) — DONE
 - **Allowed new deps:** none — the real Rive `.riv` art swap is a separate, human/designer-gated

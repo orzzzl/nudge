@@ -32,16 +32,13 @@ Each `NN-slug.md` is one self-contained, reviewable unit of work. Codex implemen
 | 07 | [Local notifications (reminder seam)](07-local-notifications.md) | DONE | — |
 | 08 | [Auto check-in at time-up](08-auto-checkin-timeup.md) | DONE | — |
 | 10 | [Settings + 勿扰](10-settings-dnd.md) | DONE | — |
-| 09 | [团团 mascot + PetRenderer seam](09-pet-rive.md) | READY | — |
+| 09 | [团团 mascot + PetRenderer seam](09-pet-rive.md) | DONE | — |
 
 ## Backlog — planned MVP tasks
 
-Scope is known; the `.md` spec gets written right before dispatch (PLANNED → READY). Numbers are
-stable IDs — the rows below are in **recommended run order** (Codex-reviewed), not numeric order.
-
-**Remaining order:** 09 — the last MVP task, now READY + dispatched (06/07/08/10/11/12 done). Key
-constraint: **09 after 06** (mood is derived from the stats). Once 09 merges, the MVP feature set is
-complete; only "Later" follow-ups remain.
+🎉 **All MVP tasks (01–12) are DONE and merged to a green main.** The backlog is empty — only the
+"Later" post-MVP follow-ups below remain. Each is scoped; write its `NN-slug.md` spec (PLANNED →
+READY) right before dispatch.
 
 ## Later — post-MVP, not yet scoped
 
