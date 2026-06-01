@@ -1,0 +1,40 @@
+name: Android DB Smoke
+
+on:
+  pull_request:
+    # This intentionally avoids gating unrelated PRs; the fast CI workflow still
+    # runs on every PR.
+    paths:
+      - 'lib/data/**'
+      - 'pubspec.yaml'
+      - 'pubspec.lock'
+      - 'android/**'
+      - 'ios/**'
+      - '.github/workflows/android-smoke.yml'
+  push:
+    branches: [main]
+
+jobs:
+  android-db-smoke:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: 3.44.0
+          channel: stable
+          cache: true
+
+      - name: Install dependencies
+        run: flutter pub get
+
+      - name: Run DB smoke test on Android
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 34
+          arch: x86_64
+          target: google_apis
+          profile: pixel_6
+          script: flutter test integration_test/db_smoke_test.dart
