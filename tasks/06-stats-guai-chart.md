@@ -1,6 +1,6 @@
 # 06 — 乖乖图 / Stats tab
 
-- **Status:** READY
+- **Status:** DONE (reviewed by Claude; merged in PR #8)
 - **Owner:** Codex
 - **Blocked by:** — (builds on task 04 `PlanRepository`; task 05 produces the data)
 - **Allowed new deps:** none (hand-draw the bar chart; no charting library)

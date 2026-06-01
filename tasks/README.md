@@ -26,7 +26,7 @@ Each `NN-slug.md` is one self-contained, reviewable unit of work. Codex implemen
 | 03 | [Bilingual i18n: add Chinese (zh)](03-i18n-zh.md) | DONE | — |
 | 04 | [Domain: Plan entity + PlanRepository](04-domain-plan-repository.md) | DONE | — |
 | 05 | [Build-plan + check-in core loop (chat UI)](05-build-plan-checkin-ui.md) | DONE | — |
-| 06 | [乖乖图 / Stats tab](06-stats-guai-chart.md) | READY (dispatched to Codex) | — |
+| 06 | [乖乖图 / Stats tab](06-stats-guai-chart.md) | DONE | — |
 
 ## Backlog — planned MVP tasks
 
@@ -51,6 +51,8 @@ do it early to protect everything after it.
 
 - Real animated 团团 `.riv` art — swap it in behind the task-09 `PetRenderer` seam. Needs a
   designer-made Rive asset (Codex can't author a `.riv` binary), so it's gated on art, not code.
+- Multi-week streak — task 06's streak caps at the current week (single-week query). Compute it
+  over a wider window so a run spanning the Monday boundary still counts. Small, isolated.
 - Pet customization (换色 / 配饰) — the `PetConfigs` table already exists for this.
 - Re-engagement nudges ("3h with no plan", morning prompt) — needs 07; must stay non-naggy.
 - Cloud sync + accounts (China/US region-split), app-store release prep, optional LLM intent parsing.
