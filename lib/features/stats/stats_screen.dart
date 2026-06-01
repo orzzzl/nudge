@@ -3,6 +3,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:nudge/l10n/generated/app_localizations.dart';
 
 import '../../domain/plan.dart';
+import '../pet/pet_mood.dart';
+import '../pet/pet_view.dart';
 import 'stats_providers.dart';
 import 'stats_summary.dart';
 
@@ -36,24 +38,43 @@ class _StatsContent extends StatelessWidget {
   Widget build(BuildContext context) {
     final localizations = AppLocalizations.of(context);
     final theme = Theme.of(context);
+    final mood = petMoodFromStats(
+      plannedMinutes: summary.plannedMinutes,
+      completionRate: summary.completionRate,
+      streakDays: summary.streakDays,
+    );
 
     return SingleChildScrollView(
       padding: const EdgeInsets.fromLTRB(20, 20, 20, 96),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            localizations.statsScreenTitle,
-            style: theme.textTheme.headlineSmall?.copyWith(
-              fontWeight: FontWeight.w700,
-            ),
-          ),
-          const SizedBox(height: 4),
-          Text(
-            localizations.statsScreenSubtitle,
-            style: theme.textTheme.bodyMedium?.copyWith(
-              color: theme.colorScheme.onSurfaceVariant,
-            ),
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      localizations.statsScreenTitle,
+                      style: theme.textTheme.headlineSmall?.copyWith(
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      localizations.statsScreenSubtitle,
+                      style: theme.textTheme.bodyMedium?.copyWith(
+                        color: theme.colorScheme.onSurfaceVariant,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(width: 16),
+              PetView(mood: mood, size: 48),
+            ],
           ),
           const SizedBox(height: 20),
           _PlannedHoursHero(summary: summary),

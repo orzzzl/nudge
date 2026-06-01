@@ -5,6 +5,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../domain/plan.dart';
 import '../../l10n/generated/app_localizations.dart';
+import '../pet/pet_mood.dart';
+import '../pet/pet_providers.dart';
+import '../pet/pet_view.dart';
 import 'chat_controller.dart';
 import 'widgets/check_in_sheet.dart';
 import 'widgets/countdown_capsule.dart';
@@ -34,6 +37,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
     });
 
     final state = ref.watch(chatControllerProvider);
+    final mood = ref.watch(petMoodProvider);
     final controller = ref.read(chatControllerProvider.notifier);
 
     return Scaffold(
@@ -45,7 +49,10 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                 padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
                 itemCount: state.messages.length,
                 itemBuilder: (context, index) {
-                  return _MessageBubble(message: state.messages[index]);
+                  return _MessageBubble(
+                    message: state.messages[index],
+                    mood: mood,
+                  );
                 },
               ),
             ),
@@ -98,9 +105,10 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
 
 /// Renders one [ChatMessage] variant as a localized, sender-aligned bubble.
 class _MessageBubble extends StatelessWidget {
-  const _MessageBubble({required this.message});
+  const _MessageBubble({required this.message, required this.mood});
 
   final ChatMessage message;
+  final PetMood mood;
 
   @override
   Widget build(BuildContext context) {
@@ -148,7 +156,7 @@ class _MessageBubble extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.end,
         children: [
           if (!isUser) ...[
-            const Text('🌱', style: TextStyle(fontSize: 22)),
+            PetView(mood: mood, size: 22),
             const SizedBox(width: 8),
           ],
           Flexible(child: bubble),

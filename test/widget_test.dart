@@ -11,6 +11,8 @@ import 'package:nudge/domain/plan.dart';
 import 'package:nudge/domain/plan_repository.dart';
 import 'package:nudge/domain/reminder_scheduler.dart';
 import 'package:nudge/domain/settings_repository.dart';
+import 'package:nudge/features/pet/pet_mood.dart';
+import 'package:nudge/features/pet/pet_providers.dart';
 import 'package:nudge/l10n/generated/app_localizations_en.dart';
 import 'package:nudge/l10n/generated/app_localizations_zh.dart';
 
@@ -103,6 +105,7 @@ Widget _buildApp({_InMemorySettingsRepository? settingsRepository}) {
         settingsRepository ?? _InMemorySettingsRepository(AppSettings.defaults),
       ),
       packageInfoProvider.overrideWith((ref) async => _testPackageInfo),
+      petMoodProvider.overrideWithValue(PetMood.neutral),
     ],
     child: const NudgeApp(),
   );
