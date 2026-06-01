@@ -1,6 +1,6 @@
 # 17 — Unbounded (multi-week) streak
 
-- **Status:** IN_PROGRESS (Claude — role swap)
+- **Status:** IN_REVIEW (PR #19, Claude — Codex reviews)
 - **Owner:** Claude (Codex reviews)
 - **Blocked by:** 06 (stats) — DONE.
 - **Allowed new deps:** none.

@@ -37,7 +37,7 @@ Each `NN-slug.md` is one self-contained, reviewable unit of work. Codex implemen
 | 14 | [Cute theme foundation (palette + fonts + candy primitives)](14-cute-theme-foundation.md) | DONE (PR #16) | — |
 | 15 | [Cute skin across screens](15-cute-screens-skin.md) | DONE (PR #18) | 14 |
 | 16 | [团团 character art (CustomPaint mascot)](16-tuantuan-character-art.md) | DONE (PR #17) | 09 |
-| 17 | [Unbounded (multi-week) streak](17-multi-week-streak.md) | IN_PROGRESS (Claude — role swap) | 06 |
+| 17 | [Unbounded (multi-week) streak](17-multi-week-streak.md) | IN_REVIEW (PR #19, Claude — Codex reviews) | 06 |
 
 ## Backlog — post-MVP, scoped
 
