@@ -33,13 +33,13 @@ Scope is known; the `.md` spec gets written right before dispatch. Rough order, 
 
 | # | Task | What it adds | Depends on |
 |---|------|--------------|------------|
-| 06 | 乖乖图 / Stats | Reactive aggregation over `PlanRepository` (planned hours, completion rate, streak) + the stats-tab UI. The "hero metric" is **planned time**, not completion %. | 04 |
-| 07 | Local notifications (the `Notifier` seam) | Schedule an on-device notification at a plan's `endAt`; tapping it deep-links to check-in. Android exact-alarm permission + iOS + timezone. No remote/push (that's post-MVP). | 05 |
-| 08 | Auto check-in at time-up | When the countdown hits 0 (in-app and via the notification), surface the check-in sheet automatically instead of only on the capsule button. | 07 |
-| 09 | 团团 mascot with Rive (the `PetRenderer` seam) | Replace the 🌱 emoji with the Rive state-machine character; mood (happy/neutral/sad) driven by recent completion. | 05 |
-| 10 | Settings + 勿扰 (do-not-disturb) | The ⚙️/🌙 entry: do-not-disturb toggle, manual language override, basic about. | 05 |
-| 11 | Active-plan persistence | On launch, restore the running plan (capsule / prompt check-in) instead of losing it — today the active plan lives only in in-memory `ChatController` state. | 04 |
-| 12 | CI (GitHub Actions) | Run `dart format --set-exit-if-changed`, `flutter analyze`, `flutter test` on every PR so `main` stays green without manual local checks. | — |
+| 06 | [乖乖图 / Stats](06-stats-guai-chart.md) | Reactive aggregation over `PlanRepository` (planned hours, completion rate, streak) + the stats-tab UI. The "hero metric" is **planned time**, not completion %. | 04 |
+| 07 | [Local notifications (`Notifier` seam)](07-local-notifications.md) | Schedule an on-device notification at a plan's `endAt`; tapping it deep-links to check-in. Android exact-alarm + iOS + timezone. No remote/push (post-MVP). | 05 |
+| 08 | [Auto check-in at time-up](08-auto-checkin-timeup.md) | When the countdown hits 0 (in-app and via the notification), surface the check-in sheet automatically, not only on the capsule button. | 07 |
+| 09 | [团团 mascot with Rive (`PetRenderer` seam)](09-pet-rive.md) | Replace the 🌱 emoji with the Rive state-machine character; mood (happy/neutral/sad) driven by recent completion. | 05 |
+| 10 | [Settings + 勿扰](10-settings-dnd.md) | The ⚙️/🌙 entry: do-not-disturb toggle, manual language override, basic about. | 05 |
+| 11 | [Active-plan persistence](11-active-plan-persistence.md) | On launch, restore the running plan (capsule / prompt check-in) instead of losing it — today it lives only in in-memory `ChatController` state. | 04 |
+| 12 | [CI (GitHub Actions)](12-ci-github-actions.md) | Run `dart format --set-exit-if-changed`, `flutter analyze`, `flutter test` on every PR so `main` stays green without manual local checks. | — |
 
 ## Later — post-MVP, not yet scoped
 
