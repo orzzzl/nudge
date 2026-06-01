@@ -1,6 +1,6 @@
 # 08 — Auto check-in when the block ends
 
-- **Status:** READY
+- **Status:** DONE
 - **Owner:** Codex, or Claude if Codex is low on budget (Codex reviews)
 - **Blocked by:** 07 (`onCheckInTapped` + `takeInitialTappedPlanId`) + 11 (`getPlanById`) + 05 (`showCheckInSheet`, `ChatController.checkIn`) — all DONE
 - **Allowed new deps:** none. (`fake_async` for tests is already available transitively via `flutter_test` — import `package:fake_async/fake_async.dart`.)

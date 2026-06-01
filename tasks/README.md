@@ -30,19 +30,18 @@ Each `NN-slug.md` is one self-contained, reviewable unit of work. Codex implemen
 | 12 | [CI (GitHub Actions)](12-ci-github-actions.md) | DONE | — |
 | 11 | [Active-plan persistence](11-active-plan-persistence.md) | DONE | — |
 | 07 | [Local notifications (reminder seam)](07-local-notifications.md) | DONE | — |
-| 08 | [Auto check-in at time-up](08-auto-checkin-timeup.md) | READY | — |
+| 08 | [Auto check-in at time-up](08-auto-checkin-timeup.md) | DONE | — |
 
 ## Backlog — planned MVP tasks
 
 Scope is known; the `.md` spec gets written right before dispatch (PLANNED → READY). Numbers are
 stable IDs — the rows below are in **recommended run order** (Codex-reviewed), not numeric order.
 
-**Remaining order:** 08 → 10 → 09 (07 dispatched; 06/11/12 done). Key constraint: **09 after 06**
-(mood is derived from the stats); **08 needs 07 + 11** (the tapped `planId` + `getPlanById`).
+**Remaining order:** 10 → 09 (06/07/08/11/12 done). Key constraint: **09 after 06** (mood is
+derived from the stats).
 
 | # | Task | What it adds | Depends on |
 |---|------|--------------|------------|
-| 08 | [Auto check-in at time-up](08-auto-checkin-timeup.md) | Open the check-in automatically when the block ends (in-app) and when the notification is tapped (loads the plan via 11's `getPlanById`). | 07, 11 |
 | 10 | [Settings + 勿扰](10-settings-dnd.md) | ⚙️ entry: DND toggle, language override, about. `shared_preferences` + `package_info_plus`. | 05 |
 | 09 | [团团 mascot + PetRenderer seam](09-pet-rive.md) | The `PetRenderer` seam + mood-driven mascot widget (emoji/`CustomPaint`). Real Rive `.riv` deferred to a designer-gated follow-up. | 06 |
 
