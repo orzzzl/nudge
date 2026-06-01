@@ -25,7 +25,7 @@ Each `NN-slug.md` is one self-contained, reviewable unit of work. Codex implemen
 | 02 | [Drift DB + Plans schema](02-drift-plans-schema.md) | DONE | — |
 | 03 | [Bilingual i18n: add Chinese (zh)](03-i18n-zh.md) | DONE | — |
 | 04 | [Domain: Plan entity + PlanRepository](04-domain-plan-repository.md) | DONE | — |
-| 05 | [Build-plan + check-in core loop (chat UI)](05-build-plan-checkin-ui.md) | IN_REVIEW (PR #6) | — |
+| 05 | [Build-plan + check-in core loop (chat UI)](05-build-plan-checkin-ui.md) | DONE | — |
 
 ## Backlog — planned MVP tasks
 

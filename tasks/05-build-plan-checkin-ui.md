@@ -1,6 +1,6 @@
 # 05 — Build-plan + check-in core loop (chat UI)
 
-- **Status:** IN_PROGRESS (implemented by Claude; Codex to review)
+- **Status:** DONE (implemented by Claude; reviewed by Codex; merged in PR #6)
 - **Owner:** Claude (role swap this round — Codex reviews)
 - **Blocked by:** — (task 04 merged)
 - **Allowed new deps:** none
