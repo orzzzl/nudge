@@ -1,6 +1,6 @@
 # 10 — Settings + 勿扰 (do-not-disturb)
 
-- **Status:** READY
+- **Status:** DONE
 - **Owner:** Codex, or Claude if Codex is low on budget (Codex reviews)
 - **Blocked by:** 03 (i18n), 05 — both DONE
 - **Allowed new deps:** `shared_preferences` + `package_info_plus` (add to `dependencies:` in
