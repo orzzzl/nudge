@@ -1,6 +1,6 @@
 # 13 — On-device DB smoke test (CI hardening)
 
-- **Status:** READY
+- **Status:** DONE (PR #15)
 - **Owner:** Codex, or Claude if Codex is low on budget (Codex reviews)
 - **Blocked by:** 02 (Drift DB) + 12 (CI) — both DONE
 - **Allowed new deps:** `integration_test` (Flutter SDK, dev_dependency only) — no third-party deps.
