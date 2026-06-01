@@ -1,6 +1,6 @@
 # 16 — 团团 character art (CustomPaint mascot behind the PetView seam)
 
-- **Status:** READY (dispatched to Codex 2026-06-01)
+- **Status:** DONE (PR #17)
 - **Owner:** Codex, or Claude if Codex is low on budget (Codex reviews)
 - **Blocked by:** 09 (the `PetView` seam) — DONE. (Independent of 14/15, but visually completes them.)
 - **Allowed new deps:** none — drawn with `CustomPaint`, no asset, no `rive`.
