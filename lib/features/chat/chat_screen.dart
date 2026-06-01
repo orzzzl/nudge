@@ -43,35 +43,44 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
     final controller = ref.read(chatControllerProvider.notifier);
 
     return Scaffold(
-      body: SafeArea(
-        child: Column(
-          children: [
-            Expanded(
-              child: ListView.builder(
-                padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
-                itemCount: state.messages.length,
-                itemBuilder: (context, index) {
-                  return _MessageBubble(
-                    message: state.messages[index],
-                    mood: mood,
-                  );
-                },
-              ),
-            ),
-            if (state.activePlan == null)
-              PlanComposer(
-                onStart: (title, durationMin) => controller.createPlan(
-                  title: title,
-                  durationMin: durationMin,
-                  locale: Localizations.localeOf(context).languageCode,
+      // Tapping anywhere outside the text field dismisses the keyboard — a
+      // chat screen should never trap the keyboard open.
+      body: GestureDetector(
+        onTap: () => FocusManager.instance.primaryFocus?.unfocus(),
+        behavior: HitTestBehavior.opaque,
+        child: SafeArea(
+          child: Column(
+            children: [
+              Expanded(
+                child: ListView.builder(
+                  // Dragging the message list also dismisses the keyboard.
+                  keyboardDismissBehavior:
+                      ScrollViewKeyboardDismissBehavior.onDrag,
+                  padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
+                  itemCount: state.messages.length,
+                  itemBuilder: (context, index) {
+                    return _MessageBubble(
+                      message: state.messages[index],
+                      mood: mood,
+                    );
+                  },
                 ),
-              )
-            else
-              CountdownCapsule(
-                plan: state.activePlan!,
-                onCheckIn: () => _checkIn(context, ref, state.activePlan!),
               ),
-          ],
+              if (state.activePlan == null)
+                PlanComposer(
+                  onStart: (title, durationMin) => controller.createPlan(
+                    title: title,
+                    durationMin: durationMin,
+                    locale: Localizations.localeOf(context).languageCode,
+                  ),
+                )
+              else
+                CountdownCapsule(
+                  plan: state.activePlan!,
+                  onCheckIn: () => _checkIn(context, ref, state.activePlan!),
+                ),
+            ],
+          ),
         ),
       ),
     );
