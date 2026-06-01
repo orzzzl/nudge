@@ -1,9 +1,24 @@
 # 06 — 乖乖图 / Stats tab
 
-- **Status:** PLANNED (provisional — finalized to READY right before dispatch)
-- **Owner:** Codex, or Claude if Codex is low on budget (Codex reviews)
+- **Status:** READY
+- **Owner:** Codex
 - **Blocked by:** — (builds on task 04 `PlanRepository`; task 05 produces the data)
 - **Allowed new deps:** none (hand-draw the bar chart; no charting library)
+
+## Definitions (locked — don't reinterpret)
+- **Week** = Monday→Sunday containing "today" (device local date). Bars are Mon..Sun.
+- **A day "has a plan"** = ≥1 plan whose `startAt` falls on that local date.
+- **Planned minutes** (hero) = Σ `durationMin` of all plans in the week. Display as hours, 1 decimal.
+- **Checked-in plans** = plans with status `done`, `partial`, or `missed` (exclude `running` &
+  `abandoned`).
+- **Completion rate** = (done×1 + partial×0.5) ÷ (checked-in count), as a %; 0 checked-in → show 0%
+  (or an empty state), never divide by zero.
+- **Streak** = number of consecutive days, counting back from today, where each day "has a plan".
+  Today with no plan yet ⇒ streak counts back from yesterday (today doesn't break a streak until
+  the day ends). Keep this rule in a comment.
+- **Today's ledger** = plans whose `startAt` is today, ordered by `startAt`.
+- Pull the week's data with one `repo.watchPlansInRange(start: mondayMidnight, end: nextMondayMidnight)`
+  and derive everything else in memory.
 
 ## Goal
 Fill the Stats tab with the "how good have I been" view, computed **reactively** from
@@ -28,12 +43,16 @@ reward showing up to plan, not perfection.
   - No date-range picker / month view; no charting dependency; no editing/deleting plans.
   - Don't change the domain/DAO. (A read-only convenience query on the repo is OK if needed.)
 
-## Acceptance criteria (draft)
-- [ ] Hero shows planned **hours** (not completion %); completion rate counts partial as 0.5.
-- [ ] Streak counts consecutive days (ending today) with ≥1 plan.
-- [ ] Weekly bar chart renders 7 days from real data; ledger lists today's plans with status.
-- [ ] Updates reactively as plans are created/checked in.
-- [ ] New strings in both ARBs; no Chinese outside `*.arb`.
+## Acceptance criteria
+- [ ] Hero shows planned **hours** (not completion %); completion rate counts partial as 0.5 and
+      never divides by zero.
+- [ ] Streak matches the Definitions rule (consecutive days back from today; today-with-no-plan
+      doesn't break it).
+- [ ] Weekly bar chart renders Mon–Sun from real data; ledger lists today's plans with status emoji.
+- [ ] Updates reactively as plans are created / checked in (uses `watchPlansInRange`).
+- [ ] Aggregation is a pure function of `(List<Plan>, DateTime now)` with direct unit tests for
+      planned total, completion rate (incl. partial=0.5 and zero-checkin), streak, and per-day buckets.
+- [ ] New strings in both `app_en.arb` and `app_zh.arb`; no Chinese outside `*.arb`.
 - [ ] `dart format` / `flutter analyze` / `flutter test` all clean.
 
 ## Notes / hints

@@ -26,6 +26,7 @@ Each `NN-slug.md` is one self-contained, reviewable unit of work. Codex implemen
 | 03 | [Bilingual i18n: add Chinese (zh)](03-i18n-zh.md) | DONE | — |
 | 04 | [Domain: Plan entity + PlanRepository](04-domain-plan-repository.md) | DONE | — |
 | 05 | [Build-plan + check-in core loop (chat UI)](05-build-plan-checkin-ui.md) | DONE | — |
+| 06 | [乖乖图 / Stats tab](06-stats-guai-chart.md) | READY (dispatched to Codex) | — |
 
 ## Backlog — planned MVP tasks
 
@@ -33,7 +34,6 @@ Scope is known; the `.md` spec gets written right before dispatch. Rough order, 
 
 | # | Task | What it adds | Depends on |
 |---|------|--------------|------------|
-| 06 | [乖乖图 / Stats](06-stats-guai-chart.md) | Reactive aggregation over `PlanRepository` (planned hours, completion rate, streak) + the stats-tab UI. The "hero metric" is **planned time**, not completion %. | 04 |
 | 07 | [Local notifications (`Notifier` seam)](07-local-notifications.md) | Schedule an on-device notification at a plan's `endAt`; tapping it deep-links to check-in. Android exact-alarm + iOS + timezone. No remote/push (post-MVP). | 05 |
 | 08 | [Auto check-in at time-up](08-auto-checkin-timeup.md) | When the countdown hits 0 (in-app and via the notification), surface the check-in sheet automatically, not only on the capsule button. | 07 |
 | 09 | [团团 mascot with Rive (`PetRenderer` seam)](09-pet-rive.md) | Replace the 🌱 emoji with the Rive state-machine character; mood (happy/neutral/sad) driven by recent completion. | 05 |
