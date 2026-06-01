@@ -34,6 +34,9 @@ Each `NN-slug.md` is one self-contained, reviewable unit of work. Codex implemen
 | 10 | [Settings + 勿扰](10-settings-dnd.md) | DONE | — |
 | 09 | [团团 mascot + PetRenderer seam](09-pet-rive.md) | DONE | — |
 | 13 | [On-device DB smoke test (CI hardening)](13-ondevice-db-smoke.md) | READY | — |
+| 14 | [Cute theme foundation (palette + fonts + candy primitives)](14-cute-theme-foundation.md) | READY | — |
+| 15 | [Cute skin across screens](15-cute-screens-skin.md) | PLANNED | 14 |
+| 16 | [团团 character art (CustomPaint mascot)](16-tuantuan-character-art.md) | PLANNED | 09 |
 
 ## Backlog — post-MVP, scoped
 
@@ -41,12 +44,23 @@ Each `NN-slug.md` is one self-contained, reviewable unit of work. Codex implemen
 "Later" list below; each gets its `NN-slug.md` spec (PLANNED → READY) right before dispatch. Stable
 IDs continue from 13.
 
-- **13** — [On-device DB smoke test](13-ondevice-db-smoke.md) — READY, see table above.
+**UI overhaul — match the approved mockup `docs/mockups/cute.html`.** The app is functionally complete
+but still on stock Material 3 (a bare teal seed); the cute "macaron" skin was never a task. Run order:
+**14 → 15 → 16** (16 is independent of 14/15 but visually completes them). Font decision (owner):
+**`google_fonts`** — Baloo 2 + a rounded Chinese fallback.
+- **13** — [On-device DB smoke test](13-ondevice-db-smoke.md) — READY.
+- **14** — [Cute theme foundation](14-cute-theme-foundation.md) — READY (palette/fonts/background/candy
+  primitives + shell app bar & tab bar).
+- **15** — [Cute skin across screens](15-cute-screens-skin.md) — PLANNED, after 14 (chat / stats /
+  check-in / settings content).
+- **16** — [团团 character art](16-tuantuan-character-art.md) — PLANNED (CustomPaint mascot behind the
+  task-09 `PetView` seam; replaces the placeholder emoji).
 
 ## Later — post-MVP, not yet scoped
 
-- Real animated 团团 `.riv` art — swap it in behind the task-09 `PetRenderer` seam. Needs a
-  designer-made Rive asset (Codex can't author a `.riv` binary), so it's gated on art, not code.
+- Real **animated** 团团 `.riv` art — swap it in behind the task-09 `PetView` seam, *after* task 16's
+  static `CustomPaint` mascot. Needs a designer-made Rive asset (Codex can't author a `.riv` binary),
+  so it's gated on art, not code.
 - Multi-week streak — task 06's streak caps at the current week (single-week query). Compute it
   over a wider window so a run spanning the Monday boundary still counts. Small, isolated.
 - ~~On-device DB smoke test~~ — **scoped as [task 13](13-ondevice-db-smoke.md) (READY).** (The
