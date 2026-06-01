@@ -31,18 +31,18 @@ Each `NN-slug.md` is one self-contained, reviewable unit of work. Codex implemen
 | 11 | [Active-plan persistence](11-active-plan-persistence.md) | DONE | — |
 | 07 | [Local notifications (reminder seam)](07-local-notifications.md) | DONE | — |
 | 08 | [Auto check-in at time-up](08-auto-checkin-timeup.md) | DONE | — |
+| 10 | [Settings + 勿扰](10-settings-dnd.md) | READY | — |
 
 ## Backlog — planned MVP tasks
 
 Scope is known; the `.md` spec gets written right before dispatch (PLANNED → READY). Numbers are
 stable IDs — the rows below are in **recommended run order** (Codex-reviewed), not numeric order.
 
-**Remaining order:** 10 → 09 (06/07/08/11/12 done). Key constraint: **09 after 06** (mood is
-derived from the stats).
+**Remaining order:** 09 (06/07/08/10/11/12 done; 10 dispatched). Key constraint: **09 after 06**
+(mood is derived from the stats).
 
 | # | Task | What it adds | Depends on |
 |---|------|--------------|------------|
-| 10 | [Settings + 勿扰](10-settings-dnd.md) | ⚙️ entry: DND toggle, language override, about. `shared_preferences` + `package_info_plus`. | 05 |
 | 09 | [团团 mascot + PetRenderer seam](09-pet-rive.md) | The `PetRenderer` seam + mood-driven mascot widget (emoji/`CustomPaint`). Real Rive `.riv` deferred to a designer-gated follow-up. | 06 |
 
 ## Later — post-MVP, not yet scoped
