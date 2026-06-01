@@ -10,6 +10,8 @@ import 'package:nudge/data/repositories/plan_repository_impl.dart';
 import 'package:nudge/domain/plan_repository.dart';
 import 'package:nudge/domain/reminder_scheduler.dart';
 import 'package:nudge/features/chat/chat_screen.dart';
+import 'package:nudge/features/pet/pet_mood.dart';
+import 'package:nudge/features/pet/pet_providers.dart';
 import 'package:nudge/l10n/generated/app_localizations.dart';
 import 'package:nudge/l10n/generated/app_localizations_en.dart';
 
@@ -34,6 +36,7 @@ void main() {
           reminderSchedulerProvider.overrideWithValue(
             const _NoopReminderScheduler(),
           ),
+          petMoodProvider.overrideWithValue(PetMood.neutral),
         ],
         child: const MaterialApp(
           localizationsDelegates: AppLocalizations.localizationsDelegates,
