@@ -1,6 +1,6 @@
 # 14 — Cute theme foundation (palette + fonts + candy primitives + shell)
 
-- **Status:** READY
+- **Status:** DONE (PR #16)
 - **Owner:** Codex, or Claude if Codex is low on budget (Codex reviews)
 - **Blocked by:** — (all the screens it restyles already exist)
 - **Allowed new deps:** `google_fonts` (^6.x). No others.

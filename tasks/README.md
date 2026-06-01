@@ -34,7 +34,7 @@ Each `NN-slug.md` is one self-contained, reviewable unit of work. Codex implemen
 | 10 | [Settings + 勿扰](10-settings-dnd.md) | DONE | — |
 | 09 | [团团 mascot + PetRenderer seam](09-pet-rive.md) | DONE | — |
 | 13 | [On-device DB smoke test (CI hardening)](13-ondevice-db-smoke.md) | DONE (PR #15) | — |
-| 14 | [Cute theme foundation (palette + fonts + candy primitives)](14-cute-theme-foundation.md) | IN_REVIEW (PR #16, Claude — Codex reviews) | — |
+| 14 | [Cute theme foundation (palette + fonts + candy primitives)](14-cute-theme-foundation.md) | DONE (PR #16) | — |
 | 15 | [Cute skin across screens](15-cute-screens-skin.md) | PLANNED | 14 |
 | 16 | [团团 character art (CustomPaint mascot)](16-tuantuan-character-art.md) | PLANNED | 09 |
 
@@ -49,7 +49,7 @@ but still on stock Material 3 (a bare teal seed); the cute "macaron" skin was ne
 **14 → 15 → 16** (16 is independent of 14/15 but visually completes them). Font decision (owner):
 **`google_fonts`** — Baloo 2 + a rounded Chinese fallback.
 - **13** — [On-device DB smoke test](13-ondevice-db-smoke.md) — DONE (PR #15).
-- **14** — [Cute theme foundation](14-cute-theme-foundation.md) — READY (palette/fonts/background/candy
+- **14** — [Cute theme foundation](14-cute-theme-foundation.md) — DONE (PR #16) (palette/fonts/background/candy
   primitives + shell app bar & tab bar).
 - **15** — [Cute skin across screens](15-cute-screens-skin.md) — PLANNED, after 14 (chat / stats /
   check-in / settings content).
