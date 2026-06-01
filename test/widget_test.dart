@@ -1,13 +1,16 @@
 import 'dart:async';
 
-import 'package:flutter/widgets.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:package_info_plus/package_info_plus.dart';
 import 'package:nudge/app/nudge_app.dart';
 import 'package:nudge/app/providers.dart';
+import 'package:nudge/domain/app_settings.dart';
 import 'package:nudge/domain/plan.dart';
 import 'package:nudge/domain/plan_repository.dart';
 import 'package:nudge/domain/reminder_scheduler.dart';
+import 'package:nudge/domain/settings_repository.dart';
 import 'package:nudge/l10n/generated/app_localizations_en.dart';
 import 'package:nudge/l10n/generated/app_localizations_zh.dart';
 
@@ -50,15 +53,56 @@ void main() {
     expect(find.text(localizations.chatTabLabel), findsAtLeastNWidgets(1));
     expect(find.text(localizations.statsTabLabel), findsAtLeastNWidgets(1));
   });
+
+  testWidgets('opens settings from the shared app bar', (tester) async {
+    final localizations = AppLocalizationsEn();
+
+    await tester.pumpWidget(_buildApp());
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.byTooltip(localizations.settingsEntryTooltip));
+    await tester.pumpAndSettle();
+
+    expect(find.text(localizations.settingsTitle), findsOneWidget);
+    expect(find.text(localizations.settingsDndLabel), findsOneWidget);
+    expect(
+      find.text(localizations.settingsVersionValue('9.9.9')),
+      findsOneWidget,
+    );
+
+    await tester.tap(find.byType(BackButton));
+    await tester.pumpAndSettle();
+  });
+
+  testWidgets('uses a persisted Chinese locale override', (tester) async {
+    final localizations = AppLocalizationsZh();
+    _setPlatformLocales(tester, const [Locale('en')]);
+
+    await tester.pumpWidget(
+      _buildApp(
+        settingsRepository: _InMemorySettingsRepository(
+          const AppSettings(dnd: false, localeOverride: LocaleOverride.zh),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.text(localizations.chatTabLabel), findsAtLeastNWidgets(1));
+    expect(find.text(AppLocalizationsEn().chatTabLabel), findsNothing);
+  });
 }
 
-Widget _buildApp() {
+Widget _buildApp({_InMemorySettingsRepository? settingsRepository}) {
   return ProviderScope(
     overrides: [
       planRepositoryProvider.overrideWithValue(const _EmptyPlanRepository()),
       reminderSchedulerProvider.overrideWithValue(
         const _NoopReminderScheduler(),
       ),
+      settingsRepositoryProvider.overrideWithValue(
+        settingsRepository ?? _InMemorySettingsRepository(AppSettings.defaults),
+      ),
+      packageInfoProvider.overrideWith((ref) async => _testPackageInfo),
     ],
     child: const NudgeApp(),
   );
@@ -138,5 +182,33 @@ class _NoopReminderScheduler implements ReminderScheduler {
   @override
   Future<int?> takeInitialTappedPlanId() async {
     return null;
+  }
+}
+
+final _testPackageInfo = PackageInfo(
+  appName: 'Nudge',
+  packageName: 'com.nudge.app',
+  version: '9.9.9',
+  buildNumber: '99',
+);
+
+class _InMemorySettingsRepository implements SettingsRepository {
+  _InMemorySettingsRepository(this.settings);
+
+  AppSettings settings;
+
+  @override
+  Future<AppSettings> load() async {
+    return settings;
+  }
+
+  @override
+  Future<void> setDnd(bool value) async {
+    settings = settings.copyWith(dnd: value);
+  }
+
+  @override
+  Future<void> setLocaleOverride(LocaleOverride value) async {
+    settings = settings.copyWith(localeOverride: value);
   }
 }

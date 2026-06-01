@@ -218,5 +218,51 @@
   "resultMissed": "Logged — no worries, next block is fresh. 😴",
   "@resultMissed": {
     "description": "Result bubble after checking in as missed."
+  },
+  "settingsTitle": "Settings",
+  "@settingsTitle": {
+    "description": "Title for the settings screen."
+  },
+  "settingsEntryTooltip": "Open settings",
+  "@settingsEntryTooltip": {
+    "description": "Tooltip for the settings entry button in the app bar."
+  },
+  "settingsDndLabel": "Do Not Disturb",
+  "@settingsDndLabel": {
+    "description": "Label for the do-not-disturb setting."
+  },
+  "settingsDndDescription": "Store quiet mode for future nudges.",
+  "@settingsDndDescription": {
+    "description": "Description for the do-not-disturb setting."
+  },
+  "settingsLanguageLabel": "Language",
+  "@settingsLanguageLabel": {
+    "description": "Label for the manual language override setting."
+  },
+  "settingsLanguageSystem": "System",
+  "@settingsLanguageSystem": {
+    "description": "Language option that follows the device locale."
+  },
+  "settingsLanguageEnglish": "English",
+  "@settingsLanguageEnglish": {
+    "description": "Language option for English."
+  },
+  "settingsLanguageChinese": "Chinese",
+  "@settingsLanguageChinese": {
+    "description": "Language option for Chinese."
+  },
+  "settingsAboutLabel": "About",
+  "@settingsAboutLabel": {
+    "description": "Label for the app information section."
+  },
+  "settingsVersionValue": "Version {version}",
+  "@settingsVersionValue": {
+    "description": "Application version shown in the about section.",
+    "placeholders": {
+      "version": {
+        "type": "String",
+        "example": "0.1.0"
+      }
+    }
   }
 }
