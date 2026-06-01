@@ -1,7 +1,7 @@
 # 11 — Active-plan persistence (survive app restart)
 
-- **Status:** PLANNED (provisional — finalized to READY right before dispatch)
-- **Owner:** Codex, or Claude if Codex is low on budget (Codex reviews)
+- **Status:** READY
+- **Owner:** Codex
 - **Blocked by:** 04 (extends the repository interface)
 - **Allowed new deps:** none
 - **Sequencing:** do this BEFORE 07/08 — they need the repo reads this task adds (load a plan by id
@@ -15,21 +15,32 @@ its block already ended).
 
 ## Scope
 - in:
-  - Extend `PlanRepository` with two read methods (interface change — Claude reviews the seam):
-    - `Future<Plan?> getActivePlan()` (and/or `Stream<Plan?> watchActivePlan()`) — the latest plan
-      with status `running`.
-    - `Future<Plan?> getPlanById(int id)` — needed by task 08 to open the right plan when a
-      notification is tapped.
-  - On `ChatController` build, load the active plan and restore `activePlan` (rebuild the capsule).
-  - If the restored plan's `endAt` is already past, coordinate with task 08 to prompt check-in.
+  - **DAO** (`PlansDao`): add two read queries — the latest plan with status `running`
+    (`order by startAt desc limit 1`), and a select by `id`.
+  - **Domain** (`PlanRepository`, in `lib/domain`): add `Future<Plan?> getActivePlan()` and
+    `Future<Plan?> getPlanById(int id)` (interface change — Claude reviews the seam).
+  - **Impl** (`PlanRepositoryImpl`): implement both, mapping `db.Plan` → domain `Plan` (reuse the
+    existing `_mapRow`).
+  - **Restore on launch** in `ChatController`: `build()` still returns the initial state
+    synchronously (greeting, no active plan), then kicks off an async restore that calls
+    `getActivePlan()` and, if non-null, sets `state = state.copyWith(activePlan: restored)` so the
+    countdown capsule reappears. Fire-and-forget from `build()`; guard against clobbering a plan the
+    user may have created in the meantime (only restore if `state.activePlan` is still null).
 - out:
-  - No full history/transcript restore (just the active plan + capsule). No multi-plan view.
+  - No full transcript restore — just bring back `activePlan` so the task-05 capsule shows. No
+    multi-plan view, no editing.
+  - No new auto-check-in behavior: if the restored `endAt` is already past, the existing task-05
+    capsule already renders "time's up" and its check-in button works — that's enough here.
+    (Auto-firing the sheet is task 08; do NOT build it now.)
 
-## Acceptance criteria (draft)
-- [ ] Create a plan, kill & relaunch → the capsule is restored with the correct remaining time.
-- [ ] Checking in the restored plan works and clears it.
-- [ ] If `endAt` already passed, the user is led to check in (not left with a stale capsule).
-- [ ] Repository + controller covered by tests over an in-memory db.
+## Acceptance criteria
+- [ ] `getActivePlan()` returns the latest `running` plan (or null); `getPlanById` returns the
+      matching plan (or null). Both covered by repo tests over an in-memory db.
+- [ ] After a running plan exists, a freshly built `ChatController` restores it into `activePlan`
+      (capsule shows) — covered by a controller/widget test with an overridden in-memory repo.
+- [ ] Checking in the restored plan works and clears it; the composer returns.
+- [ ] A restored plan whose `endAt` already passed shows the task-05 "time's up" capsule (no crash,
+      no auto-sheet).
 - [ ] `dart format` / `flutter analyze` / `flutter test` all clean.
 
 ## Notes / hints
