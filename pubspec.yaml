@@ -17,7 +17,10 @@ dependencies:
   intl: ^0.20.2
   path: ^1.9.1
   path_provider: ^2.1.5
-  sqlite3_flutter_libs: ^0.6.0+eol
+  # Pin to the last release that actually ships the native sqlite3 libraries.
+  # 0.6.0+eol is an end-of-life stub with NO libsqlite3.so, which crashes the app
+  # on-device the first time it touches the database (host-only tests don't catch it).
+  sqlite3_flutter_libs: ^0.5.42
 
 dev_dependencies:
   flutter_test:
