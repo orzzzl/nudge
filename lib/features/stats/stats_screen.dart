@@ -127,6 +127,7 @@ class _StatsContent extends StatelessWidget {
             valueLabel: (p) => localizations.statsPlannedHoursValue(
               p.plannedHours.toStringAsFixed(1),
             ),
+            yAxisLabel: (v) => '${v.toStringAsFixed(1)}h',
             dateLabel: dateLabel,
             emptyLabel: localizations.statsChartEmpty,
           ),
@@ -141,6 +142,8 @@ class _StatsContent extends StatelessWidget {
                 : localizations.statsCompletionPercent(
                     (p.completionRate! * 100).round(),
                   ),
+            yAxisLabel: (v) =>
+                localizations.statsCompletionPercent((v * 100).round()),
             dateLabel: dateLabel,
             emptyLabel: localizations.statsChartEmpty,
           ),

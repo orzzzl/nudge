@@ -239,6 +239,43 @@ void main() {
       expect(series.last.start, DateTime(2026, 6, 4));
     });
 
+    test('YTD excludes the previous year tail from the first weekly bucket', () {
+      // now = Thu 2026-01-15. The week containing Jan 1 starts Mon 2025-12-29.
+      // A plan on 2025-12-31 must NOT count toward YTD.
+      final series = buildStatsSeries(
+        [
+          _plan(
+            id: 1,
+            startAt: DateTime(2025, 12, 31, 9),
+            durationMin: 120,
+            status: PlanStatus.done,
+          ),
+          _plan(
+            id: 2,
+            startAt: DateTime(2026, 1, 2, 9),
+            durationMin: 60,
+            status: PlanStatus.done,
+          ),
+        ],
+        StatsRange.ytd,
+        DateTime(2026, 1, 15, 12),
+      );
+
+      final totalHours = series.fold<double>(0, (s, p) => s + p.plannedHours);
+      expect(totalHours, 1.0); // only the Jan 2 plan, not Dec 31's 2.0h
+    });
+
+    test('5Y range = 60 monthly buckets ending this month', () {
+      final series = buildStatsSeries(
+        const [],
+        StatsRange.fiveYears,
+        DateTime(2026, 6, 4),
+      );
+      expect(series.length, 60);
+      expect(series.last.start, DateTime(2026, 6));
+      expect(series.first.start, DateTime(2021, 7)); // 59 months back
+    });
+
     test('all-time uses monthly buckets from the first plan to now', () {
       final series = buildStatsSeries(
         [

@@ -144,7 +144,12 @@ List<StatsPoint> buildStatsSeries(
   DateTime now,
 ) {
   final today = statsDayStart(now);
-  final (firstStart, bucket) = _rangeStart(range, today, plans);
+  // dataStart = the inclusion lower bound (e.g. Jan 1 for YTD); firstBucket =
+  // the aligned start of the bucket containing it (e.g. that week's Monday,
+  // which may be in late December). Filtering by dataStart keeps prior-period
+  // days out of the first bucket while the x-axis still aligns to bucket edges.
+  final (dataStart, bucket) = _rangeStart(range, today, plans);
+  final firstBucket = _bucketStart(dataStart, bucket);
 
   // Accumulators keyed by bucket start.
   final plannedMin = <DateTime, int>{};
@@ -154,7 +159,7 @@ List<StatsPoint> buildStatsSeries(
 
   for (final plan in plans) {
     final day = statsDayStart(plan.startAt);
-    if (day.isBefore(firstStart) || day.isAfter(today)) {
+    if (day.isBefore(dataStart) || day.isAfter(today)) {
       continue;
     }
     final key = _bucketStart(day, bucket);
@@ -173,7 +178,7 @@ List<StatsPoint> buildStatsSeries(
 
   final points = <StatsPoint>[];
   for (
-    var cursor = firstStart;
+    var cursor = firstBucket;
     !cursor.isAfter(today);
     cursor = _nextBucket(cursor, bucket)
   ) {
@@ -193,8 +198,9 @@ List<StatsPoint> buildStatsSeries(
   return List.unmodifiable(points);
 }
 
-/// First bucket start + bucket granularity for a range, aligned to local
-/// calendar boundaries. All stepping is calendar-based (DST-safe).
+/// The data-inclusion lower bound + bucket granularity for a range, in local
+/// calendar time. (The first *bucket* is derived from this via _bucketStart;
+/// plans before this bound are excluded even if they share the first bucket.)
 (DateTime, _Bucket) _rangeStart(
   StatsRange range,
   DateTime today,
@@ -206,9 +212,12 @@ List<StatsPoint> buildStatsSeries(
     case StatsRange.month:
       return (_addDays(today, -29), _Bucket.day); // 30 daily points
     case StatsRange.ytd:
-      return (statsWeekStart(DateTime(today.year)), _Bucket.week);
+      // Jan 1 of this year — NOT the containing week's Monday, so last year's
+      // tail days don't leak into the first weekly bucket.
+      return (DateTime(today.year), _Bucket.week);
     case StatsRange.fiveYears:
-      return (DateTime(today.year - 5, today.month), _Bucket.month);
+      // 60 monthly buckets ending this month → start 59 months back.
+      return (DateTime(today.year, today.month - 59), _Bucket.month);
     case StatsRange.all:
       if (plans.isEmpty) {
         return (DateTime(today.year, today.month), _Bucket.month);

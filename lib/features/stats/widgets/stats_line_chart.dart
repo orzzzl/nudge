@@ -15,6 +15,7 @@ class StatsLineChart extends StatefulWidget {
     required this.valueOf,
     required this.yMax,
     required this.valueLabel,
+    required this.yAxisLabel,
     required this.dateLabel,
     required this.emptyLabel,
     super.key,
@@ -31,6 +32,9 @@ class StatsLineChart extends StatefulWidget {
 
   /// Formats a point's value for the readout (e.g. "3.5 h" / "80%").
   final String Function(StatsPoint) valueLabel;
+
+  /// Formats a y-axis gridline value (e.g. "3.5h" / "50%").
+  final String Function(double) yAxisLabel;
 
   /// Formats a bucket start for axis/readout labels (locale + range aware).
   final String Function(DateTime) dateLabel;
@@ -126,6 +130,7 @@ class _StatsLineChartState extends State<StatsLineChart> {
                         yMax: widget.yMax,
                         selected: _selected,
                         labelFor: widget.dateLabel,
+                        yAxisLabel: widget.yAxisLabel,
                       ),
                     ),
                   ),
@@ -145,6 +150,7 @@ class _LineChartPainter extends CustomPainter {
     required this.yMax,
     required this.selected,
     required this.labelFor,
+    required this.yAxisLabel,
   });
 
   final List<StatsPoint> points;
@@ -152,25 +158,41 @@ class _LineChartPainter extends CustomPainter {
   final double yMax;
   final int? selected;
   final String Function(DateTime) labelFor;
+  final String Function(double) yAxisLabel;
 
   static const _labelGutter = 22.0; // bottom space for x-axis labels
+  static const _leftGutter = 32.0; // left space for y-axis labels
 
   @override
   void paint(Canvas canvas, Size size) {
     final chartH = size.height - _labelGutter;
+    final plotLeft = _leftGutter;
+    final plotW = size.width - _leftGutter;
     final n = points.length;
     final safeMax = yMax <= 0 ? 1.0 : yMax;
 
-    double xAt(int i) => n == 1 ? size.width / 2 : size.width * i / (n - 1);
+    double xAt(int i) =>
+        n == 1 ? plotLeft + plotW / 2 : plotLeft + plotW * i / (n - 1);
     double yAt(double v) => chartH - (v / safeMax).clamp(0.0, 1.0) * chartH;
 
-    // Gridlines (baseline + two above) in faint cream.
+    // Gridlines (baseline + two above) in faint cream, with a y-axis label at
+    // the left of each (0 / mid / max).
     final grid = Paint()
       ..color = CuteColors.borderCream
       ..strokeWidth = 1.5;
+    final yLabelStyle = TextStyle(
+      color: CuteColors.textFaint2,
+      fontSize: 10,
+      fontWeight: FontWeight.w700,
+    );
     for (final frac in [0.0, 0.5, 1.0]) {
       final y = chartH - frac * chartH;
-      canvas.drawLine(Offset(0, y), Offset(size.width, y), grid);
+      canvas.drawLine(Offset(plotLeft, y), Offset(size.width, y), grid);
+      final tp = TextPainter(
+        text: TextSpan(text: yAxisLabel(safeMax * frac), style: yLabelStyle),
+        textDirection: TextDirection.ltr,
+      )..layout(maxWidth: _leftGutter - 4);
+      tp.paint(canvas, Offset(_leftGutter - 6 - tp.width, y - tp.height / 2));
     }
 
     // Polyline, broken into segments of consecutive non-null values.
