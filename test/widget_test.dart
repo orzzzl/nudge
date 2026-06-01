@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -5,6 +7,7 @@ import 'package:nudge/app/nudge_app.dart';
 import 'package:nudge/app/providers.dart';
 import 'package:nudge/domain/plan.dart';
 import 'package:nudge/domain/plan_repository.dart';
+import 'package:nudge/domain/reminder_scheduler.dart';
 import 'package:nudge/l10n/generated/app_localizations_en.dart';
 import 'package:nudge/l10n/generated/app_localizations_zh.dart';
 
@@ -53,6 +56,9 @@ Widget _buildApp() {
   return ProviderScope(
     overrides: [
       planRepositoryProvider.overrideWithValue(const _EmptyPlanRepository()),
+      reminderSchedulerProvider.overrideWithValue(
+        const _NoopReminderScheduler(),
+      ),
     ],
     child: const NudgeApp(),
   );
@@ -110,5 +116,27 @@ class _EmptyPlanRepository implements PlanRepository {
     required DateTime end,
   }) {
     return Stream.value(const []);
+  }
+}
+
+class _NoopReminderScheduler implements ReminderScheduler {
+  const _NoopReminderScheduler();
+
+  @override
+  Stream<int> get onCheckInTapped => const Stream.empty();
+
+  @override
+  Future<void> cancel(int planId) async {}
+
+  @override
+  Future<void> scheduleCheckInReminder({
+    required int planId,
+    required String title,
+    required DateTime at,
+  }) async {}
+
+  @override
+  Future<int?> takeInitialTappedPlanId() async {
+    return null;
   }
 }

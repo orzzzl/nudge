@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../app/providers.dart';
 import '../../domain/plan.dart';
 import '../../domain/plan_repository.dart';
+import '../../domain/reminder_scheduler.dart';
 
 /// A single bubble in the chat transcript. Variants carry only data — the widget
 /// layer resolves them to localized text, so no user-facing strings live here.
@@ -68,6 +69,9 @@ class ChatController extends Notifier<ChatState> {
 
   PlanRepository get _repository => ref.read(planRepositoryProvider);
 
+  ReminderScheduler get _reminderScheduler =>
+      ref.read(reminderSchedulerProvider);
+
   Future<void> _restoreActivePlan() async {
     final restoredPlan = await _repository.getActivePlan();
     if (restoredPlan == null || state.activePlan != null) {
@@ -103,6 +107,15 @@ class ChatController extends Notifier<ChatState> {
       ],
       activePlan: plan,
     );
+
+    final planId = plan.id;
+    if (planId != null) {
+      await _reminderScheduler.scheduleCheckInReminder(
+        planId: planId,
+        title: trimmed,
+        at: plan.endAt,
+      );
+    }
   }
 
   /// Record the outcome of the active plan and clear it for the next one.
@@ -114,6 +127,7 @@ class ChatController extends Notifier<ChatState> {
     }
 
     await _repository.checkIn(id: id, status: status);
+    await _reminderScheduler.cancel(id);
 
     state = state.copyWith(
       messages: [

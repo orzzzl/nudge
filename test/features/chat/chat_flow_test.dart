@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:drift/native.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -6,6 +8,7 @@ import 'package:nudge/app/providers.dart';
 import 'package:nudge/data/db/app_database.dart' as db;
 import 'package:nudge/data/repositories/plan_repository_impl.dart';
 import 'package:nudge/domain/plan_repository.dart';
+import 'package:nudge/domain/reminder_scheduler.dart';
 import 'package:nudge/features/chat/chat_screen.dart';
 import 'package:nudge/l10n/generated/app_localizations.dart';
 import 'package:nudge/l10n/generated/app_localizations_en.dart';
@@ -26,7 +29,12 @@ void main() {
   Future<void> pumpChat(WidgetTester tester) async {
     await tester.pumpWidget(
       ProviderScope(
-        overrides: [planRepositoryProvider.overrideWithValue(repository)],
+        overrides: [
+          planRepositoryProvider.overrideWithValue(repository),
+          reminderSchedulerProvider.overrideWithValue(
+            const _NoopReminderScheduler(),
+          ),
+        ],
         child: const MaterialApp(
           localizationsDelegates: AppLocalizations.localizationsDelegates,
           supportedLocales: AppLocalizations.supportedLocales,
@@ -129,4 +137,26 @@ void main() {
     expect(find.text(l10n.capsuleTimeUp), findsOneWidget);
     expect(find.text(l10n.checkInTitle), findsNothing);
   });
+}
+
+class _NoopReminderScheduler implements ReminderScheduler {
+  const _NoopReminderScheduler();
+
+  @override
+  Stream<int> get onCheckInTapped => const Stream.empty();
+
+  @override
+  Future<void> cancel(int planId) async {}
+
+  @override
+  Future<void> scheduleCheckInReminder({
+    required int planId,
+    required String title,
+    required DateTime at,
+  }) async {}
+
+  @override
+  Future<int?> takeInitialTappedPlanId() async {
+    return null;
+  }
 }
