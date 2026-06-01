@@ -127,7 +127,8 @@ class _StatsContent extends StatelessWidget {
             valueLabel: (p) => localizations.statsPlannedHoursValue(
               p.plannedHours.toStringAsFixed(1),
             ),
-            yAxisLabel: (v) => '${v.toStringAsFixed(1)}h',
+            yAxisLabel: (v) =>
+                localizations.statsAxisHours(v.toStringAsFixed(1)),
             dateLabel: dateLabel,
             emptyLabel: localizations.statsChartEmpty,
           ),

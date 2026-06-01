@@ -78,6 +78,13 @@
   "@statsHoursChartTitle": {
     "description": "Title for the planned-hours line chart."
   },
+  "statsAxisHours": "{hours}h",
+  "@statsAxisHours": {
+    "description": "Compact hours unit for y-axis tick labels (h = hours).",
+    "placeholders": {
+      "hours": { "type": "String", "example": "3.5" }
+    }
+  },
   "statsCompletionRateTitle": "Completion rate",
   "@statsCompletionRateTitle": {
     "description": "Title for the completion-rate line chart."

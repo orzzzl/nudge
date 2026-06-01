@@ -15,6 +15,7 @@
   "statsCompletionTitle": "完成度",
   "statsCompletionPercent": "{percent}%",
   "statsHoursChartTitle": "计划小时数",
+  "statsAxisHours": "{hours}h",
   "statsCompletionRateTitle": "完成率",
   "statsRangeWeek": "近一周",
   "statsRangeMonth": "近一月",

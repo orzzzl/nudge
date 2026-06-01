@@ -4,6 +4,11 @@ import '../../../app/cute_palette.dart';
 import '../../../app/widgets/candy.dart';
 import '../stats_summary.dart';
 
+/// Left space reserved for y-axis labels. Shared by the painter (which plots
+/// points in `[_kChartLeftGutter, width]`) and the hit-test, so a tap maps to
+/// the same bucket the dot is drawn at.
+const double _kChartLeftGutter = 32;
+
 /// A hand-drawn (no chart dep) line chart card for one metric over [points],
 /// stock-style: a soft gridded area, a matcha polyline, and a tap/drag readout
 /// that highlights the nearest bucket and shows its date + value. Completion
@@ -56,7 +61,11 @@ class _StatsLineChartState extends State<StatsLineChart> {
     if (n == 0) {
       return;
     }
-    final ratio = (dx / width).clamp(0.0, 1.0);
+    // Map within the plot area (after the y-axis gutter), matching the painter.
+    final plotW = width - _kChartLeftGutter;
+    final ratio = plotW <= 0
+        ? 0.0
+        : ((dx - _kChartLeftGutter) / plotW).clamp(0.0, 1.0);
     final index = n == 1 ? 0 : (ratio * (n - 1)).round();
     if (index != _selected) {
       setState(() => _selected = index);
@@ -161,13 +170,12 @@ class _LineChartPainter extends CustomPainter {
   final String Function(double) yAxisLabel;
 
   static const _labelGutter = 22.0; // bottom space for x-axis labels
-  static const _leftGutter = 32.0; // left space for y-axis labels
 
   @override
   void paint(Canvas canvas, Size size) {
     final chartH = size.height - _labelGutter;
-    final plotLeft = _leftGutter;
-    final plotW = size.width - _leftGutter;
+    final plotLeft = _kChartLeftGutter;
+    final plotW = size.width - _kChartLeftGutter;
     final n = points.length;
     final safeMax = yMax <= 0 ? 1.0 : yMax;
 
@@ -191,8 +199,11 @@ class _LineChartPainter extends CustomPainter {
       final tp = TextPainter(
         text: TextSpan(text: yAxisLabel(safeMax * frac), style: yLabelStyle),
         textDirection: TextDirection.ltr,
-      )..layout(maxWidth: _leftGutter - 4);
-      tp.paint(canvas, Offset(_leftGutter - 6 - tp.width, y - tp.height / 2));
+      )..layout(maxWidth: _kChartLeftGutter - 4);
+      tp.paint(
+        canvas,
+        Offset(_kChartLeftGutter - 6 - tp.width, y - tp.height / 2),
+      );
     }
 
     // Polyline, broken into segments of consecutive non-null values.
