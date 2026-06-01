@@ -12,6 +12,16 @@ class NudgeNavigationShell extends StatelessWidget {
     final localizations = AppLocalizations.of(context);
 
     return Scaffold(
+      appBar: AppBar(
+        title: Text(localizations.appTitle),
+        actions: [
+          IconButton(
+            tooltip: localizations.settingsEntryTooltip,
+            onPressed: () => context.push('/settings'),
+            icon: const Icon(Icons.settings),
+          ),
+        ],
+      ),
       body: navigationShell,
       bottomNavigationBar: NavigationBar(
         selectedIndex: navigationShell.currentIndex,

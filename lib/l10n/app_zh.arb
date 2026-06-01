@@ -45,5 +45,51 @@
   "checkInReassure": "选哪个都没关系,下一格重新来 🌱",
   "resultDone": "记下啦,搞定 ✅",
   "resultPartial": "记下啦,做了点 🍃",
-  "resultMissed": "记下啦,没关系,下一格重新来 😴"
+  "resultMissed": "记下啦,没关系,下一格重新来 😴",
+  "settingsTitle": "设置",
+  "@settingsTitle": {
+    "description": "Title for the settings screen."
+  },
+  "settingsEntryTooltip": "打开设置",
+  "@settingsEntryTooltip": {
+    "description": "Tooltip for the settings entry button in the app bar."
+  },
+  "settingsDndLabel": "勿扰",
+  "@settingsDndLabel": {
+    "description": "Label for the do-not-disturb setting."
+  },
+  "settingsDndDescription": "保存安静模式,供之后的提醒使用。",
+  "@settingsDndDescription": {
+    "description": "Description for the do-not-disturb setting."
+  },
+  "settingsLanguageLabel": "语言",
+  "@settingsLanguageLabel": {
+    "description": "Label for the manual language override setting."
+  },
+  "settingsLanguageSystem": "跟随系统",
+  "@settingsLanguageSystem": {
+    "description": "Language option that follows the device locale."
+  },
+  "settingsLanguageEnglish": "English",
+  "@settingsLanguageEnglish": {
+    "description": "Language option for English."
+  },
+  "settingsLanguageChinese": "中文",
+  "@settingsLanguageChinese": {
+    "description": "Language option for Chinese."
+  },
+  "settingsAboutLabel": "关于",
+  "@settingsAboutLabel": {
+    "description": "Label for the app information section."
+  },
+  "settingsVersionValue": "版本 {version}",
+  "@settingsVersionValue": {
+    "description": "Application version shown in the about section.",
+    "placeholders": {
+      "version": {
+        "type": "String",
+        "example": "0.1.0"
+      }
+    }
+  }
 }

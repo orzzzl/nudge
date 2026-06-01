@@ -11,9 +11,11 @@ class NudgeApp extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final settings = ref.watch(settingsControllerProvider);
     ref.watch(reminderSchedulerInitializationProvider);
 
     return MaterialApp.router(
+      locale: settings.resolvedLocale,
       onGenerateTitle: (context) => AppLocalizations.of(context).appTitle,
       routerConfig: appRouter,
       theme: buildAppTheme(),
