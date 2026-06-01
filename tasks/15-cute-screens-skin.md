@@ -1,7 +1,7 @@
 # 15 — Cute skin across the screens (chat / stats / check-in / settings)
 
-- **Status:** PLANNED (finalize to READY right before dispatch — after task 14 lands so it can lock
-  against the real `CuteColors` / `candy.dart` / `CandyButton` APIs)
+- **Status:** IN_PROGRESS (Claude — role swap; task 14 landed so this locks against the real
+  `CuteColors` / `candy.dart` / `CandyButton` APIs)
 - **Owner:** Codex, or Claude if Codex is low on budget (Codex reviews)
 - **Blocked by:** 14 (theme foundation + candy primitives)
 - **Allowed new deps:** none (reuse task 14's foundation).
@@ -55,13 +55,24 @@ check-in card, and the settings rows. Use task 14's `CuteColors`, `candyShadow`,
 - If the diff gets too large to review comfortably, split by tab into 15a (chat) / 15b (stats +
   check-in) / 15c (settings) PRs against the same task — note that in the PR.
 
-## Acceptance criteria (draft — finalized at dispatch)
+## Acceptance criteria
 - [ ] Each screen visibly matches the mockup's cute styling (bubbles, capsule, chips, hero, streak,
       bars, ledger, check-in card, settings cards).
-- [ ] No hard-coded hex at call sites — all via `CuteColors` / `candy.dart`.
+- [ ] No hard-coded hex at call sites — broadly reused colors go into `CuteColors`; a widget that needs
+      a one-off semantic palette (e.g. the check-in answer tiles' done/partial/missed triad) may hold
+      it as a private `const` in its own file, not scattered at call sites.
 - [ ] All existing behavior + widget/unit tests still pass; the check-in `Future<PlanStatus?>` and the
       composer `onStart` contracts are unchanged.
 - [ ] `dart format .` / `flutter analyze` / `flutter test` all clean.
+
+## Test impact (locked against the current tests — keep these green)
+- `test/features/chat/chat_flow_test.dart` asserts the start button's disabled state via
+  `tester.widget<FilledButton>(find.byType(FilledButton))`. Swapping the start button to `CandyButton`
+  means updating that finder to `CandyButton` (expose `onPressed`); it still taps via
+  `find.text(l10n.startButton)`, so keep the label exactly `l10n.startButton` (no appended glyph) and
+  keep the duration chips' and check-in options' label text findable by `find.text`.
+- `test/features/stats/stats_screen_test.dart` asserts `find.text('✅ ${statsStatusDone}')` — keep the
+  ledger row's emoji+label in a SINGLE `Text` (`'$emoji $label'`), don't split them.
 
 ## Notes / hints
 - Device-verify after this (see `docs/device-verify.md`) — screenshot each screen against the mockup.
