@@ -1,7 +1,6 @@
 # 15 — Cute skin across the screens (chat / stats / check-in / settings)
 
-- **Status:** IN_PROGRESS (Claude — role swap; task 14 landed so this locks against the real
-  `CuteColors` / `candy.dart` / `CandyButton` APIs)
+- **Status:** IN_REVIEW (PR #18, Claude — Codex reviews)
 - **Owner:** Codex, or Claude if Codex is low on budget (Codex reviews)
 - **Blocked by:** 14 (theme foundation + candy primitives)
 - **Allowed new deps:** none (reuse task 14's foundation).
