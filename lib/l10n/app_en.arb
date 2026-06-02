@@ -12,10 +12,6 @@
   "@statsTabLabel": {
     "description": "Bottom navigation label for the stats tab."
   },
-  "statsPlaceholderLabel": "Stats",
-  "@statsPlaceholderLabel": {
-    "description": "Centered placeholder label on the stats screen."
-  },
   "statsScreenTitle": "This week",
   "@statsScreenTitle": {
     "description": "Title for the stats screen."
@@ -28,9 +24,9 @@
   "@statsLoadError": {
     "description": "Error message shown when stats fail to load."
   },
-  "statsPlannedHoursLabel": "Planned time",
+  "statsPlannedHoursLabel": "Planned this week",
   "@statsPlannedHoursLabel": {
-    "description": "Label for the hero planned-time metric."
+    "description": "Label for the hero planned-time metric (current week total)."
   },
   "statsPlannedHoursValue": "{hours} h",
   "@statsPlannedHoursValue": {
@@ -55,14 +51,6 @@
         "example": "3"
       }
     }
-  },
-  "statsWeeklyChartTitle": "Planned minutes",
-  "@statsWeeklyChartTitle": {
-    "description": "Title for the weekly planned-minutes bar chart."
-  },
-  "statsCompletionTitle": "Completion",
-  "@statsCompletionTitle": {
-    "description": "Title for the weekly completion-rate bar."
   },
   "statsCompletionPercent": "{percent}%",
   "@statsCompletionPercent": {
@@ -99,10 +87,6 @@
   "@statsRangeFiveYears": { "description": "Chart range: last five years." },
   "statsRangeAll": "All",
   "@statsRangeAll": { "description": "Chart range: all time." },
-  "statsChartEmpty": "No data in this range yet",
-  "@statsChartEmpty": {
-    "description": "Empty state shown when a chart range has no data."
-  },
   "statsTodayLedgerTitle": "Today",
   "@statsTodayLedgerTitle": {
     "description": "Title for today's plans ledger."
@@ -110,44 +94,6 @@
   "statsTodayLedgerEmpty": "No plans logged today yet.",
   "@statsTodayLedgerEmpty": {
     "description": "Empty state for today's plans ledger."
-  },
-  "statsWeekdayMon": "Mon",
-  "@statsWeekdayMon": {
-    "description": "Monday abbreviation in the stats chart."
-  },
-  "statsWeekdayTue": "Tue",
-  "@statsWeekdayTue": {
-    "description": "Tuesday abbreviation in the stats chart."
-  },
-  "statsWeekdayWed": "Wed",
-  "@statsWeekdayWed": {
-    "description": "Wednesday abbreviation in the stats chart."
-  },
-  "statsWeekdayThu": "Thu",
-  "@statsWeekdayThu": {
-    "description": "Thursday abbreviation in the stats chart."
-  },
-  "statsWeekdayFri": "Fri",
-  "@statsWeekdayFri": {
-    "description": "Friday abbreviation in the stats chart."
-  },
-  "statsWeekdaySat": "Sat",
-  "@statsWeekdaySat": {
-    "description": "Saturday abbreviation in the stats chart."
-  },
-  "statsWeekdaySun": "Sun",
-  "@statsWeekdaySun": {
-    "description": "Sunday abbreviation in the stats chart."
-  },
-  "statsBarMinutes": "{minutes}m",
-  "@statsBarMinutes": {
-    "description": "Compact minutes label below each stats chart bar.",
-    "placeholders": {
-      "minutes": {
-        "type": "int",
-        "example": "90"
-      }
-    }
   },
   "statsStatusDone": "Done",
   "@statsStatusDone": {

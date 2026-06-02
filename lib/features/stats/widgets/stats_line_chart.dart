@@ -11,8 +11,8 @@ const double _kChartLeftGutter = 32;
 
 /// A hand-drawn (no chart dep) line chart card for one metric over [points],
 /// stock-style: a soft gridded area, a matcha polyline, and a tap/drag readout
-/// that highlights the nearest bucket and shows its date + value. Completion
-/// gaps (null) break the line rather than dropping to 0.
+/// that highlights the nearest bucket and shows its date + value. Empty buckets
+/// are zero-filled, so the line is continuous (no gaps).
 class StatsLineChart extends StatefulWidget {
   const StatsLineChart({
     required this.title,
@@ -22,7 +22,6 @@ class StatsLineChart extends StatefulWidget {
     required this.valueLabel,
     required this.yAxisLabel,
     required this.dateLabel,
-    required this.emptyLabel,
     super.key,
   });
 
@@ -44,17 +43,12 @@ class StatsLineChart extends StatefulWidget {
   /// Formats a bucket start for axis/readout labels (locale + range aware).
   final String Function(DateTime) dateLabel;
 
-  /// Shown when there is no plottable data.
-  final String emptyLabel;
-
   @override
   State<StatsLineChart> createState() => _StatsLineChartState();
 }
 
 class _StatsLineChartState extends State<StatsLineChart> {
   int? _selected;
-
-  bool get _hasData => widget.points.any((p) => widget.valueOf(p) != null);
 
   void _selectAt(double dx, double width) {
     final n = widget.points.length;
@@ -107,45 +101,33 @@ class _StatsLineChartState extends State<StatsLineChart> {
             ],
           ),
           const SizedBox(height: 12),
-          if (!_hasData)
-            SizedBox(
-              height: 120,
-              child: Center(
-                child: Text(
-                  widget.emptyLabel,
-                  style: theme.textTheme.bodyMedium?.copyWith(
-                    color: CuteColors.textMuted,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-              ),
-            )
-          else
-            LayoutBuilder(
-              builder: (context, constraints) {
-                final width = constraints.maxWidth;
-                return GestureDetector(
-                  behavior: HitTestBehavior.opaque,
-                  onTapDown: (d) => _selectAt(d.localPosition.dx, width),
-                  onHorizontalDragUpdate: (d) =>
-                      _selectAt(d.localPosition.dx, width),
-                  child: SizedBox(
-                    height: 132,
-                    width: width,
-                    child: CustomPaint(
-                      painter: _LineChartPainter(
-                        points: widget.points,
-                        valueOf: widget.valueOf,
-                        yMax: widget.yMax,
-                        selected: _selected,
-                        labelFor: widget.dateLabel,
-                        yAxisLabel: widget.yAxisLabel,
-                      ),
+          // Empty ranges still render a flat zero line (buckets are zero-filled),
+          // so there's no separate empty state.
+          LayoutBuilder(
+            builder: (context, constraints) {
+              final width = constraints.maxWidth;
+              return GestureDetector(
+                behavior: HitTestBehavior.opaque,
+                onTapDown: (d) => _selectAt(d.localPosition.dx, width),
+                onHorizontalDragUpdate: (d) =>
+                    _selectAt(d.localPosition.dx, width),
+                child: SizedBox(
+                  height: 132,
+                  width: width,
+                  child: CustomPaint(
+                    painter: _LineChartPainter(
+                      points: widget.points,
+                      valueOf: widget.valueOf,
+                      yMax: widget.yMax,
+                      selected: _selected,
+                      labelFor: widget.dateLabel,
+                      yAxisLabel: widget.yAxisLabel,
                     ),
                   ),
-                );
-              },
-            ),
+                ),
+              );
+            },
+          ),
         ],
       ),
     );
