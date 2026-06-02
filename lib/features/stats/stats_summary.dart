@@ -7,7 +7,6 @@ class StatsSummary {
     required this.plannedMinutes,
     required this.completionRate,
     required this.streakDays,
-    required this.dailyPlannedMinutes,
     required this.todaysPlans,
   });
 
@@ -16,24 +15,10 @@ class StatsSummary {
   final int plannedMinutes;
   final double completionRate;
   final int streakDays;
-  final List<DailyPlannedMinutes> dailyPlannedMinutes;
   final List<Plan> todaysPlans;
 
   double get plannedHours => plannedMinutes / 60;
   int get completionPercent => (completionRate * 100).round();
-  int get maxDailyPlannedMinutes {
-    return dailyPlannedMinutes.fold<int>(
-      0,
-      (max, day) => day.plannedMinutes > max ? day.plannedMinutes : max,
-    );
-  }
-}
-
-class DailyPlannedMinutes {
-  const DailyPlannedMinutes({required this.day, required this.plannedMinutes});
-
-  final DateTime day;
-  final int plannedMinutes;
 }
 
 StatsSummary aggregateStats(List<Plan> plans, DateTime now) {
@@ -44,19 +29,12 @@ StatsSummary aggregateStats(List<Plan> plans, DateTime now) {
     return !plan.startAt.isBefore(weekStart) && plan.startAt.isBefore(weekEnd);
   }).toList()..sort((a, b) => a.startAt.compareTo(b.startAt));
 
-  final plannedByDay = <DateTime, int>{
-    for (var index = 0; index < 7; index++)
-      weekStart.add(Duration(days: index)): 0,
-  };
-
   var plannedMinutes = 0;
   var checkedInCount = 0;
   var completionScore = 0.0;
 
   for (final plan in weekPlans) {
-    final day = statsDayStart(plan.startAt);
     plannedMinutes += plan.durationMin;
-    plannedByDay[day] = (plannedByDay[day] ?? 0) + plan.durationMin;
 
     switch (plan.status) {
       case PlanStatus.done:
@@ -65,30 +43,27 @@ StatsSummary aggregateStats(List<Plan> plans, DateTime now) {
       case PlanStatus.partial:
         checkedInCount += 1;
         completionScore += 0.5;
-      case PlanStatus.missed:
+      // abandoned counts as a miss (a non-completion), same as missed.
+      case PlanStatus.missed || PlanStatus.abandoned:
         checkedInCount += 1;
-      case PlanStatus.running || PlanStatus.abandoned:
+      case PlanStatus.running:
         break;
     }
   }
-
-  final dailyPlannedMinutes = [
-    for (var index = 0; index < 7; index++)
-      DailyPlannedMinutes(
-        day: weekStart.add(Duration(days: index)),
-        plannedMinutes: plannedByDay[weekStart.add(Duration(days: index))] ?? 0,
-      ),
-  ];
 
   final todaysPlans = weekPlans
       .where((plan) => statsDayStart(plan.startAt) == today)
       .toList();
 
-  // The streak is unbounded: any local calendar day with >=1 planned block (any
-  // outcome) counts. Built from ALL plans, not just this week, so it carries
-  // across week/month boundaries.
+  // Streak (rule B): a day counts only if it has >=1 plan that is NOT
+  // missed/abandoned (i.e. at least one done/partial/running) — a fully
+  // missed/abandoned day no longer extends it. Built from ALL plans so it
+  // carries across week/month boundaries. All local time.
   final activeDays = <DateTime>{
-    for (final plan in plans) statsDayStart(plan.startAt),
+    for (final plan in plans)
+      if (plan.status != PlanStatus.missed &&
+          plan.status != PlanStatus.abandoned)
+        statsDayStart(plan.startAt),
   };
 
   return StatsSummary(
@@ -97,7 +72,6 @@ StatsSummary aggregateStats(List<Plan> plans, DateTime now) {
     plannedMinutes: plannedMinutes,
     completionRate: checkedInCount == 0 ? 0 : completionScore / checkedInCount,
     streakDays: _calculateStreak(activeDays, today),
-    dailyPlannedMinutes: List.unmodifiable(dailyPlannedMinutes),
     todaysPlans: List.unmodifiable(todaysPlans),
   );
 }
@@ -130,4 +104,147 @@ int _calculateStreak(Set<DateTime> activeDays, DateTime today) {
 // transitions (24h arithmetic would land an hour off and miss an activeDays key).
 DateTime _previousDay(DateTime day) {
   return DateTime(day.year, day.month, day.day - 1);
+}
+
+// ===========================================================================
+// 乖乖图 v2 — time-series for the planned-hours + completion-rate line charts.
+// ===========================================================================
+
+/// The selectable time windows for the stats line charts (stock-style).
+enum StatsRange { week, month, ytd, fiveYears, all }
+
+/// One plotted point: a bucket's planned hours and completion rate.
+class StatsPoint {
+  const StatsPoint({
+    required this.start,
+    required this.plannedHours,
+    required this.completionRate,
+  });
+
+  /// Local start of the bucket (day / week-Monday / month-1st).
+  final DateTime start;
+
+  /// Total planned hours in the bucket (>= 0, decimals).
+  final double plannedHours;
+
+  /// (done + partial) / (done + partial + missed + abandoned), with partial
+  /// counting as complete and abandoned as a miss. Null when the bucket has no
+  /// countable plan (so the line gaps rather than dropping to 0%).
+  final double? completionRate;
+}
+
+enum _Bucket { day, week, month }
+
+/// Builds the continuous bucketed series for [range] from ALL [plans], in local
+/// time. Buckets with no plans are still present (planned hours = 0, completion
+/// = null) so the x-axis is continuous.
+List<StatsPoint> buildStatsSeries(
+  List<Plan> plans,
+  StatsRange range,
+  DateTime now,
+) {
+  final today = statsDayStart(now);
+  // dataStart = the inclusion lower bound (e.g. Jan 1 for YTD); firstBucket =
+  // the aligned start of the bucket containing it (e.g. that week's Monday,
+  // which may be in late December). Filtering by dataStart keeps prior-period
+  // days out of the first bucket while the x-axis still aligns to bucket edges.
+  final (dataStart, bucket) = _rangeStart(range, today, plans);
+  final firstBucket = _bucketStart(dataStart, bucket);
+
+  // Accumulators keyed by bucket start.
+  final plannedMin = <DateTime, int>{};
+  final done = <DateTime, int>{};
+  final partial = <DateTime, int>{};
+  final misses = <DateTime, int>{}; // missed + abandoned
+
+  for (final plan in plans) {
+    final day = statsDayStart(plan.startAt);
+    if (day.isBefore(dataStart) || day.isAfter(today)) {
+      continue;
+    }
+    final key = _bucketStart(day, bucket);
+    plannedMin[key] = (plannedMin[key] ?? 0) + plan.durationMin;
+    switch (plan.status) {
+      case PlanStatus.done:
+        done[key] = (done[key] ?? 0) + 1;
+      case PlanStatus.partial:
+        partial[key] = (partial[key] ?? 0) + 1;
+      case PlanStatus.missed || PlanStatus.abandoned:
+        misses[key] = (misses[key] ?? 0) + 1;
+      case PlanStatus.running:
+        break;
+    }
+  }
+
+  final points = <StatsPoint>[];
+  for (
+    var cursor = firstBucket;
+    !cursor.isAfter(today);
+    cursor = _nextBucket(cursor, bucket)
+  ) {
+    final d = done[cursor] ?? 0;
+    final p = partial[cursor] ?? 0;
+    final m = misses[cursor] ?? 0;
+    final countable = d + p + m;
+    points.add(
+      StatsPoint(
+        start: cursor,
+        plannedHours: (plannedMin[cursor] ?? 0) / 60,
+        completionRate: countable == 0 ? null : (d + p) / countable,
+      ),
+    );
+  }
+
+  return List.unmodifiable(points);
+}
+
+/// The data-inclusion lower bound + bucket granularity for a range, in local
+/// calendar time. (The first *bucket* is derived from this via _bucketStart;
+/// plans before this bound are excluded even if they share the first bucket.)
+(DateTime, _Bucket) _rangeStart(
+  StatsRange range,
+  DateTime today,
+  List<Plan> plans,
+) {
+  switch (range) {
+    case StatsRange.week:
+      return (_addDays(today, -6), _Bucket.day); // 7 daily points
+    case StatsRange.month:
+      return (_addDays(today, -29), _Bucket.day); // 30 daily points
+    case StatsRange.ytd:
+      // Jan 1 of this year — NOT the containing week's Monday, so last year's
+      // tail days don't leak into the first weekly bucket.
+      return (DateTime(today.year), _Bucket.week);
+    case StatsRange.fiveYears:
+      // 60 monthly buckets ending this month → start 59 months back.
+      return (DateTime(today.year, today.month - 59), _Bucket.month);
+    case StatsRange.all:
+      if (plans.isEmpty) {
+        return (DateTime(today.year, today.month), _Bucket.month);
+      }
+      final earliest = plans
+          .map((p) => statsDayStart(p.startAt))
+          .reduce((a, b) => a.isBefore(b) ? a : b);
+      return (DateTime(earliest.year, earliest.month), _Bucket.month);
+  }
+}
+
+DateTime _bucketStart(DateTime day, _Bucket bucket) {
+  return switch (bucket) {
+    _Bucket.day => day,
+    _Bucket.week => statsWeekStart(day),
+    _Bucket.month => DateTime(day.year, day.month),
+  };
+}
+
+DateTime _nextBucket(DateTime cursor, _Bucket bucket) {
+  return switch (bucket) {
+    _Bucket.day => _addDays(cursor, 1),
+    _Bucket.week => _addDays(cursor, 7),
+    _Bucket.month => DateTime(cursor.year, cursor.month + 1),
+  };
+}
+
+DateTime _addDays(DateTime day, int delta) {
+  return DateTime(day.year, day.month, day.day + delta);
 }

@@ -9,19 +9,33 @@ import '../pet/pet_mood.dart';
 import '../pet/pet_view.dart';
 import 'stats_providers.dart';
 import 'stats_summary.dart';
+import 'widgets/stats_line_chart.dart';
 
-class StatsScreen extends ConsumerWidget {
+class StatsScreen extends ConsumerStatefulWidget {
   const StatsScreen({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final summary = ref.watch(statsSummaryProvider);
+  ConsumerState<StatsScreen> createState() => _StatsScreenState();
+}
+
+class _StatsScreenState extends ConsumerState<StatsScreen> {
+  StatsRange _range = StatsRange.month;
+
+  @override
+  Widget build(BuildContext context) {
+    final plansAsync = ref.watch(statsPlansProvider);
+    final now = ref.watch(statsNowProvider);
     final localizations = AppLocalizations.of(context);
 
     return Scaffold(
       body: SafeArea(
-        child: summary.when(
-          data: (data) => _StatsContent(summary: data),
+        child: plansAsync.when(
+          data: (plans) => _StatsContent(
+            plans: plans,
+            now: now,
+            range: _range,
+            onRangeChanged: (r) => setState(() => _range = r),
+          ),
           loading: () => const Center(child: CircularProgressIndicator()),
           error: (error, stackTrace) =>
               Center(child: Text(localizations.statsLoadError)),
@@ -32,18 +46,40 @@ class StatsScreen extends ConsumerWidget {
 }
 
 class _StatsContent extends StatelessWidget {
-  const _StatsContent({required this.summary});
+  const _StatsContent({
+    required this.plans,
+    required this.now,
+    required this.range,
+    required this.onRangeChanged,
+  });
 
-  final StatsSummary summary;
+  final List<Plan> plans;
+  final DateTime now;
+  final StatsRange range;
+  final ValueChanged<StatsRange> onRangeChanged;
 
   @override
   Widget build(BuildContext context) {
     final localizations = AppLocalizations.of(context);
     final theme = Theme.of(context);
+    final summary = aggregateStats(plans, now);
+    final series = buildStatsSeries(plans, range, now);
     final mood = petMoodFromStats(
       plannedMinutes: summary.plannedMinutes,
       completionRate: summary.completionRate,
       streakDays: summary.streakDays,
+    );
+
+    String dateLabel(DateTime d) {
+      if (range == StatsRange.fiveYears || range == StatsRange.all) {
+        return '${d.year}/${d.month}';
+      }
+      return '${d.month}/${d.day}';
+    }
+
+    final maxHours = series.fold<double>(
+      0,
+      (m, p) => p.plannedHours > m ? p.plannedHours : m,
     );
 
     return SingleChildScrollView(
@@ -81,12 +117,123 @@ class _StatsContent extends StatelessWidget {
           const SizedBox(height: 20),
           _PlannedHoursHero(summary: summary),
           const SizedBox(height: 20),
-          _WeeklyBars(summary: summary),
-          const SizedBox(height: 20),
-          _CompletionBar(summary: summary),
+          _RangeSelector(range: range, onChanged: onRangeChanged),
+          const SizedBox(height: 16),
+          StatsLineChart(
+            title: localizations.statsHoursChartTitle,
+            points: series,
+            valueOf: (p) => p.plannedHours,
+            yMax: maxHours < 1 ? 1 : maxHours,
+            valueLabel: (p) => localizations.statsPlannedHoursValue(
+              p.plannedHours.toStringAsFixed(1),
+            ),
+            yAxisLabel: (v) =>
+                localizations.statsAxisHours(v.toStringAsFixed(1)),
+            dateLabel: dateLabel,
+            emptyLabel: localizations.statsChartEmpty,
+          ),
+          const SizedBox(height: 16),
+          StatsLineChart(
+            title: localizations.statsCompletionRateTitle,
+            points: series,
+            valueOf: (p) => p.completionRate,
+            yMax: 1,
+            valueLabel: (p) => p.completionRate == null
+                ? '—'
+                : localizations.statsCompletionPercent(
+                    (p.completionRate! * 100).round(),
+                  ),
+            yAxisLabel: (v) =>
+                localizations.statsCompletionPercent((v * 100).round()),
+            dateLabel: dateLabel,
+            emptyLabel: localizations.statsChartEmpty,
+          ),
           const SizedBox(height: 20),
           _TodayLedger(plans: summary.todaysPlans),
         ],
+      ),
+    );
+  }
+}
+
+/// Stock-style range pills; selected = peach gradient + candy shadow.
+class _RangeSelector extends StatelessWidget {
+  const _RangeSelector({required this.range, required this.onChanged});
+
+  final StatsRange range;
+  final ValueChanged<StatsRange> onChanged;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+    final labels = <StatsRange, String>{
+      StatsRange.week: l10n.statsRangeWeek,
+      StatsRange.month: l10n.statsRangeMonth,
+      StatsRange.ytd: l10n.statsRangeYtd,
+      StatsRange.fiveYears: l10n.statsRangeFiveYears,
+      StatsRange.all: l10n.statsRangeAll,
+    };
+
+    return Wrap(
+      spacing: 8,
+      runSpacing: 8,
+      children: [
+        for (final entry in labels.entries)
+          _RangePill(
+            label: entry.value,
+            selected: entry.key == range,
+            onTap: () => onChanged(entry.key),
+          ),
+      ],
+    );
+  }
+}
+
+class _RangePill extends StatelessWidget {
+  const _RangePill({
+    required this.label,
+    required this.selected,
+    required this.onTap,
+  });
+
+  final String label;
+  final bool selected;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(14),
+        child: Ink(
+          decoration: BoxDecoration(
+            color: selected ? null : CuteColors.white,
+            gradient: selected ? CuteColors.peachGradient : null,
+            borderRadius: BorderRadius.circular(14),
+            border: Border.all(
+              color: selected
+                  ? CuteColors.peachGradientBottom
+                  : CuteColors.borderPeach,
+              width: 2,
+            ),
+            boxShadow: selected
+                ? candyShadow(CuteColors.peachCandyShadow, dy: 3)
+                : null,
+          ),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 13, vertical: 7),
+            child: Text(
+              label,
+              style: TextStyle(
+                fontSize: 12,
+                fontWeight: FontWeight.w800,
+                color: selected ? CuteColors.white : CuteColors.chipBrown,
+              ),
+            ),
+          ),
+        ),
       ),
     );
   }
@@ -188,176 +335,6 @@ class _StreakChip extends StatelessWidget {
           ),
         ],
       ),
-    );
-  }
-}
-
-class _WeeklyBars extends StatelessWidget {
-  const _WeeklyBars({required this.summary});
-
-  final StatsSummary summary;
-
-  @override
-  Widget build(BuildContext context) {
-    final localizations = AppLocalizations.of(context);
-    final theme = Theme.of(context);
-    final maxMinutes = summary.maxDailyPlannedMinutes;
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          localizations.statsWeeklyChartTitle,
-          style: theme.textTheme.titleMedium?.copyWith(
-            color: CuteColors.textMuted2,
-            fontWeight: FontWeight.w800,
-          ),
-        ),
-        const SizedBox(height: 12),
-        SizedBox(
-          height: 150,
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.end,
-            children: [
-              for (final (index, day) in summary.dailyPlannedMinutes.indexed)
-                Expanded(
-                  child: _DayBar(
-                    label: _weekdayLabel(localizations, index),
-                    plannedMinutes: day.plannedMinutes,
-                    maxMinutes: maxMinutes,
-                  ),
-                ),
-            ],
-          ),
-        ),
-      ],
-    );
-  }
-
-  String _weekdayLabel(AppLocalizations localizations, int index) {
-    return switch (index) {
-      0 => localizations.statsWeekdayMon,
-      1 => localizations.statsWeekdayTue,
-      2 => localizations.statsWeekdayWed,
-      3 => localizations.statsWeekdayThu,
-      4 => localizations.statsWeekdayFri,
-      5 => localizations.statsWeekdaySat,
-      _ => localizations.statsWeekdaySun,
-    };
-  }
-}
-
-class _DayBar extends StatelessWidget {
-  const _DayBar({
-    required this.label,
-    required this.plannedMinutes,
-    required this.maxMinutes,
-  });
-
-  final String label;
-  final int plannedMinutes;
-  final int maxMinutes;
-
-  @override
-  Widget build(BuildContext context) {
-    final localizations = AppLocalizations.of(context);
-    final theme = Theme.of(context);
-    final ratio = maxMinutes == 0 ? 0.0 : plannedMinutes / maxMinutes;
-    final barHeight = plannedMinutes == 0 ? 4.0 : 18.0 + ratio * 74.0;
-
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 4),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.end,
-        children: [
-          SizedBox(
-            height: 96,
-            child: Align(
-              alignment: Alignment.bottomCenter,
-              child: Container(
-                width: 20,
-                height: barHeight,
-                decoration: BoxDecoration(
-                  gradient: plannedMinutes == 0
-                      ? null
-                      : CuteColors.matchaGradient,
-                  color: plannedMinutes == 0 ? CuteColors.barFaint : null,
-                  borderRadius: BorderRadius.circular(10),
-                  boxShadow: candyShadow(
-                    plannedMinutes == 0
-                        ? CuteColors.barFaintShadow
-                        : CuteColors.matchaCandyShadow,
-                    dy: 3,
-                  ),
-                ),
-              ),
-            ),
-          ),
-          const SizedBox(height: 10),
-          Text(
-            label,
-            style: theme.textTheme.labelMedium?.copyWith(
-              color: CuteColors.textFaint2,
-              fontWeight: FontWeight.w700,
-            ),
-          ),
-          const SizedBox(height: 2),
-          Text(
-            localizations.statsBarMinutes(plannedMinutes),
-            style: theme.textTheme.labelSmall?.copyWith(
-              color: CuteColors.textFaint2,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _CompletionBar extends StatelessWidget {
-  const _CompletionBar({required this.summary});
-
-  final StatsSummary summary;
-
-  @override
-  Widget build(BuildContext context) {
-    final localizations = AppLocalizations.of(context);
-    final theme = Theme.of(context);
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Row(
-          children: [
-            Expanded(
-              child: Text(
-                localizations.statsCompletionTitle,
-                style: theme.textTheme.titleMedium?.copyWith(
-                  color: CuteColors.textMuted2,
-                  fontWeight: FontWeight.w800,
-                ),
-              ),
-            ),
-            Text(
-              localizations.statsCompletionPercent(summary.completionPercent),
-              style: theme.textTheme.labelLarge?.copyWith(
-                color: CuteColors.matchaVivid,
-                fontWeight: FontWeight.w800,
-              ),
-            ),
-          ],
-        ),
-        const SizedBox(height: 10),
-        ClipRRect(
-          borderRadius: BorderRadius.circular(8),
-          child: LinearProgressIndicator(
-            minHeight: 12,
-            value: summary.completionRate.clamp(0, 1),
-            color: CuteColors.matchaGradientBottom,
-            backgroundColor: CuteColors.borderCream,
-          ),
-        ),
-      ],
     );
   }
 }

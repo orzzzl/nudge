@@ -48,16 +48,16 @@ void main() {
     );
     await tester.pump();
 
+    // Hero shows this week's planned hours (60 + 60 min = 2.0 h).
     expect(
       find.text(localizations.statsPlannedHoursValue('2.0')),
       findsOneWidget,
     );
-    expect(
-      find.text(localizations.statsCompletionPercent(100)),
-      findsOneWidget,
-    );
-    expect(find.text(localizations.statsWeekdayMon), findsOneWidget);
-    expect(find.text(localizations.statsWeekdaySun), findsOneWidget);
+    // The two line-chart cards + the range selector are present.
+    expect(find.text(localizations.statsHoursChartTitle), findsOneWidget);
+    expect(find.text(localizations.statsCompletionRateTitle), findsOneWidget);
+    expect(find.text(localizations.statsRangeMonth), findsOneWidget);
+    // Today's ledger still lists today's plan with its status.
     expect(find.text(localizations.statsTodayLedgerTitle), findsOneWidget);
     expect(find.text('Write report'), findsOneWidget);
     expect(find.text('✅ ${localizations.statsStatusDone}'), findsOneWidget);

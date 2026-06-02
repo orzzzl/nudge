@@ -1,21 +1,32 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../app/providers.dart';
+import '../../domain/plan.dart';
 import 'stats_summary.dart';
 
 final statsNowProvider = Provider<DateTime>((ref) {
   return DateTime.now();
 });
 
-final statsSummaryProvider = StreamProvider<StatsSummary>((ref) {
+/// All plans (history → this week's end), in local time. The stats screen
+/// derives both the hero/ledger summary (aggregateStats) and the line-chart
+/// series (buildStatsSeries) from this single stream, so changing the chart
+/// range needs no re-query. DateTime(2000) is a local sentinel before any plan
+/// can exist — no UTC anywhere.
+final statsPlansProvider = StreamProvider<List<Plan>>((ref) {
   final now = ref.watch(statsNowProvider);
   final weekEnd = statsWeekStart(now).add(const Duration(days: 7));
-  final repository = ref.watch(planRepositoryProvider);
+  return ref
+      .watch(planRepositoryProvider)
+      .watchPlansInRange(start: DateTime(2000), end: weekEnd);
+});
 
-  // The streak is unbounded, so query from before any plan can exist up to this
-  // week's end; aggregateStats slices the current week back out for the chart /
-  // ledger. DateTime(2000) is a LOCAL sentinel — all date math stays local.
-  return repository
-      .watchPlansInRange(start: DateTime(2000), end: weekEnd)
-      .map((plans) => aggregateStats(plans, now));
+/// Hero/ledger/streak summary derived from the single plan stream. The mascot
+/// mood ([petMoodProvider]) watches this; the stats screen derives its own
+/// summary + chart series directly from [statsPlansProvider].
+final statsSummaryProvider = Provider<AsyncValue<StatsSummary>>((ref) {
+  final now = ref.watch(statsNowProvider);
+  return ref
+      .watch(statsPlansProvider)
+      .whenData((plans) => aggregateStats(plans, now));
 });
