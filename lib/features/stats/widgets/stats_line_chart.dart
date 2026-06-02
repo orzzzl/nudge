@@ -11,8 +11,8 @@ const double _kChartLeftGutter = 32;
 
 /// A hand-drawn (no chart dep) line chart card for one metric over [points],
 /// stock-style: a soft gridded area, a matcha polyline, and a tap/drag readout
-/// that highlights the nearest bucket and shows its date + value. Completion
-/// gaps (null) break the line rather than dropping to 0.
+/// that highlights the nearest bucket and shows its date + value. Empty buckets
+/// are zero-filled, so the line is continuous (no gaps).
 class StatsLineChart extends StatefulWidget {
   const StatsLineChart({
     required this.title,
