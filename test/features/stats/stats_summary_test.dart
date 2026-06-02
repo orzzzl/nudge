@@ -201,7 +201,7 @@ void main() {
 
       final jun1 = series.firstWhere((p) => p.start == DateTime(2026, 6, 1));
       expect(jun1.plannedHours, 0);
-      expect(jun1.completionRate, isNull); // no plans → line gaps
+      expect(jun1.completionRate, 0); // no plans → filled with zero
     });
 
     test('partial counts as complete, abandoned as a miss', () {

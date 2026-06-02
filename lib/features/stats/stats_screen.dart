@@ -138,11 +138,9 @@ class _StatsContent extends StatelessWidget {
             points: series,
             valueOf: (p) => p.completionRate,
             yMax: 1,
-            valueLabel: (p) => p.completionRate == null
-                ? '—'
-                : localizations.statsCompletionPercent(
-                    (p.completionRate! * 100).round(),
-                  ),
+            valueLabel: (p) => localizations.statsCompletionPercent(
+              (p.completionRate * 100).round(),
+            ),
             yAxisLabel: (v) =>
                 localizations.statsCompletionPercent((v * 100).round()),
             dateLabel: dateLabel,

@@ -128,9 +128,9 @@ class StatsPoint {
   final double plannedHours;
 
   /// (done + partial) / (done + partial + missed + abandoned), with partial
-  /// counting as complete and abandoned as a miss. Null when the bucket has no
-  /// countable plan (so the line gaps rather than dropping to 0%).
-  final double? completionRate;
+  /// counting as complete and abandoned as a miss. A bucket with no countable
+  /// plan is 0 (charts fill empty buckets with zero, not gaps).
+  final double completionRate;
 }
 
 enum _Bucket { day, week, month }
@@ -190,7 +190,7 @@ List<StatsPoint> buildStatsSeries(
       StatsPoint(
         start: cursor,
         plannedHours: (plannedMin[cursor] ?? 0) / 60,
-        completionRate: countable == 0 ? null : (d + p) / countable,
+        completionRate: countable == 0 ? 0 : (d + p) / countable,
       ),
     );
   }
