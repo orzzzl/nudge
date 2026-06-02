@@ -130,7 +130,6 @@ class _StatsContent extends StatelessWidget {
             yAxisLabel: (v) =>
                 localizations.statsAxisHours(v.toStringAsFixed(1)),
             dateLabel: dateLabel,
-            emptyLabel: localizations.statsChartEmpty,
           ),
           const SizedBox(height: 16),
           StatsLineChart(
@@ -144,7 +143,6 @@ class _StatsContent extends StatelessWidget {
             yAxisLabel: (v) =>
                 localizations.statsCompletionPercent((v * 100).round()),
             dateLabel: dateLabel,
-            emptyLabel: localizations.statsChartEmpty,
           ),
           const SizedBox(height: 20),
           _TodayLedger(plans: summary.todaysPlans),

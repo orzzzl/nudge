@@ -40,3 +40,6 @@ android/key.properties
 # Secrets — never commit
 *.env
 secrets/
+
+# Xcode SwiftPM resolved state (generated)
+**/xcshareddata/swiftpm/Package.resolved
