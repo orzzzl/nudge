@@ -129,21 +129,51 @@
   },
   "durationChipLabel": "{minutes} min",
   "@durationChipLabel": {
-    "description": "Label for a duration chip, in minutes.",
+    "description": "Label for a duration chip / value, in minutes.",
     "placeholders": {
       "minutes": { "type": "int" }
     }
+  },
+  "durationHoursLabel": "{hours} hr",
+  "@durationHoursLabel": {
+    "description": "Label for a duration chip / value, in whole hours.",
+    "placeholders": {
+      "hours": { "type": "int" }
+    }
+  },
+  "durationSecondsLabel": "{seconds} sec",
+  "@durationSecondsLabel": {
+    "description": "Label for a duration chip / value, in seconds (debug-only short durations).",
+    "placeholders": {
+      "seconds": { "type": "int" }
+    }
+  },
+  "unitMinutes": "Minutes",
+  "@unitMinutes": {
+    "description": "Duration unit toggle: minutes."
+  },
+  "unitHours": "Hours",
+  "@unitHours": {
+    "description": "Duration unit toggle: hours."
+  },
+  "unitSeconds": "Seconds",
+  "@unitSeconds": {
+    "description": "Duration unit toggle: seconds (debug-only)."
+  },
+  "composerCustomHint": "Custom",
+  "@composerCustomHint": {
+    "description": "Hint for the custom duration amount input."
   },
   "startButton": "Start this block",
   "@startButton": {
     "description": "Button that creates the plan and starts the countdown."
   },
-  "planConfirmation": "Okay — \"{title}\" for {minutes} min. I'll nudge you. 👉",
+  "planConfirmation": "Okay — \"{title}\" for {duration}. I'll nudge you. 👉",
   "@planConfirmation": {
     "description": "Mascot confirmation bubble after a plan is created.",
     "placeholders": {
       "title": { "type": "String" },
-      "minutes": { "type": "int" }
+      "duration": { "type": "String" }
     }
   },
   "capsuleCheckIn": "Check in",
@@ -158,12 +188,12 @@
   "@checkInTitle": {
     "description": "Heading of the check-in sheet."
   },
-  "checkInTaskLine": "\"{title}\" · {minutes} min",
+  "checkInTaskLine": "\"{title}\" · {duration}",
   "@checkInTaskLine": {
     "description": "Subheading on the check-in sheet showing the plan being checked in.",
     "placeholders": {
       "title": { "type": "String" },
-      "minutes": { "type": "int" }
+      "duration": { "type": "String" }
     }
   },
   "checkInDone": "Done",

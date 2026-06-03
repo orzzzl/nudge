@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:nudge/l10n/generated/app_localizations.dart';
 
 import '../../app/cute_palette.dart';
+import '../../app/duration_format.dart';
 import '../../app/widgets/candy.dart';
 import '../../domain/plan.dart';
 import '../pet/pet_mood.dart';
@@ -432,7 +433,7 @@ class _LedgerRow extends StatelessWidget {
           ),
           const SizedBox(width: 8),
           Text(
-            localizations.durationChipLabel(plan.durationMin),
+            formatPlanDuration(localizations, plan.durationSec),
             style: theme.textTheme.labelMedium?.copyWith(
               color: CuteColors.textFaint2,
             ),

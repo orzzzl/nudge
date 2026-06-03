@@ -25,7 +25,7 @@ void main() {
 
     final plan = await repository.createPlan(
       title: 'smoke',
-      durationMin: 30,
+      durationSec: 30 * 60,
       startAt: startAt,
       locale: 'en',
     );
@@ -37,7 +37,7 @@ void main() {
 
     expect(storedPlan, isNotNull);
     expect(storedPlan!.title, 'smoke');
-    expect(storedPlan.durationMin, 30);
+    expect(storedPlan.durationSec, 30 * 60);
     expect(storedPlan.status, PlanStatus.running);
 
     await repository.checkIn(id: id, status: PlanStatus.done);

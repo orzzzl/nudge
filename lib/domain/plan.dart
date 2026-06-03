@@ -4,7 +4,7 @@ class Plan {
   const Plan({
     required this.id,
     required this.title,
-    required this.durationMin,
+    required this.durationSec,
     required this.startAt,
     required this.endAt,
     required this.status,
@@ -15,7 +15,7 @@ class Plan {
 
   final int? id;
   final String title;
-  final int durationMin;
+  final int durationSec;
   final DateTime startAt;
   final DateTime endAt;
   final PlanStatus status;
@@ -26,7 +26,7 @@ class Plan {
   Plan copyWith({
     Object? id = _unset,
     String? title,
-    int? durationMin,
+    int? durationSec,
     DateTime? startAt,
     DateTime? endAt,
     PlanStatus? status,
@@ -37,7 +37,7 @@ class Plan {
     return Plan(
       id: identical(id, _unset) ? this.id : id as int?,
       title: title ?? this.title,
-      durationMin: durationMin ?? this.durationMin,
+      durationSec: durationSec ?? this.durationSec,
       startAt: startAt ?? this.startAt,
       endAt: endAt ?? this.endAt,
       status: status ?? this.status,
@@ -53,7 +53,7 @@ class Plan {
         other is Plan &&
             other.id == id &&
             other.title == title &&
-            other.durationMin == durationMin &&
+            other.durationSec == durationSec &&
             other.startAt == startAt &&
             other.endAt == endAt &&
             other.status == status &&
@@ -67,7 +67,7 @@ class Plan {
     return Object.hash(
       id,
       title,
-      durationMin,
+      durationSec,
       startAt,
       endAt,
       status,

@@ -34,7 +34,7 @@ void main() {
 
       await container
           .read(chatControllerProvider.notifier)
-          .createPlan(title: 'Fresh plan', durationMin: 30, locale: 'en');
+          .createPlan(title: 'Fresh plan', durationSec: 30 * 60, locale: 'en');
       expect(
         container.read(chatControllerProvider).activePlan?.title,
         'Fresh plan',
@@ -65,7 +65,7 @@ void main() {
 
     await container
         .read(chatControllerProvider.notifier)
-        .createPlan(title: '  Focus block  ', durationMin: 45, locale: 'en');
+        .createPlan(title: '  Focus block  ', durationSec: 45 * 60, locale: 'en');
 
     expect(scheduler.scheduled, hasLength(1));
     expect(scheduler.scheduled.single.planId, 10);
@@ -88,7 +88,7 @@ void main() {
     final controller = container.read(chatControllerProvider.notifier);
     await controller.createPlan(
       title: 'Focus block',
-      durationMin: 45,
+      durationSec: 45 * 60,
       locale: 'en',
     );
     await controller.checkIn(PlanStatus.done);
@@ -107,7 +107,7 @@ void main() {
       unawaited(
         container
             .read(chatControllerProvider.notifier)
-            .createPlan(title: 'Focus block', durationMin: 1, locale: 'en'),
+            .createPlan(title: 'Focus block', durationSec: 1 * 60, locale: 'en'),
       );
       async.flushMicrotasks();
 
@@ -130,7 +130,7 @@ void main() {
         final plan = _plan(
           id: 20,
           title: 'Expired plan',
-          durationMin: 1,
+          durationSec: 1 * 60,
           startAt: DateTime.now().subtract(const Duration(minutes: 5)),
         );
         final repository = _ControllerRepository(activePlan: plan);
@@ -265,14 +265,14 @@ class _DelayedRestoreRepository implements PlanRepository {
   @override
   Future<Plan> createPlan({
     required String title,
-    required int durationMin,
+    required int durationSec,
     required DateTime startAt,
     required String locale,
   }) async {
     _createdPlan = _plan(
       id: 2,
       title: title,
-      durationMin: durationMin,
+      durationSec: durationSec,
       startAt: startAt,
       locale: locale,
     );
@@ -349,14 +349,14 @@ class _ControllerRepository implements PlanRepository {
   @override
   Future<Plan> createPlan({
     required String title,
-    required int durationMin,
+    required int durationSec,
     required DateTime startAt,
     required String locale,
   }) async {
     createdPlan = _plan(
       id: 10,
       title: title,
-      durationMin: durationMin,
+      durationSec: durationSec,
       startAt: startAt,
       locale: locale,
     );
@@ -466,7 +466,7 @@ class _ScheduledReminder {
 Plan _plan({
   required int id,
   required String title,
-  int durationMin = 60,
+  int durationSec = 60 * 60,
   required DateTime startAt,
   String locale = 'en',
   PlanStatus status = PlanStatus.running,
@@ -474,9 +474,9 @@ Plan _plan({
   return Plan(
     id: id,
     title: title,
-    durationMin: durationMin,
+    durationSec: durationSec,
     startAt: startAt,
-    endAt: startAt.add(Duration(minutes: durationMin)),
+    endAt: startAt.add(Duration(seconds: durationSec)),
     status: status,
     note: null,
     locale: locale,

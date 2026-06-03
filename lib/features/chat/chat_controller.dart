@@ -20,18 +20,18 @@ class GreetingMessage extends ChatMessage {
 
 /// Right-aligned bubble echoing what the user just committed to.
 class UserPlanMessage extends ChatMessage {
-  const UserPlanMessage({required this.title, required this.minutes});
+  const UserPlanMessage({required this.title, required this.durationSec});
 
   final String title;
-  final int minutes;
+  final int durationSec;
 }
 
 /// Mascot confirmation after a plan is created.
 class ConfirmationMessage extends ChatMessage {
-  const ConfirmationMessage({required this.title, required this.minutes});
+  const ConfirmationMessage({required this.title, required this.durationSec});
 
   final String title;
-  final int minutes;
+  final int durationSec;
 }
 
 /// Mascot acknowledgement after a check-in.
@@ -165,7 +165,7 @@ class ChatController extends Notifier<ChatState> {
   /// Create a running plan from the fixed-format input and start its block now.
   Future<void> createPlan({
     required String title,
-    required int durationMin,
+    required int durationSec,
     required String locale,
   }) async {
     final trimmed = title.trim();
@@ -175,7 +175,7 @@ class ChatController extends Notifier<ChatState> {
 
     final plan = await _repository.createPlan(
       title: trimmed,
-      durationMin: durationMin,
+      durationSec: durationSec,
       startAt: DateTime.now(),
       locale: locale,
     );
@@ -183,8 +183,8 @@ class ChatController extends Notifier<ChatState> {
     state = state.copyWith(
       messages: [
         ...state.messages,
-        UserPlanMessage(title: trimmed, minutes: durationMin),
-        ConfirmationMessage(title: trimmed, minutes: durationMin),
+        UserPlanMessage(title: trimmed, durationSec: durationSec),
+        ConfirmationMessage(title: trimmed, durationSec: durationSec),
       ],
       activePlan: plan,
     );

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../../app/cute_palette.dart';
+import '../../../app/duration_format.dart';
 import '../../../app/widgets/candy.dart';
 import '../../../domain/plan.dart';
 import '../../../l10n/generated/app_localizations.dart';
@@ -48,7 +49,10 @@ class _CheckInSheet extends StatelessWidget {
             ),
             const SizedBox(height: 4),
             Text(
-              l10n.checkInTaskLine(plan.title, plan.durationMin),
+              l10n.checkInTaskLine(
+                plan.title,
+                formatPlanDuration(l10n, plan.durationSec),
+              ),
               textAlign: TextAlign.center,
               style: theme.textTheme.bodyMedium?.copyWith(
                 color: CuteColors.textMuted,

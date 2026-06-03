@@ -24,7 +24,7 @@ void main() {
   }) {
     return repository.createPlan(
       title: title,
-      durationMin: 60,
+      durationSec: 60 * 60,
       startAt: startAt ?? _day.add(const Duration(hours: 9)),
       locale: 'en',
     );
@@ -35,14 +35,14 @@ void main() {
 
     final plan = await repository.createPlan(
       title: 'Write weekly report',
-      durationMin: 90,
+      durationSec: 90 * 60,
       startAt: startAt,
       locale: 'en',
     );
 
     expect(plan.id, isNotNull);
     expect(plan.title, 'Write weekly report');
-    expect(plan.durationMin, 90);
+    expect(plan.durationSec, 90 * 60);
     expect(plan.startAt, startAt);
     expect(plan.endAt, startAt.add(const Duration(minutes: 90)));
     expect(plan.status, PlanStatus.running);

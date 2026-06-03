@@ -4,7 +4,7 @@ class StatsSummary {
   const StatsSummary({
     required this.weekStart,
     required this.weekEnd,
-    required this.plannedMinutes,
+    required this.plannedSeconds,
     required this.completionRate,
     required this.streakDays,
     required this.todaysPlans,
@@ -12,12 +12,15 @@ class StatsSummary {
 
   final DateTime weekStart;
   final DateTime weekEnd;
-  final int plannedMinutes;
+
+  /// Total planned time this week, in seconds (durations are stored per-second).
+  final int plannedSeconds;
   final double completionRate;
   final int streakDays;
   final List<Plan> todaysPlans;
 
-  double get plannedHours => plannedMinutes / 60;
+  int get plannedMinutes => plannedSeconds ~/ 60;
+  double get plannedHours => plannedSeconds / 3600;
   int get completionPercent => (completionRate * 100).round();
 }
 
@@ -29,12 +32,12 @@ StatsSummary aggregateStats(List<Plan> plans, DateTime now) {
     return !plan.startAt.isBefore(weekStart) && plan.startAt.isBefore(weekEnd);
   }).toList()..sort((a, b) => a.startAt.compareTo(b.startAt));
 
-  var plannedMinutes = 0;
+  var plannedSeconds = 0;
   var checkedInCount = 0;
   var completionScore = 0.0;
 
   for (final plan in weekPlans) {
-    plannedMinutes += plan.durationMin;
+    plannedSeconds += plan.durationSec;
 
     switch (plan.status) {
       case PlanStatus.done:
@@ -69,7 +72,7 @@ StatsSummary aggregateStats(List<Plan> plans, DateTime now) {
   return StatsSummary(
     weekStart: weekStart,
     weekEnd: weekEnd,
-    plannedMinutes: plannedMinutes,
+    plannedSeconds: plannedSeconds,
     completionRate: checkedInCount == 0 ? 0 : completionScore / checkedInCount,
     streakDays: _calculateStreak(activeDays, today),
     todaysPlans: List.unmodifiable(todaysPlans),
@@ -152,7 +155,7 @@ List<StatsPoint> buildStatsSeries(
   final firstBucket = _bucketStart(dataStart, bucket);
 
   // Accumulators keyed by bucket start.
-  final plannedMin = <DateTime, int>{};
+  final plannedSec = <DateTime, int>{};
   final done = <DateTime, int>{};
   final partial = <DateTime, int>{};
   final misses = <DateTime, int>{}; // missed + abandoned
@@ -163,7 +166,7 @@ List<StatsPoint> buildStatsSeries(
       continue;
     }
     final key = _bucketStart(day, bucket);
-    plannedMin[key] = (plannedMin[key] ?? 0) + plan.durationMin;
+    plannedSec[key] = (plannedSec[key] ?? 0) + plan.durationSec;
     switch (plan.status) {
       case PlanStatus.done:
         done[key] = (done[key] ?? 0) + 1;
@@ -189,7 +192,7 @@ List<StatsPoint> buildStatsSeries(
     points.add(
       StatsPoint(
         start: cursor,
-        plannedHours: (plannedMin[cursor] ?? 0) / 60,
+        plannedHours: (plannedSec[cursor] ?? 0) / 3600,
         completionRate: countable == 0 ? 0 : (d + p) / countable,
       ),
     );

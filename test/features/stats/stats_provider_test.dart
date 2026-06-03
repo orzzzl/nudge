@@ -20,7 +20,7 @@ void main() {
     addTearDown(repository.dispose);
 
     repository.emit([
-      _plan(id: 1, startAt: DateTime(2026, 6, 1, 9), durationMin: 30),
+      _plan(id: 1, startAt: DateTime(2026, 6, 1, 9), durationSec: 30 * 60),
     ]);
 
     final subscription = container.listen(
@@ -39,8 +39,8 @@ void main() {
     expect(container.read(statsSummaryProvider).value?.plannedMinutes, 30);
 
     repository.emit([
-      _plan(id: 1, startAt: DateTime(2026, 6, 1, 9), durationMin: 30),
-      _plan(id: 2, startAt: DateTime(2026, 6, 4, 10), durationMin: 45),
+      _plan(id: 1, startAt: DateTime(2026, 6, 1, 9), durationSec: 30 * 60),
+      _plan(id: 2, startAt: DateTime(2026, 6, 4, 10), durationSec: 45 * 60),
     ]);
     await Future<void>.delayed(Duration.zero);
     await container.pump();
@@ -69,7 +69,7 @@ class _FakePlanRepository implements PlanRepository {
   @override
   Future<Plan> createPlan({
     required String title,
-    required int durationMin,
+    required int durationSec,
     required DateTime startAt,
     required String locale,
   }) {
@@ -128,14 +128,14 @@ class _FakePlanRepository implements PlanRepository {
 Plan _plan({
   required int id,
   required DateTime startAt,
-  required int durationMin,
+  required int durationSec,
 }) {
   return Plan(
     id: id,
     title: 'Focus',
-    durationMin: durationMin,
+    durationSec: durationSec,
     startAt: startAt,
-    endAt: startAt.add(Duration(minutes: durationMin)),
+    endAt: startAt.add(Duration(seconds: durationSec)),
     status: PlanStatus.running,
     note: null,
     locale: 'en',
