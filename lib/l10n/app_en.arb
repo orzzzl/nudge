@@ -148,17 +148,21 @@
       "seconds": { "type": "int" }
     }
   },
-  "unitMinutes": "Minutes",
+  "unitMinutes": "min",
   "@unitMinutes": {
-    "description": "Duration unit toggle: minutes."
+    "description": "Short label for the minutes side of the duration unit toggle."
   },
-  "unitHours": "Hours",
+  "unitHours": "hr",
   "@unitHours": {
-    "description": "Duration unit toggle: hours."
+    "description": "Short label for the hours side of the duration unit toggle."
   },
-  "composerCustomHint": "Custom",
-  "@composerCustomHint": {
-    "description": "Hint for the custom duration amount input."
+  "composerHintMinutes": "X min",
+  "@composerHintMinutes": {
+    "description": "Hint in the custom-amount field when the unit is minutes (X = a number)."
+  },
+  "composerHintHours": "X hr",
+  "@composerHintHours": {
+    "description": "Hint in the custom-amount field when the unit is hours (X = a number)."
   },
   "startButton": "Start this block",
   "@startButton": {

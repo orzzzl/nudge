@@ -105,6 +105,24 @@ class _PlanComposerState extends State<PlanComposer> {
     DurationUnit.hours => l10n.durationHoursLabel(value),
   };
 
+  // Hint for the narrow custom-amount field: "X 分钟" / "X 小时" — no separate
+  // "自定义" + unit suffix that would overflow the field.
+  String _customHint(AppLocalizations l10n) => switch (_unit) {
+    DurationUnit.minutes => l10n.composerHintMinutes,
+    DurationUnit.hours => l10n.composerHintHours,
+  };
+
+  OutlineInputBorder _customFieldBorder() => OutlineInputBorder(
+    borderRadius: BorderRadius.circular(15),
+    borderSide: BorderSide(
+      // A deeper peach (not a jarring red) flags an invalid custom amount.
+      color: _customInvalid
+          ? CuteColors.peachGradientBottom
+          : CuteColors.borderPeach,
+      width: 2,
+    ),
+  );
+
   void _start() {
     if (!_canStart) {
       return;
@@ -176,26 +194,10 @@ class _PlanComposerState extends State<PlanComposer> {
             ),
           ),
           const SizedBox(height: 12),
-          // Unit toggle (分钟 / 小时, plus 秒 in debug). Only shown when there's a
-          // real choice — in release that's minutes vs hours.
-          if (_units.length > 1)
-            Wrap(
-              spacing: 8,
-              runSpacing: 8,
-              children: [
-                for (final unit in _units)
-                  _DurationChip(
-                    label: _unitLabel(l10n, unit),
-                    selected: _unit == unit,
-                    onTap: () => _selectUnit(unit),
-                  ),
-              ],
-            ),
-          const SizedBox(height: 10),
+          // Row 1: duration presets for the selected unit.
           Wrap(
             spacing: 8,
             runSpacing: 8,
-            crossAxisAlignment: WrapCrossAlignment.center,
             children: [
               for (final value in _unit.presets)
                 _DurationChip(
@@ -207,23 +209,29 @@ class _PlanComposerState extends State<PlanComposer> {
                     _customController.clear();
                   }),
                 ),
-              // Custom amount in the selected unit; overrides the preset chips.
+            ],
+          ),
+          const SizedBox(height: 10),
+          // Row 2: custom amount on the left, the minutes/hours segmented toggle
+          // pinned to the far right — keeps the whole picker two rows tall.
+          Row(
+            children: [
               SizedBox(
-                width: 96,
+                width: 116,
                 child: TextField(
                   controller: _customController,
                   keyboardType: TextInputType.number,
                   textInputAction: TextInputAction.done,
                   onSubmitted: (_) => _start(),
                   style: theme.textTheme.bodyMedium?.copyWith(
-                    color: CuteColors.textBrown,
+                    color: _customInvalid
+                        ? CuteColors.peachGradientBottom
+                        : CuteColors.textBrown,
                     fontWeight: FontWeight.w700,
                   ),
                   decoration: InputDecoration(
                     isDense: true,
-                    hintText: l10n.composerCustomHint,
-                    errorText: _customInvalid ? '' : null,
-                    suffixText: _unitLabel(l10n, _unit),
+                    hintText: _customHint(l10n),
                     hintStyle: theme.textTheme.bodyMedium?.copyWith(
                       color: CuteColors.textFaint2,
                       fontWeight: FontWeight.w600,
@@ -232,24 +240,20 @@ class _PlanComposerState extends State<PlanComposer> {
                     fillColor: CuteColors.fieldBg,
                     contentPadding: const EdgeInsets.symmetric(
                       horizontal: 12,
-                      vertical: 8,
+                      vertical: 10,
                     ),
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(15),
-                      borderSide: const BorderSide(
-                        color: CuteColors.borderPeach,
-                        width: 2,
-                      ),
-                    ),
-                    enabledBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(15),
-                      borderSide: const BorderSide(
-                        color: CuteColors.borderPeach,
-                        width: 2,
-                      ),
-                    ),
+                    border: _customFieldBorder(),
+                    enabledBorder: _customFieldBorder(),
+                    focusedBorder: _customFieldBorder(),
                   ),
                 ),
+              ),
+              const Spacer(),
+              _UnitToggle(
+                units: _units,
+                selected: _unit,
+                labelOf: (unit) => _unitLabel(l10n, unit),
+                onChanged: _selectUnit,
               ),
             ],
           ),
@@ -257,6 +261,85 @@ class _PlanComposerState extends State<PlanComposer> {
           CandyButton(
             label: l10n.startButton,
             onPressed: _canStart ? _start : null,
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// A unified two-segment toggle (e.g. 分钟 | 小时) with a peach thumb that slides
+/// to the picked side — one compact control instead of separate unit chips.
+class _UnitToggle extends StatelessWidget {
+  const _UnitToggle({
+    required this.units,
+    required this.selected,
+    required this.labelOf,
+    required this.onChanged,
+  });
+
+  final List<DurationUnit> units;
+  final DurationUnit selected;
+  final String Function(DurationUnit) labelOf;
+  final ValueChanged<DurationUnit> onChanged;
+
+  static const double _segWidth = 48;
+  static const double _height = 34;
+
+  @override
+  Widget build(BuildContext context) {
+    final index = units.indexOf(selected);
+    return Container(
+      height: _height,
+      decoration: BoxDecoration(
+        color: CuteColors.white,
+        borderRadius: BorderRadius.circular(_height / 2),
+        border: Border.all(color: CuteColors.borderPeach, width: 2),
+      ),
+      child: Stack(
+        children: [
+          // The sliding selected thumb.
+          AnimatedAlign(
+            duration: const Duration(milliseconds: 180),
+            curve: Curves.easeOut,
+            alignment: index <= 0
+                ? Alignment.centerLeft
+                : Alignment.centerRight,
+            child: Container(
+              width: _segWidth,
+              height: _height - 4,
+              decoration: BoxDecoration(
+                gradient: CuteColors.peachGradient,
+                borderRadius: BorderRadius.circular((_height - 4) / 2),
+                boxShadow: candyShadow(CuteColors.peachCandyShadow, dy: 2),
+              ),
+            ),
+          ),
+          Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              for (final unit in units)
+                GestureDetector(
+                  behavior: HitTestBehavior.opaque,
+                  onTap: () => onChanged(unit),
+                  child: SizedBox(
+                    width: _segWidth,
+                    height: _height,
+                    child: Center(
+                      child: Text(
+                        labelOf(unit),
+                        style: TextStyle(
+                          fontSize: 13,
+                          fontWeight: FontWeight.w800,
+                          color: unit == selected
+                              ? CuteColors.white
+                              : CuteColors.chipBrown,
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+            ],
           ),
         ],
       ),
