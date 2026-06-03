@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../app/cute_palette.dart';
+import '../../app/duration_format.dart';
 import '../../app/widgets/candy.dart';
 import '../../domain/plan.dart';
 import '../../l10n/generated/app_localizations.dart';
@@ -68,9 +69,9 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
               ),
               if (state.activePlan == null)
                 PlanComposer(
-                  onStart: (title, durationMin) => controller.createPlan(
+                  onStart: (title, durationSec) => controller.createPlan(
                     title: title,
-                    durationMin: durationMin,
+                    durationSec: durationSec,
                     locale: Localizations.localeOf(context).languageCode,
                   ),
                 )
@@ -132,13 +133,13 @@ class _MessageBubble extends StatelessWidget {
 
     final (style, text) = switch (message) {
       GreetingMessage() => (_BubbleStyle.ai, l10n.chatGreeting),
-      UserPlanMessage(:final title, :final minutes) => (
+      UserPlanMessage(:final title, :final durationSec) => (
         _BubbleStyle.me,
-        '$title · ${l10n.durationChipLabel(minutes)}',
+        '$title · ${formatPlanDuration(l10n, durationSec)}',
       ),
-      ConfirmationMessage(:final title, :final minutes) => (
+      ConfirmationMessage(:final title, :final durationSec) => (
         _BubbleStyle.confirm,
-        l10n.planConfirmation(title, minutes),
+        l10n.planConfirmation(title, formatPlanDuration(l10n, durationSec)),
       ),
       ResultMessage(:final status) => (
         _BubbleStyle.ai,

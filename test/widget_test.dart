@@ -126,7 +126,7 @@ class _EmptyPlanRepository implements PlanRepository {
   @override
   Future<Plan> createPlan({
     required String title,
-    required int durationMin,
+    required int durationSec,
     required DateTime startAt,
     required String locale,
   }) {

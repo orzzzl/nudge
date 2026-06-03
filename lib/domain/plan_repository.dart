@@ -3,7 +3,7 @@ import 'plan.dart';
 abstract class PlanRepository {
   Future<Plan> createPlan({
     required String title,
-    required int durationMin,
+    required int durationSec,
     required DateTime startAt,
     required String locale,
   });

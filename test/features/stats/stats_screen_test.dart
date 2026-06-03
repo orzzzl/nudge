@@ -25,14 +25,14 @@ void main() {
                 id: 1,
                 title: 'Monday focus',
                 startAt: DateTime(2026, 6, 1, 9),
-                durationMin: 60,
+                durationSec: 60 * 60,
                 status: PlanStatus.done,
               ),
               _plan(
                 id: 2,
                 title: 'Write report',
                 startAt: DateTime(2026, 6, 4, 10),
-                durationMin: 60,
+                durationSec: 60 * 60,
                 status: PlanStatus.done,
               ),
             ]),
@@ -72,7 +72,7 @@ class _StaticPlanRepository implements PlanRepository {
   @override
   Future<Plan> createPlan({
     required String title,
-    required int durationMin,
+    required int durationSec,
     required DateTime startAt,
     required String locale,
   }) {
@@ -116,15 +116,15 @@ Plan _plan({
   required int id,
   required String title,
   required DateTime startAt,
-  required int durationMin,
+  required int durationSec,
   required PlanStatus status,
 }) {
   return Plan(
     id: id,
     title: title,
-    durationMin: durationMin,
+    durationSec: durationSec,
     startAt: startAt,
-    endAt: startAt.add(Duration(minutes: durationMin)),
+    endAt: startAt.add(Duration(seconds: durationSec)),
     status: status,
     note: null,
     locale: 'en',

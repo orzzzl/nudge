@@ -130,7 +130,7 @@ PlansCompanion _planCompanion({
 
   return PlansCompanion.insert(
     title: title,
-    durationMin: 60,
+    durationSec: 60 * 60,
     startAt: resolvedStartAt,
     endAt: endAt ?? resolvedStartAt.add(const Duration(hours: 1)),
     createdAt: _day,

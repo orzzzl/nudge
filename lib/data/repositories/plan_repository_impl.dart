@@ -12,15 +12,15 @@ class PlanRepositoryImpl implements PlanRepository {
   @override
   Future<Plan> createPlan({
     required String title,
-    required int durationMin,
+    required int durationSec,
     required DateTime startAt,
     required String locale,
   }) async {
-    final endAt = startAt.add(Duration(minutes: durationMin));
+    final endAt = startAt.add(Duration(seconds: durationSec));
     final id = await _plansDao.insertPlan(
       db.PlansCompanion.insert(
         title: title,
-        durationMin: durationMin,
+        durationSec: durationSec,
         startAt: startAt,
         endAt: endAt,
         status: drift.Value(PlanStatus.running.name),
@@ -33,7 +33,7 @@ class PlanRepositoryImpl implements PlanRepository {
     return Plan(
       id: id,
       title: title,
-      durationMin: durationMin,
+      durationSec: durationSec,
       startAt: startAt,
       endAt: endAt,
       status: PlanStatus.running,
@@ -91,7 +91,7 @@ class PlanRepositoryImpl implements PlanRepository {
     return Plan(
       id: row.id,
       title: row.title,
-      durationMin: row.durationMin,
+      durationSec: row.durationSec,
       startAt: row.startAt,
       endAt: row.endAt,
       status: _statusFromText(row.status),

@@ -10,7 +10,7 @@ part 'app_database.g.dart';
 class Plans extends Table {
   IntColumn get id => integer().autoIncrement()();
   TextColumn get title => text().withLength(min: 1, max: 200)();
-  IntColumn get durationMin => integer()();
+  IntColumn get durationSec => integer()();
   DateTimeColumn get startAt => dateTime()();
   DateTimeColumn get endAt => dateTime()();
   TextColumn get status => text().withDefault(const Constant('running'))();
@@ -33,13 +33,34 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase.forTesting(super.executor);
 
   @override
-  int get schemaVersion => 1;
+  int get schemaVersion => 2;
 
   @override
   MigrationStrategy get migration {
     return MigrationStrategy(
       onCreate: (migrator) => migrator.createAll(),
-      onUpgrade: (migrator, from, to) async {},
+      onUpgrade: (migrator, from, to) async {
+        // v2: durations are stored in seconds instead of minutes. Recreate the
+        // table so the old `duration_min` column is dropped, backfilling the new
+        // `duration_sec` from it (×60). CustomExpression references the old
+        // physical column, which no longer exists in the Dart schema.
+        if (from < 2) {
+          // TableMigration is the documented drift recipe for dropping/renaming
+          // a column via table recreation; the @experimental tag is long-standing.
+          // ignore: experimental_member_use
+          await migrator.alterTable(
+            // ignore: experimental_member_use
+            TableMigration(
+              plans,
+              columnTransformer: {
+                plans.durationSec: const CustomExpression<int>(
+                  'duration_min * 60',
+                ),
+              },
+            ),
+          );
+        }
+      },
     );
   }
 }

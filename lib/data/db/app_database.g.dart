@@ -34,12 +34,12 @@ class $PlansTable extends Plans with TableInfo<$PlansTable, Plan> {
     type: DriftSqlType.string,
     requiredDuringInsert: true,
   );
-  static const VerificationMeta _durationMinMeta = const VerificationMeta(
-    'durationMin',
+  static const VerificationMeta _durationSecMeta = const VerificationMeta(
+    'durationSec',
   );
   @override
-  late final GeneratedColumn<int> durationMin = GeneratedColumn<int>(
-    'duration_min',
+  late final GeneratedColumn<int> durationSec = GeneratedColumn<int>(
+    'duration_sec',
     aliasedName,
     false,
     type: DriftSqlType.int,
@@ -109,7 +109,7 @@ class $PlansTable extends Plans with TableInfo<$PlansTable, Plan> {
   List<GeneratedColumn> get $columns => [
     id,
     title,
-    durationMin,
+    durationSec,
     startAt,
     endAt,
     status,
@@ -140,16 +140,16 @@ class $PlansTable extends Plans with TableInfo<$PlansTable, Plan> {
     } else if (isInserting) {
       context.missing(_titleMeta);
     }
-    if (data.containsKey('duration_min')) {
+    if (data.containsKey('duration_sec')) {
       context.handle(
-        _durationMinMeta,
-        durationMin.isAcceptableOrUnknown(
-          data['duration_min']!,
-          _durationMinMeta,
+        _durationSecMeta,
+        durationSec.isAcceptableOrUnknown(
+          data['duration_sec']!,
+          _durationSecMeta,
         ),
       );
     } else if (isInserting) {
-      context.missing(_durationMinMeta);
+      context.missing(_durationSecMeta);
     }
     if (data.containsKey('start_at')) {
       context.handle(
@@ -210,9 +210,9 @@ class $PlansTable extends Plans with TableInfo<$PlansTable, Plan> {
         DriftSqlType.string,
         data['${effectivePrefix}title'],
       )!,
-      durationMin: attachedDatabase.typeMapping.read(
+      durationSec: attachedDatabase.typeMapping.read(
         DriftSqlType.int,
-        data['${effectivePrefix}duration_min'],
+        data['${effectivePrefix}duration_sec'],
       )!,
       startAt: attachedDatabase.typeMapping.read(
         DriftSqlType.dateTime,
@@ -250,7 +250,7 @@ class $PlansTable extends Plans with TableInfo<$PlansTable, Plan> {
 class Plan extends DataClass implements Insertable<Plan> {
   final int id;
   final String title;
-  final int durationMin;
+  final int durationSec;
   final DateTime startAt;
   final DateTime endAt;
   final String status;
@@ -260,7 +260,7 @@ class Plan extends DataClass implements Insertable<Plan> {
   const Plan({
     required this.id,
     required this.title,
-    required this.durationMin,
+    required this.durationSec,
     required this.startAt,
     required this.endAt,
     required this.status,
@@ -273,7 +273,7 @@ class Plan extends DataClass implements Insertable<Plan> {
     final map = <String, Expression>{};
     map['id'] = Variable<int>(id);
     map['title'] = Variable<String>(title);
-    map['duration_min'] = Variable<int>(durationMin);
+    map['duration_sec'] = Variable<int>(durationSec);
     map['start_at'] = Variable<DateTime>(startAt);
     map['end_at'] = Variable<DateTime>(endAt);
     map['status'] = Variable<String>(status);
@@ -289,7 +289,7 @@ class Plan extends DataClass implements Insertable<Plan> {
     return PlansCompanion(
       id: Value(id),
       title: Value(title),
-      durationMin: Value(durationMin),
+      durationSec: Value(durationSec),
       startAt: Value(startAt),
       endAt: Value(endAt),
       status: Value(status),
@@ -307,7 +307,7 @@ class Plan extends DataClass implements Insertable<Plan> {
     return Plan(
       id: serializer.fromJson<int>(json['id']),
       title: serializer.fromJson<String>(json['title']),
-      durationMin: serializer.fromJson<int>(json['durationMin']),
+      durationSec: serializer.fromJson<int>(json['durationSec']),
       startAt: serializer.fromJson<DateTime>(json['startAt']),
       endAt: serializer.fromJson<DateTime>(json['endAt']),
       status: serializer.fromJson<String>(json['status']),
@@ -322,7 +322,7 @@ class Plan extends DataClass implements Insertable<Plan> {
     return <String, dynamic>{
       'id': serializer.toJson<int>(id),
       'title': serializer.toJson<String>(title),
-      'durationMin': serializer.toJson<int>(durationMin),
+      'durationSec': serializer.toJson<int>(durationSec),
       'startAt': serializer.toJson<DateTime>(startAt),
       'endAt': serializer.toJson<DateTime>(endAt),
       'status': serializer.toJson<String>(status),
@@ -335,7 +335,7 @@ class Plan extends DataClass implements Insertable<Plan> {
   Plan copyWith({
     int? id,
     String? title,
-    int? durationMin,
+    int? durationSec,
     DateTime? startAt,
     DateTime? endAt,
     String? status,
@@ -345,7 +345,7 @@ class Plan extends DataClass implements Insertable<Plan> {
   }) => Plan(
     id: id ?? this.id,
     title: title ?? this.title,
-    durationMin: durationMin ?? this.durationMin,
+    durationSec: durationSec ?? this.durationSec,
     startAt: startAt ?? this.startAt,
     endAt: endAt ?? this.endAt,
     status: status ?? this.status,
@@ -357,9 +357,9 @@ class Plan extends DataClass implements Insertable<Plan> {
     return Plan(
       id: data.id.present ? data.id.value : this.id,
       title: data.title.present ? data.title.value : this.title,
-      durationMin: data.durationMin.present
-          ? data.durationMin.value
-          : this.durationMin,
+      durationSec: data.durationSec.present
+          ? data.durationSec.value
+          : this.durationSec,
       startAt: data.startAt.present ? data.startAt.value : this.startAt,
       endAt: data.endAt.present ? data.endAt.value : this.endAt,
       status: data.status.present ? data.status.value : this.status,
@@ -374,7 +374,7 @@ class Plan extends DataClass implements Insertable<Plan> {
     return (StringBuffer('Plan(')
           ..write('id: $id, ')
           ..write('title: $title, ')
-          ..write('durationMin: $durationMin, ')
+          ..write('durationSec: $durationSec, ')
           ..write('startAt: $startAt, ')
           ..write('endAt: $endAt, ')
           ..write('status: $status, ')
@@ -389,7 +389,7 @@ class Plan extends DataClass implements Insertable<Plan> {
   int get hashCode => Object.hash(
     id,
     title,
-    durationMin,
+    durationSec,
     startAt,
     endAt,
     status,
@@ -403,7 +403,7 @@ class Plan extends DataClass implements Insertable<Plan> {
       (other is Plan &&
           other.id == this.id &&
           other.title == this.title &&
-          other.durationMin == this.durationMin &&
+          other.durationSec == this.durationSec &&
           other.startAt == this.startAt &&
           other.endAt == this.endAt &&
           other.status == this.status &&
@@ -415,7 +415,7 @@ class Plan extends DataClass implements Insertable<Plan> {
 class PlansCompanion extends UpdateCompanion<Plan> {
   final Value<int> id;
   final Value<String> title;
-  final Value<int> durationMin;
+  final Value<int> durationSec;
   final Value<DateTime> startAt;
   final Value<DateTime> endAt;
   final Value<String> status;
@@ -425,7 +425,7 @@ class PlansCompanion extends UpdateCompanion<Plan> {
   const PlansCompanion({
     this.id = const Value.absent(),
     this.title = const Value.absent(),
-    this.durationMin = const Value.absent(),
+    this.durationSec = const Value.absent(),
     this.startAt = const Value.absent(),
     this.endAt = const Value.absent(),
     this.status = const Value.absent(),
@@ -436,7 +436,7 @@ class PlansCompanion extends UpdateCompanion<Plan> {
   PlansCompanion.insert({
     this.id = const Value.absent(),
     required String title,
-    required int durationMin,
+    required int durationSec,
     required DateTime startAt,
     required DateTime endAt,
     this.status = const Value.absent(),
@@ -444,14 +444,14 @@ class PlansCompanion extends UpdateCompanion<Plan> {
     this.locale = const Value.absent(),
     required DateTime createdAt,
   }) : title = Value(title),
-       durationMin = Value(durationMin),
+       durationSec = Value(durationSec),
        startAt = Value(startAt),
        endAt = Value(endAt),
        createdAt = Value(createdAt);
   static Insertable<Plan> custom({
     Expression<int>? id,
     Expression<String>? title,
-    Expression<int>? durationMin,
+    Expression<int>? durationSec,
     Expression<DateTime>? startAt,
     Expression<DateTime>? endAt,
     Expression<String>? status,
@@ -462,7 +462,7 @@ class PlansCompanion extends UpdateCompanion<Plan> {
     return RawValuesInsertable({
       if (id != null) 'id': id,
       if (title != null) 'title': title,
-      if (durationMin != null) 'duration_min': durationMin,
+      if (durationSec != null) 'duration_sec': durationSec,
       if (startAt != null) 'start_at': startAt,
       if (endAt != null) 'end_at': endAt,
       if (status != null) 'status': status,
@@ -475,7 +475,7 @@ class PlansCompanion extends UpdateCompanion<Plan> {
   PlansCompanion copyWith({
     Value<int>? id,
     Value<String>? title,
-    Value<int>? durationMin,
+    Value<int>? durationSec,
     Value<DateTime>? startAt,
     Value<DateTime>? endAt,
     Value<String>? status,
@@ -486,7 +486,7 @@ class PlansCompanion extends UpdateCompanion<Plan> {
     return PlansCompanion(
       id: id ?? this.id,
       title: title ?? this.title,
-      durationMin: durationMin ?? this.durationMin,
+      durationSec: durationSec ?? this.durationSec,
       startAt: startAt ?? this.startAt,
       endAt: endAt ?? this.endAt,
       status: status ?? this.status,
@@ -505,8 +505,8 @@ class PlansCompanion extends UpdateCompanion<Plan> {
     if (title.present) {
       map['title'] = Variable<String>(title.value);
     }
-    if (durationMin.present) {
-      map['duration_min'] = Variable<int>(durationMin.value);
+    if (durationSec.present) {
+      map['duration_sec'] = Variable<int>(durationSec.value);
     }
     if (startAt.present) {
       map['start_at'] = Variable<DateTime>(startAt.value);
@@ -534,7 +534,7 @@ class PlansCompanion extends UpdateCompanion<Plan> {
     return (StringBuffer('PlansCompanion(')
           ..write('id: $id, ')
           ..write('title: $title, ')
-          ..write('durationMin: $durationMin, ')
+          ..write('durationSec: $durationSec, ')
           ..write('startAt: $startAt, ')
           ..write('endAt: $endAt, ')
           ..write('status: $status, ')
@@ -863,7 +863,7 @@ typedef $$PlansTableCreateCompanionBuilder =
     PlansCompanion Function({
       Value<int> id,
       required String title,
-      required int durationMin,
+      required int durationSec,
       required DateTime startAt,
       required DateTime endAt,
       Value<String> status,
@@ -875,7 +875,7 @@ typedef $$PlansTableUpdateCompanionBuilder =
     PlansCompanion Function({
       Value<int> id,
       Value<String> title,
-      Value<int> durationMin,
+      Value<int> durationSec,
       Value<DateTime> startAt,
       Value<DateTime> endAt,
       Value<String> status,
@@ -902,8 +902,8 @@ class $$PlansTableFilterComposer extends Composer<_$AppDatabase, $PlansTable> {
     builder: (column) => ColumnFilters(column),
   );
 
-  ColumnFilters<int> get durationMin => $composableBuilder(
-    column: $table.durationMin,
+  ColumnFilters<int> get durationSec => $composableBuilder(
+    column: $table.durationSec,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -957,8 +957,8 @@ class $$PlansTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
-  ColumnOrderings<int> get durationMin => $composableBuilder(
-    column: $table.durationMin,
+  ColumnOrderings<int> get durationSec => $composableBuilder(
+    column: $table.durationSec,
     builder: (column) => ColumnOrderings(column),
   );
 
@@ -1008,8 +1008,8 @@ class $$PlansTableAnnotationComposer
   GeneratedColumn<String> get title =>
       $composableBuilder(column: $table.title, builder: (column) => column);
 
-  GeneratedColumn<int> get durationMin => $composableBuilder(
-    column: $table.durationMin,
+  GeneratedColumn<int> get durationSec => $composableBuilder(
+    column: $table.durationSec,
     builder: (column) => column,
   );
 
@@ -1062,7 +1062,7 @@ class $$PlansTableTableManager
               ({
                 Value<int> id = const Value.absent(),
                 Value<String> title = const Value.absent(),
-                Value<int> durationMin = const Value.absent(),
+                Value<int> durationSec = const Value.absent(),
                 Value<DateTime> startAt = const Value.absent(),
                 Value<DateTime> endAt = const Value.absent(),
                 Value<String> status = const Value.absent(),
@@ -1072,7 +1072,7 @@ class $$PlansTableTableManager
               }) => PlansCompanion(
                 id: id,
                 title: title,
-                durationMin: durationMin,
+                durationSec: durationSec,
                 startAt: startAt,
                 endAt: endAt,
                 status: status,
@@ -1084,7 +1084,7 @@ class $$PlansTableTableManager
               ({
                 Value<int> id = const Value.absent(),
                 required String title,
-                required int durationMin,
+                required int durationSec,
                 required DateTime startAt,
                 required DateTime endAt,
                 Value<String> status = const Value.absent(),
@@ -1094,7 +1094,7 @@ class $$PlansTableTableManager
               }) => PlansCompanion.insert(
                 id: id,
                 title: title,
-                durationMin: durationMin,
+                durationSec: durationSec,
                 startAt: startAt,
                 endAt: endAt,
                 status: status,
