@@ -256,9 +256,9 @@
   "@settingsLanguageEnglish": {
     "description": "Language option for English."
   },
-  "settingsLanguageChinese": "Chinese",
+  "settingsLanguageChinese": "中文",
   "@settingsLanguageChinese": {
-    "description": "Language option for Chinese."
+    "description": "Language option for Chinese. Shown in its own endonym (中文) in every locale, like English stays 'English'."
   },
   "settingsAboutLabel": "About",
   "@settingsAboutLabel": {

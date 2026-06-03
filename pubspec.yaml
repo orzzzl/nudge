@@ -1,7 +1,7 @@
 name: nudge
 description: "A local-first self-discipline app."
 publish_to: 'none'
-version: 0.1.0+1
+version: 0.1.1+2
 
 environment:
   sdk: ^3.12.0
@@ -44,7 +44,21 @@ dev_dependencies:
   custom_lint: ^0.8.1
   riverpod_lint: ^3.1.0
   drift_dev: ^2.31.0
+  # Generates the launcher icons (android mipmaps + adaptive + iOS) from the
+  # 团团 art rendered by tool/gen_app_icon.dart into assets/icon/.
+  flutter_launcher_icons: ^0.14.4
 
 flutter:
   generate: true
   uses-material-design: true
+
+# Launcher icon = the 团团 mascot. Regenerate after re-running
+# `flutter test tool/gen_app_icon.dart` with: `dart run flutter_launcher_icons`.
+flutter_launcher_icons:
+  android: true
+  ios: true
+  remove_alpha_ios: true
+  min_sdk_android: 21
+  image_path: "assets/icon/app_icon.png"
+  adaptive_icon_background: "#FFF3E6"
+  adaptive_icon_foreground: "assets/icon/app_icon_foreground.png"
