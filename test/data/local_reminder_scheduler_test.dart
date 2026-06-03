@@ -142,6 +142,51 @@ void main() {
     },
   );
 
+  test('creates both a loud and a silent channel on init', () async {
+    final scheduler = LocalReminderScheduler();
+    await scheduler.initialize();
+
+    final channels = calls
+        .where((c) => c.method == 'createNotificationChannel')
+        .map((c) => c.arguments as Map)
+        .toList();
+    final ids = channels.map((m) => m['id']).toList();
+    expect(
+      ids,
+      containsAll(<String>[
+        expectedChannelId,
+        'plan_check_in_reminders_silent',
+      ]),
+    );
+
+    final silent = channels.firstWhere(
+      (m) => m['id'] == 'plan_check_in_reminders_silent',
+    );
+    expect(silent['importance'], Importance.low.value);
+    expect(silent['playSound'], isFalse);
+  });
+
+  test(
+    'schedules on the silent channel (no sound) when silent: true',
+    () async {
+      // Backs the in-app 勿扰 setting: still delivered, but quiet.
+      final scheduler = LocalReminderScheduler();
+
+      await scheduler.scheduleCheckInReminder(
+        planId: 5,
+        title: 'smoke',
+        at: DateTime.now().add(const Duration(minutes: 5)),
+        silent: true,
+      );
+
+      final android =
+          callTo('zonedSchedule').arguments['platformSpecifics'] as Map;
+      expect(android['channelId'], 'plan_check_in_reminders_silent');
+      expect(android['importance'], Importance.low.value);
+      expect(android['playSound'], isFalse);
+    },
+  );
+
   test(
     'schedules a check-in reminder even when exact-alarm permission is denied',
     () async {

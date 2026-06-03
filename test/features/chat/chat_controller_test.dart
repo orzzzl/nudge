@@ -5,12 +5,20 @@ import 'package:fake_async/fake_async.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:nudge/app/providers.dart';
+import 'package:nudge/domain/app_settings.dart';
 import 'package:nudge/domain/plan.dart';
 import 'package:nudge/domain/plan_repository.dart';
 import 'package:nudge/domain/reminder_scheduler.dart';
 import 'package:nudge/features/chat/chat_controller.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 void main() {
+  // createPlan now reads the settings (for 勿扰); the default SettingsController
+  // loads SharedPreferences, so give the tests an initialized binding + empty
+  // prefs (= 勿扰 off) unless a test overrides settingsControllerProvider.
+  TestWidgetsFlutterBinding.ensureInitialized();
+  SharedPreferences.setMockInitialValues(<String, Object>{});
+
   test(
     'restore does not replace a plan created while restore is pending',
     () async {
@@ -75,7 +83,65 @@ void main() {
     expect(scheduler.scheduled.single.planId, 10);
     expect(scheduler.scheduled.single.title, 'Focus block');
     expect(scheduler.scheduled.single.at, repository.createdPlan?.endAt);
+    // 勿扰 defaults off -> the reminder is loud.
+    expect(scheduler.scheduled.single.silent, isFalse);
   });
+
+  test('schedules a SILENT reminder when 勿扰 (DND) is on', () async {
+    final repository = _ControllerRepository();
+    final scheduler = _RecordingReminderScheduler();
+    final container = ProviderContainer(
+      overrides: [
+        planRepositoryProvider.overrideWithValue(repository),
+        reminderSchedulerProvider.overrideWithValue(scheduler),
+        settingsControllerProvider.overrideWith(_DndOnSettings.new),
+      ],
+    );
+    addTearDown(container.dispose);
+    addTearDown(scheduler.dispose);
+
+    await container
+        .read(chatControllerProvider.notifier)
+        .createPlan(title: 'Focus block', durationSec: 30 * 60, locale: 'en');
+
+    expect(scheduler.scheduled.single.silent, isTrue);
+  });
+
+  test(
+    'flipping 勿扰 mid-block re-schedules the active reminder to match',
+    () async {
+      final repository = _ControllerRepository();
+      final scheduler = _RecordingReminderScheduler();
+      final container = ProviderContainer(
+        overrides: [
+          planRepositoryProvider.overrideWithValue(repository),
+          reminderSchedulerProvider.overrideWithValue(scheduler),
+          settingsControllerProvider.overrideWith(_FlippableSettings.new),
+        ],
+      );
+      addTearDown(container.dispose);
+      addTearDown(scheduler.dispose);
+
+      final controller = container.read(chatControllerProvider.notifier);
+      await controller.createPlan(
+        title: 'Focus block',
+        durationSec: 30 * 60,
+        locale: 'en',
+      );
+      expect(scheduler.scheduled.single.silent, isFalse); // 勿扰 off at start
+
+      // Turn 勿扰 ON before time-up -> the pending reminder is re-armed silent.
+      await container.read(settingsControllerProvider.notifier).setDnd(true);
+      await Future<void>.delayed(Duration.zero);
+      expect(scheduler.scheduled.last.planId, 10);
+      expect(scheduler.scheduled.last.silent, isTrue);
+
+      // Turn it back OFF -> re-armed loud again (latest state wins).
+      await container.read(settingsControllerProvider.notifier).setDnd(false);
+      await Future<void>.delayed(Duration.zero);
+      expect(scheduler.scheduled.last.silent, isFalse);
+    },
+  );
 
   test('cancels the reminder when checking in', () async {
     final repository = _ControllerRepository();
@@ -482,8 +548,11 @@ class _RecordingReminderScheduler implements ReminderScheduler {
     required int planId,
     required String title,
     required DateTime at,
+    bool silent = false,
   }) async {
-    scheduled.add(_ScheduledReminder(planId: planId, title: title, at: at));
+    scheduled.add(
+      _ScheduledReminder(planId: planId, title: title, at: at, silent: silent),
+    );
   }
 
   void emitTap(int planId) {
@@ -503,16 +572,33 @@ class _RecordingReminderScheduler implements ReminderScheduler {
   }
 }
 
+/// Settings stub with 勿扰 on, without touching SharedPreferences (build()
+/// returns the state directly instead of loading it).
+class _DndOnSettings extends SettingsController {
+  @override
+  AppSettings build() =>
+      const AppSettings(dnd: true, localeOverride: LocaleOverride.system);
+}
+
+/// Settings stub starting with 勿扰 off and no async load, so a test can flip
+/// `setDnd` deterministically (no SharedPreferences race resetting the state).
+class _FlippableSettings extends SettingsController {
+  @override
+  AppSettings build() => AppSettings.defaults;
+}
+
 class _ScheduledReminder {
   const _ScheduledReminder({
     required this.planId,
     required this.title,
     required this.at,
+    this.silent = false,
   });
 
   final int planId;
   final String title;
   final DateTime at;
+  final bool silent;
 }
 
 Plan _plan({

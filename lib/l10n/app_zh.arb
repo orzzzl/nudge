@@ -62,7 +62,7 @@
   "@settingsDndLabel": {
     "description": "Label for the do-not-disturb setting."
   },
-  "settingsDndDescription": "保存安静模式,供之后的提醒使用。",
+  "settingsDndDescription": "到点提醒仍会显示,但不出声、不震动。",
   "@settingsDndDescription": {
     "description": "Description for the do-not-disturb setting."
   },

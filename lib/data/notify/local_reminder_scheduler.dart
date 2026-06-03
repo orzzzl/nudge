@@ -19,17 +19,33 @@ import '../../domain/reminder_scheduler.dart';
 const _channelId = 'plan_check_in_reminders_v2';
 const _channelName = 'Nudge';
 
+// Channel sound/importance is IMMUTABLE per channel, so "loud" and "silent" must
+// be two separate channels picked at schedule time — we can't toggle one
+// channel's sound at runtime. The silent channel backs the in-app 勿扰 setting.
+const _silentChannelId = 'plan_check_in_reminders_silent';
+const _silentChannelName = 'Nudge (quiet)';
+
 /// Old channel ids to delete on init so their stale (silent) settings can't
 /// linger on updated installs.
 const _legacyChannelIds = <String>['plan_check_in_reminders'];
 
-/// The single source of truth for the reminder channel — high importance so it
-/// makes a heads-up sound, with sound explicitly on (don't rely on the default).
+/// The loud reminder channel — high importance so it makes a heads-up sound,
+/// with sound explicitly on (don't rely on the default).
 const _reminderChannel = AndroidNotificationChannel(
   _channelId,
   _channelName,
   importance: Importance.high,
   playSound: true,
+);
+
+/// The quiet channel for in-app 勿扰 — still shows in the shade, but low
+/// importance with no sound and no vibration.
+const _silentChannel = AndroidNotificationChannel(
+  _silentChannelId,
+  _silentChannelName,
+  importance: Importance.low,
+  playSound: false,
+  enableVibration: false,
 );
 
 class LocalReminderScheduler implements ReminderScheduler {
@@ -98,6 +114,7 @@ class LocalReminderScheduler implements ReminderScheduler {
           await android.deleteNotificationChannel(legacyId);
         }
         await android.createNotificationChannel(_reminderChannel);
+        await android.createNotificationChannel(_silentChannel);
       }
 
       final launchDetails = await _plugin.getNotificationAppLaunchDetails();
@@ -120,6 +137,7 @@ class LocalReminderScheduler implements ReminderScheduler {
     required int planId,
     required String title,
     required DateTime at,
+    bool silent = false,
   }) async {
     await initialize();
 
@@ -137,7 +155,7 @@ class LocalReminderScheduler implements ReminderScheduler {
       title,
       null,
       timezone.TZDateTime.from(at, timezone.local),
-      _notificationDetails(),
+      _notificationDetails(silent: silent),
       // alarmClock routes through AlarmManager.setAlarmClock: exact delivery
       // even in Doze, and — unlike exactAllowWhileIdle — exempt from the
       // SCHEDULE_EXACT_ALARM permission, so the reminder fires on time for
@@ -212,7 +230,23 @@ class LocalReminderScheduler implements ReminderScheduler {
     return granted;
   }
 
-  NotificationDetails _notificationDetails() {
+  NotificationDetails _notificationDetails({required bool silent}) {
+    if (silent) {
+      // In-app 勿扰: deliver quietly via the silent channel. iOS/pre-8 Android
+      // honour the per-notification flags too, so set sound off there as well.
+      return const NotificationDetails(
+        android: AndroidNotificationDetails(
+          _silentChannelId,
+          _silentChannelName,
+          importance: Importance.low,
+          priority: Priority.low,
+          playSound: false,
+          enableVibration: false,
+        ),
+        iOS: DarwinNotificationDetails(presentSound: false),
+        macOS: DarwinNotificationDetails(presentSound: false),
+      );
+    }
     return const NotificationDetails(
       android: AndroidNotificationDetails(
         _channelId,

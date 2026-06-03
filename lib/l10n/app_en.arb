@@ -240,7 +240,7 @@
   "@settingsDndLabel": {
     "description": "Label for the do-not-disturb setting."
   },
-  "settingsDndDescription": "Store quiet mode for future nudges.",
+  "settingsDndDescription": "Time-up reminders still show, but make no sound or vibration.",
   "@settingsDndDescription": {
     "description": "Description for the do-not-disturb setting."
   },
