@@ -9,6 +9,13 @@ on a device. This playbook is self-contained: follow it top-to-bottom without pr
 > data on the emulator) — no repo changes. Record results in a PR comment or `tasks/` note; do not
 > commit screenshots.
 
+> **⛔ REQUIRED MERGE GATE — notification/reminder changes.** Any PR touching the reminder/notification
+> path (`lib/data/notify/**`, the `ReminderScheduler` seam, notification permissions, or the Android
+> manifest's alarm/notification bits) **must not merge** until the §5 *"Notification rings"* checklist
+> is run and its box checked in the PR. Two silent-notification incidents reached users because this
+> step was optional and skipped (see `docs/postmortem-2026-06-02-silent-notification.md`). "Tests
+> green" does not satisfy this gate — a host test cannot hear a notification.
+
 ---
 
 ## 0. Toolchain (already installed on this machine)
@@ -154,6 +161,29 @@ just `adb shell settings put global auto_time 1` and toggle airplane mode, or si
    immediately re-open; the capsule's manual check-in button still works.
 5. **Pick a status** (✅ done / 🍃 partial / 😴 missed) → sheet closes, a result bubble appears, the
    capsule clears back to the composer.
+
+### Notification rings — REQUIRED pre-rollout gate (the "通知不响" regression)
+
+This is the gate from the top of this doc. The automated `android-notify-smoke` CI job proves a
+scheduled notification *posts*; only a human ear/eye proves it's actually **audible** on a real
+device with real settings. Use a **short debug block** (per-second durations) so you don't wait — set
+a duration of ~10s via a debug build, or schedule directly. With media/ring volume up and the phone
+**not** on silent:
+
+1. **Fresh install rings:** install the build, create a short block, lock the screen, wait for time-up
+   → the notification posts **and makes a sound** (and vibrates). Confirm it shows on the lock screen.
+2. **⚠️ After an app UPDATE still rings:** install a *previous* build first, create a block, then
+   `flutter install`/upgrade over it (do **not** uninstall) and repeat step 1. This is the exact trap
+   that caused the incident — Android channels are immutable, so a stale channel can stay silent
+   across updates. The channel-id bump in the scheduler is what this step guards; it can only be
+   verified by upgrading, never by a fresh install.
+3. **Heads-up:** if the screen is on, the notification appears as a heads-up banner (high importance),
+   not just a silent status-bar entry.
+4. **DND:** with Do-Not-Disturb on, confirm the documented behavior (currently the in-app 勿扰 toggle
+   does **not** gate OS reminders — by design; note if that ever changes).
+
+Record the result (incl. the OS version + whether it was a fresh install or an upgrade) in the PR and
+check the box. Do not merge a notification PR with this unchecked.
 
 ### Task 09 — 团团 mascot mood
 The mascot is a small circular badge (emoji + mood-tinted ring): happy 🌳 / neutral 🌱 / sad 🥀.

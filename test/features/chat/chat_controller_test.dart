@@ -257,6 +257,50 @@ void main() {
       async.flushMicrotasks();
     });
   });
+
+  // End-to-end of the time-up chain in one test, using the spy scheduler:
+  // create -> schedule a reminder AT endAt -> time-up prompts -> check-in
+  // records the outcome AND cancels the reminder. This is the flow the silent
+  // notification escaped; the spy lets us assert the wiring without a device.
+  test('full lifecycle: create -> schedule@endAt -> time-up -> check-in', () {
+    fakeAsync((async) {
+      final repository = _ControllerRepository();
+      final scheduler = _RecordingReminderScheduler();
+      final container = _container(repository, scheduler);
+      final controller = container.read(chatControllerProvider.notifier);
+
+      unawaited(
+        controller.createPlan(
+          title: 'Focus block',
+          durationSec: 1 * 60,
+          locale: 'en',
+        ),
+      );
+      async.flushMicrotasks();
+
+      // The reminder is scheduled for the plan's exact end time.
+      expect(scheduler.scheduled.single.planId, 10);
+      expect(scheduler.scheduled.single.at, repository.createdPlan?.endAt);
+
+      // Time-up arrives -> the check-in is prompted.
+      async.elapse(const Duration(minutes: 1));
+      expect(container.read(chatControllerProvider).pendingCheckIn?.id, 10);
+
+      // Checking in records the outcome and cancels the now-moot reminder.
+      unawaited(controller.checkIn(PlanStatus.done));
+      async.flushMicrotasks();
+
+      expect(repository.checkedInStatus, PlanStatus.done);
+      expect(scheduler.canceledPlanIds, [10]);
+      final state = container.read(chatControllerProvider);
+      expect(state.pendingCheckIn, isNull);
+      expect(state.activePlan, isNull);
+
+      container.dispose();
+      unawaited(scheduler.dispose());
+      async.flushMicrotasks();
+    });
+  });
 }
 
 class _DelayedRestoreRepository implements PlanRepository {
