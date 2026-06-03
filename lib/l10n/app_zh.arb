@@ -36,6 +36,7 @@
   "unitHours": "小时",
   "composerHintMinutes": "X 分钟",
   "composerHintHours": "X 小时",
+  "composerNeedTask": "先写下要做的事呀~",
   "startButton": "开始这一格",
   "planConfirmation": "好嘞~「{title}」{duration},到点我来戳你 👉",
   "capsuleCheckIn": "结账",

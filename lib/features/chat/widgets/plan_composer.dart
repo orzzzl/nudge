@@ -49,7 +49,7 @@ class _PlanComposerState extends State<PlanComposer> {
   @override
   void initState() {
     super.initState();
-    // Rebuild so the start button enables/disables as the fields change.
+    // Rebuild as the fields change (custom-amount border + preset highlight).
     _titleController.addListener(_onChanged);
     _customController.addListener(_onChanged);
   }
@@ -90,10 +90,9 @@ class _PlanComposerState extends State<PlanComposer> {
   // A typed custom amount overrides the selected preset.
   int get _durationSec => (_customValue ?? _selectedValue) * _unit.secondsPer;
 
-  bool get _canStart =>
-      _titleController.text.trim().isNotEmpty &&
-      !_customInvalid &&
-      _durationSec > 0;
+  // A typed custom amount that fails to parse blocks starting; an empty task is
+  // handled with a reminder on tap (so the button stays tappable), not here.
+  bool get _hasValidDuration => !_customInvalid && _durationSec > 0;
 
   String _unitLabel(AppLocalizations l10n, DurationUnit unit) => switch (unit) {
     DurationUnit.minutes => l10n.unitMinutes,
@@ -124,8 +123,22 @@ class _PlanComposerState extends State<PlanComposer> {
   );
 
   void _start() {
-    if (!_canStart) {
+    // Nudge the user to name the task instead of silently doing nothing.
+    if (_titleController.text.trim().isEmpty) {
+      final l10n = AppLocalizations.of(context);
+      ScaffoldMessenger.of(context)
+        ..hideCurrentSnackBar()
+        ..showSnackBar(
+          SnackBar(
+            content: Text(l10n.composerNeedTask),
+            behavior: SnackBarBehavior.floating,
+            duration: const Duration(seconds: 2),
+          ),
+        );
       return;
+    }
+    if (!_hasValidDuration) {
+      return; // the custom field's deeper-peach border already flags this
     }
     widget.onStart(_titleController.text, _durationSec);
     _titleController.clear();
@@ -258,18 +271,16 @@ class _PlanComposerState extends State<PlanComposer> {
             ],
           ),
           const SizedBox(height: 14),
-          CandyButton(
-            label: l10n.startButton,
-            onPressed: _canStart ? _start : null,
-          ),
+          CandyButton(label: l10n.startButton, onPressed: _start),
         ],
       ),
     );
   }
 }
 
-/// A unified two-segment toggle (e.g. 分钟 | 小时) with a peach thumb that slides
-/// to the picked side — one compact control instead of separate unit chips.
+/// A unified two-segment toggle (e.g. 分钟 | 小时): one rounded pill whose
+/// selected segment is filled peach (the fill animates as you switch sides).
+/// Replaces the separate unit chips with one compact control.
 class _UnitToggle extends StatelessWidget {
   const _UnitToggle({
     required this.units,
@@ -284,64 +295,51 @@ class _UnitToggle extends StatelessWidget {
   final ValueChanged<DurationUnit> onChanged;
 
   static const double _segWidth = 48;
-  static const double _height = 34;
+  static const double _segHeight = 28;
 
   @override
   Widget build(BuildContext context) {
-    final index = units.indexOf(selected);
+    // No fixed outer height: the pill wraps the segments + 3px padding + border,
+    // so the segments can't overflow it.
     return Container(
-      height: _height,
+      padding: const EdgeInsets.all(3),
       decoration: BoxDecoration(
         color: CuteColors.white,
-        borderRadius: BorderRadius.circular(_height / 2),
+        borderRadius: BorderRadius.circular(20),
         border: Border.all(color: CuteColors.borderPeach, width: 2),
       ),
-      child: Stack(
-        children: [
-          // The sliding selected thumb.
-          AnimatedAlign(
-            duration: const Duration(milliseconds: 180),
-            curve: Curves.easeOut,
-            alignment: index <= 0
-                ? Alignment.centerLeft
-                : Alignment.centerRight,
-            child: Container(
-              width: _segWidth,
-              height: _height - 4,
-              decoration: BoxDecoration(
-                gradient: CuteColors.peachGradient,
-                borderRadius: BorderRadius.circular((_height - 4) / 2),
-                boxShadow: candyShadow(CuteColors.peachCandyShadow, dy: 2),
-              ),
-            ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [for (final unit in units) _segment(unit)],
+      ),
+    );
+  }
+
+  // Each segment colours itself: the selected one is filled peach, so the fill
+  // tracks the selection directly (no separate sliding thumb to mis-position).
+  Widget _segment(DurationUnit unit) {
+    final isSelected = unit == selected;
+    return GestureDetector(
+      behavior: HitTestBehavior.opaque,
+      onTap: () => onChanged(unit),
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 160),
+        curve: Curves.easeOut,
+        width: _segWidth,
+        height: _segHeight,
+        alignment: Alignment.center,
+        decoration: BoxDecoration(
+          gradient: isSelected ? CuteColors.peachGradient : null,
+          borderRadius: BorderRadius.circular(_segHeight / 2),
+        ),
+        child: Text(
+          labelOf(unit),
+          style: TextStyle(
+            fontSize: 13,
+            fontWeight: FontWeight.w800,
+            color: isSelected ? CuteColors.white : CuteColors.chipBrown,
           ),
-          Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              for (final unit in units)
-                GestureDetector(
-                  behavior: HitTestBehavior.opaque,
-                  onTap: () => onChanged(unit),
-                  child: SizedBox(
-                    width: _segWidth,
-                    height: _height,
-                    child: Center(
-                      child: Text(
-                        labelOf(unit),
-                        style: TextStyle(
-                          fontSize: 13,
-                          fontWeight: FontWeight.w800,
-                          color: unit == selected
-                              ? CuteColors.white
-                              : CuteColors.chipBrown,
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-            ],
-          ),
-        ],
+        ),
       ),
     );
   }

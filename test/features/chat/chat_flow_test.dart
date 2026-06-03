@@ -5,7 +5,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:nudge/app/providers.dart';
-import 'package:nudge/app/widgets/candy.dart';
 import 'package:nudge/data/db/app_database.dart' as db;
 import 'package:nudge/data/repositories/plan_repository_impl.dart';
 import 'package:nudge/domain/plan_repository.dart';
@@ -55,12 +54,13 @@ void main() {
     final l10n = AppLocalizationsEn();
     await pumpChat(tester);
 
-    // Greeting is shown and the start button is disabled until a title exists.
+    // Greeting is shown. Tapping Start with no task nudges the user with a
+    // reminder instead of silently doing nothing — and creates no plan.
     expect(find.text(l10n.chatGreeting), findsOneWidget);
-    expect(
-      tester.widget<CandyButton>(find.byType(CandyButton)).onPressed,
-      isNull,
-    );
+    await tester.tap(find.text(l10n.startButton));
+    await tester.pump();
+    expect(find.text(l10n.composerNeedTask), findsOneWidget);
+    expect(find.text(l10n.startButton), findsOneWidget);
 
     // Fill the fixed-format input and start the block.
     await tester.enterText(
@@ -99,6 +99,23 @@ void main() {
     expect(find.text(l10n.resultDone), findsOneWidget);
     expect(find.text(l10n.startButton), findsOneWidget);
     expect(find.text(l10n.capsuleCheckIn), findsNothing);
+  });
+
+  testWidgets('unit toggle switches the presets to hours', (tester) async {
+    final l10n = AppLocalizationsEn();
+    await pumpChat(tester);
+
+    // Minutes presets by default; no hour presets yet.
+    expect(find.text(l10n.durationChipLabel(30)), findsOneWidget); // "30 min"
+    expect(find.text(l10n.durationHoursLabel(1)), findsNothing);
+
+    // Tap the hours side of the segmented toggle.
+    await tester.tap(find.text(l10n.unitHours)); // "hr"
+    await tester.pump();
+
+    // Presets are now in hours.
+    expect(find.text(l10n.durationHoursLabel(1)), findsOneWidget); // "1 hr"
+    expect(find.text(l10n.durationChipLabel(30)), findsNothing);
   });
 
   testWidgets('restores an active plan and checks it in', (tester) async {

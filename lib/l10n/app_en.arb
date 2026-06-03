@@ -164,6 +164,10 @@
   "@composerHintHours": {
     "description": "Hint in the custom-amount field when the unit is hours (X = a number)."
   },
+  "composerNeedTask": "Jot down a task first ~",
+  "@composerNeedTask": {
+    "description": "Reminder shown when Start is tapped with an empty task name."
+  },
   "startButton": "Start this block",
   "@startButton": {
     "description": "Button that creates the plan and starts the countdown."
