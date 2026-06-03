@@ -34,7 +34,6 @@
   "durationSecondsLabel": "{seconds} 秒",
   "unitMinutes": "分钟",
   "unitHours": "小时",
-  "unitSeconds": "秒",
   "composerCustomHint": "自定义",
   "startButton": "开始这一格",
   "planConfirmation": "好嘞~「{title}」{duration},到点我来戳你 👉",

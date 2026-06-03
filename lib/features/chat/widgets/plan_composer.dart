@@ -1,18 +1,17 @@
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
 import '../../../app/cute_palette.dart';
 import '../../../app/widgets/candy.dart';
 import '../../../l10n/generated/app_localizations.dart';
 
-/// The unit a user picks a duration in. Internally everything is seconds; the
-/// unit only decides the presets shown and how the typed amount is multiplied.
-/// `seconds` is a debug-only affordance (short blocks for manual/e2e testing)
-/// and is never offered in release builds.
+/// The unit a user picks a duration in. Internally everything is stored in
+/// seconds; the unit only decides the presets shown and how the typed amount is
+/// multiplied. Seconds is **not** a user-facing unit — sub-minute blocks exist
+/// only for internal/e2e testing, which create them by calling the controller /
+/// repository with a `durationSec` directly rather than through this picker.
 enum DurationUnit {
   minutes(60, [30, 60, 90, 120]),
-  hours(3600, [1, 2, 3, 4]),
-  seconds(1, [10, 30, 60, 120]);
+  hours(3600, [1, 2, 3, 4]);
 
   const DurationUnit(this.secondsPer, this.presets);
 
@@ -38,11 +37,10 @@ class _PlanComposerState extends State<PlanComposer> {
   final TextEditingController _titleController = TextEditingController();
   final TextEditingController _customController = TextEditingController();
 
-  // The units a user can choose between. Seconds is debug-only.
-  static final List<DurationUnit> _units = [
+  // The units a user can choose between.
+  static const List<DurationUnit> _units = [
     DurationUnit.minutes,
     DurationUnit.hours,
-    if (kDebugMode) DurationUnit.seconds,
   ];
 
   DurationUnit _unit = DurationUnit.minutes;
@@ -100,13 +98,11 @@ class _PlanComposerState extends State<PlanComposer> {
   String _unitLabel(AppLocalizations l10n, DurationUnit unit) => switch (unit) {
     DurationUnit.minutes => l10n.unitMinutes,
     DurationUnit.hours => l10n.unitHours,
-    DurationUnit.seconds => l10n.unitSeconds,
   };
 
   String _valueLabel(AppLocalizations l10n, int value) => switch (_unit) {
     DurationUnit.minutes => l10n.durationChipLabel(value),
     DurationUnit.hours => l10n.durationHoursLabel(value),
-    DurationUnit.seconds => l10n.durationSecondsLabel(value),
   };
 
   void _start() {

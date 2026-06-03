@@ -156,10 +156,6 @@
   "@unitHours": {
     "description": "Duration unit toggle: hours."
   },
-  "unitSeconds": "Seconds",
-  "@unitSeconds": {
-    "description": "Duration unit toggle: seconds (debug-only)."
-  },
   "composerCustomHint": "Custom",
   "@composerCustomHint": {
     "description": "Hint for the custom duration amount input."

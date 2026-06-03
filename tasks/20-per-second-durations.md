@@ -7,8 +7,9 @@
 ## Goal
 Let users pick a plan duration in **minutes** (default) or **hours**, and store durations
 internally in **seconds** so we can also create very short blocks (a few seconds) for manual and
-e2e testing of the time-up → check-in/notification flow. Seconds is an internal concept only —
-users never pick seconds in release builds.
+e2e testing of the time-up → check-in/notification flow. Seconds is an internal concept only and is
+**never shown in the UI** (not even a debug toggle) — tests create short blocks by calling the
+controller / repository with a `durationSec` directly, bypassing the picker.
 
 ## Design
 - **Storage unit = seconds.** `Plan.durationMin` → `durationSec`; Drift column `duration_min` →
@@ -18,13 +19,13 @@ users never pick seconds in release builds.
   `duration_sec` from `CustomExpression('duration_min * 60')` so existing plans keep their length.
 - **Stats** sum `durationSec`; `StatsSummary` stores `plannedSeconds` and exposes `plannedMinutes`
   (`~/60`) + `plannedHours` (`/3600`) getters, so `pet_mood` and the hero label are unchanged.
-- **Display:** `formatPlanDuration(l10n, seconds)` — whole hours read "2 hr", sub-minute (debug)
-  "30 sec", else whole minutes "90 min". `planConfirmation`/`checkInTaskLine` now take a preformatted
-  `{duration}` string.
-- **Composer:** a minutes/hours unit toggle (seconds is added only in `kDebugMode`), per-unit preset
-  chips (min: 30/60/90/120, hr: 1/2/3/4, sec: 10/30/60/120), and a custom amount field that overrides
-  the presets. `onStart` reports `durationSec`. The title field gets a `Key('composerTitleField')`
-  now that there are two text fields.
+- **Display:** `formatPlanDuration(l10n, seconds)` — whole hours read "2 hr", sub-minute (test-only
+  short blocks) "30 sec", else whole minutes "90 min". `planConfirmation`/`checkInTaskLine` now take a
+  preformatted `{duration}` string.
+- **Composer:** a minutes/hours unit toggle (no seconds — it's never user-facing), per-unit preset
+  chips (min: 30/60/90/120, hr: 1/2/3/4), and a custom amount field that overrides the presets.
+  `onStart` reports `durationSec`. The title field gets a `Key('composerTitleField')` now that there
+  are two text fields.
 
 ## Tests
 - `test/data/db/migration_test.dart` hand-builds a v1 DB (raw `sqlite3`, `NativeDatabase.opened`) and
