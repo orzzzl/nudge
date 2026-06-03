@@ -1,6 +1,6 @@
 # 21 — Fix: time-up reminder never fires (exact-alarm permission gate)
 
-- **Status:** DONE (PR #__)
+- **Status:** IN_REVIEW (PR #25)
 - **Owner:** Claude (self-merged — Codex on leave)
 - **Blocked by:** 07 (local notifications) — DONE
 
