@@ -6,8 +6,11 @@
          than bundling .ttf.) -->
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+    <!-- RECEIVE_BOOT_COMPLETED lets the boot receiver re-arm a pending reminder
+         after a reboot. We intentionally do NOT request SCHEDULE_EXACT_ALARM:
+         the reminder uses AlarmManager.setAlarmClock (AndroidScheduleMode.alarmClock),
+         which fires exactly on time without that restricted permission. -->
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
-    <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM" />
 
     <application
         android:label="nudge"

@@ -103,7 +103,12 @@ class LocalReminderScheduler implements ReminderScheduler {
       null,
       timezone.TZDateTime.from(at, timezone.local),
       _notificationDetails(),
-      androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
+      // alarmClock routes through AlarmManager.setAlarmClock: exact delivery
+      // even in Doze, and — unlike exactAllowWhileIdle — exempt from the
+      // SCHEDULE_EXACT_ALARM permission, so the reminder fires on time for
+      // every user with no extra setup. Fits the "nudge you right at time-up"
+      // promise without the permission gate that used to drop notifications.
+      androidScheduleMode: AndroidScheduleMode.alarmClock,
       payload: planId.toString(),
     );
   }
@@ -128,19 +133,20 @@ class LocalReminderScheduler implements ReminderScheduler {
   }
 
   Future<bool> _requestPermissions() async {
-    final permissionsGranted = _permissionsGranted;
-    if (permissionsGranted != null) {
-      return permissionsGranted;
+    // Only the notification permission gates scheduling. Exact timing is handled
+    // by AndroidScheduleMode.alarmClock (no SCHEDULE_EXACT_ALARM needed), so we
+    // deliberately do NOT couple exact-alarm grant in here — doing so used to
+    // drop the reminder entirely for users who hadn't enabled exact alarms.
+    if (_permissionsGranted == true) {
+      return true;
     }
 
     final android = _plugin
         .resolvePlatformSpecificImplementation<
           AndroidFlutterLocalNotificationsPlugin
         >();
-    final androidNotificationsGranted =
+    final androidGranted =
         await android?.requestNotificationsPermission() ?? true;
-    final androidExactAlarmsGranted =
-        await android?.requestExactAlarmsPermission() ?? true;
 
     final ios = _plugin
         .resolvePlatformSpecificImplementation<
@@ -162,12 +168,13 @@ class LocalReminderScheduler implements ReminderScheduler {
         ) ??
         true;
 
-    _permissionsGranted =
-        androidNotificationsGranted &&
-        androidExactAlarmsGranted &&
-        iosGranted &&
-        macOSGranted;
-    return _permissionsGranted!;
+    final granted = androidGranted && iosGranted && macOSGranted;
+    // Cache only a positive result: a denial can be reversed in system settings,
+    // so re-request next time rather than silencing reminders for the session.
+    if (granted) {
+      _permissionsGranted = true;
+    }
+    return granted;
   }
 
   NotificationDetails _notificationDetails() {
