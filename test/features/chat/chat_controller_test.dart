@@ -107,6 +107,42 @@ void main() {
     expect(scheduler.scheduled.single.silent, isTrue);
   });
 
+  test(
+    'flipping 勿扰 mid-block re-schedules the active reminder to match',
+    () async {
+      final repository = _ControllerRepository();
+      final scheduler = _RecordingReminderScheduler();
+      final container = ProviderContainer(
+        overrides: [
+          planRepositoryProvider.overrideWithValue(repository),
+          reminderSchedulerProvider.overrideWithValue(scheduler),
+          settingsControllerProvider.overrideWith(_FlippableSettings.new),
+        ],
+      );
+      addTearDown(container.dispose);
+      addTearDown(scheduler.dispose);
+
+      final controller = container.read(chatControllerProvider.notifier);
+      await controller.createPlan(
+        title: 'Focus block',
+        durationSec: 30 * 60,
+        locale: 'en',
+      );
+      expect(scheduler.scheduled.single.silent, isFalse); // 勿扰 off at start
+
+      // Turn 勿扰 ON before time-up -> the pending reminder is re-armed silent.
+      await container.read(settingsControllerProvider.notifier).setDnd(true);
+      await Future<void>.delayed(Duration.zero);
+      expect(scheduler.scheduled.last.planId, 10);
+      expect(scheduler.scheduled.last.silent, isTrue);
+
+      // Turn it back OFF -> re-armed loud again (latest state wins).
+      await container.read(settingsControllerProvider.notifier).setDnd(false);
+      await Future<void>.delayed(Duration.zero);
+      expect(scheduler.scheduled.last.silent, isFalse);
+    },
+  );
+
   test('cancels the reminder when checking in', () async {
     final repository = _ControllerRepository();
     final scheduler = _RecordingReminderScheduler();
@@ -542,6 +578,13 @@ class _DndOnSettings extends SettingsController {
   @override
   AppSettings build() =>
       const AppSettings(dnd: true, localeOverride: LocaleOverride.system);
+}
+
+/// Settings stub starting with 勿扰 off and no async load, so a test can flip
+/// `setDnd` deterministically (no SharedPreferences race resetting the state).
+class _FlippableSettings extends SettingsController {
+  @override
+  AppSettings build() => AppSettings.defaults;
 }
 
 class _ScheduledReminder {

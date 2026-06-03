@@ -81,6 +81,13 @@ class ChatController extends Notifier<ChatState> {
     ) {
       unawaited(_promptCheckInById(planId));
     });
+    // A scheduled notification's sound is fixed when it's scheduled, so flipping
+    // 勿扰 mid-block must re-schedule the active plan's reminder — that way the
+    // setting as of the latest change before time-up wins, not whatever it was
+    // when the plan started.
+    ref.listen(settingsControllerProvider.select((s) => s.dnd), (_, dnd) {
+      unawaited(_rescheduleActiveReminder(silent: dnd));
+    });
     ref.onDispose(() {
       _checkInTimer?.cancel();
       unawaited(_checkInTapSubscription?.cancel() ?? Future<void>.value());
@@ -109,6 +116,25 @@ class ChatController extends Notifier<ChatState> {
 
     state = state.copyWith(activePlan: restoredPlan);
     _armCheckInTimer(restoredPlan);
+  }
+
+  /// Re-arms the active plan's OS reminder on the loud or silent channel after
+  /// 勿扰 changes. No-op if there's no active plan or it has already ended.
+  Future<void> _rescheduleActiveReminder({required bool silent}) async {
+    final plan = state.activePlan;
+    final planId = plan?.id;
+    if (plan == null || planId == null) {
+      return;
+    }
+    if (!plan.endAt.isAfter(DateTime.now())) {
+      return;
+    }
+    await _reminderScheduler.scheduleCheckInReminder(
+      planId: planId,
+      title: plan.title,
+      at: plan.endAt,
+      silent: silent,
+    );
   }
 
   Future<void> _restoreInitialTappedPlan() async {
