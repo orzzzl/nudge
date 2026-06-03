@@ -55,8 +55,19 @@ class LocalReminderScheduler implements ReminderScheduler {
   Future<void> _initialize() async {
     try {
       timezone_data.initializeTimeZones();
-      final localTimezone = await FlutterTimezone.getLocalTimezone();
-      timezone.setLocalLocation(timezone.getLocation(localTimezone.identifier));
+      try {
+        final localTimezone = await FlutterTimezone.getLocalTimezone();
+        timezone.setLocalLocation(
+          timezone.getLocation(localTimezone.identifier),
+        );
+      } catch (_) {
+        // Some devices/emulators report a timezone id that isn't in the tz
+        // database (e.g. "Etc/Unknown"), which throws and would abort the whole
+        // init — leaving the channel uncreated and reminders silently dead
+        // (another flavour of "通知不响"). Fall back to UTC: zonedSchedule
+        // uses absolute instants, so the fire time stays correct.
+        timezone.setLocalLocation(timezone.getLocation('UTC'));
+      }
 
       await _plugin.initialize(
         const InitializationSettings(

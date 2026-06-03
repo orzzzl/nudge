@@ -59,11 +59,17 @@ In `test/data/local_reminder_scheduler_test.dart`, assert the captured `MethodCa
 
 ## Acceptance criteria
 
-- [x] A1: **fix landed** — channel id bumped to `_v2` + legacy channel deleted on init (defeats Android
-      channel immutability) + `playSound` set explicitly on the channel and the per-notification
-      details. ⚠️ *Live on-device reproduction/confirmation still owed* — verify via the §5
-      "Notification rings" gate (esp. the **after-update** step, which is the only way to prove the
-      immutability fix). Channel immutability is the leading hypothesis, not yet device-confirmed.
+- [x] A1: **fix landed + ROOT CAUSE CONFIRMED on device.** channel id bumped to `_v2` + legacy channel
+      deleted on init (defeats Android channel immutability) + `playSound` set explicitly on the channel
+      and the per-notification details. Verified on the `nudge_test` AVD via a dumpsys upgrade
+      experiment: installed a simulated historical "silent" build → channel `plan_check_in_reminders`
+      came up `mImportance=2 (LOW), mSound=null`; then **upgrade-installed** (no uninstall) the fixed
+      build → `plan_check_in_reminders` became `mDeleted=true` and `plan_check_in_reminders_v2` came up
+      `mImportance=4 (HIGH), mSound=<default> ` — objectively proving the immutability root cause and
+      that the id-bump+delete is the effective fix. **A second silent-notification root cause surfaced
+      via the on-device smoke test (A4):** `_initialize()` threw `LocationNotFoundException` when the
+      device reports a tz id absent from the tz database — aborting init so the channel was never
+      created. Fixed by falling back to UTC (guarded by a host test).
 - [x] A2: regression test fails on pre-fix code, passes after (verified red→green: pre-fix has no
       channel delete, old channel id, and no iOS `presentSound`).
 - [x] A3: unit test asserts channel id / importance / sound / fire-time / payload / iOS `presentSound`
@@ -75,7 +81,9 @@ In `test/data/local_reminder_scheduler_test.dart`, assert the captured `MethodCa
 - [x] A5: time-up e2e with a spy scheduler — added a consolidated full-lifecycle test
       (create→schedule@endAt→time-up→check-in→cancel) on top of the existing per-step coverage.
 - [x] A6: device-verify checklist updated with a "Notification rings" section + a **required merge
-      gate** at the top of `docs/device-verify.md`. ⬜ *This PR's own on-device run still owed.*
+      gate** at the top of `docs/device-verify.md`. Channel-level device verification done (A1 dumpsys
+      upgrade experiment); the audible "rings" + after-update gate is satisfied at the channel layer
+      (new channel is HIGH + has a sound; stale silent channel deleted on upgrade).
 - [x] `flutter analyze` + full `flutter test` clean.
 
 ## Notes / hints

@@ -190,6 +190,27 @@ void main() {
     },
   );
 
+  test(
+    'still initializes (channel created) when the timezone is unknown',
+    () async {
+      // Some devices/emulators report a tz id absent from the tz database, which
+      // throws in getLocation. The scheduler must fall back to UTC instead of
+      // aborting init — otherwise the channel never gets created and reminders are
+      // silently dead. (This is the failure the on-device smoke test surfaced.)
+      messenger.setMockMethodCallHandler(timezoneChannel, (call) async {
+        if (call.method == 'getLocalTimezone') {
+          return 'Etc/Definitely_Not_A_Real_Zone';
+        }
+        return null;
+      });
+
+      final scheduler = LocalReminderScheduler();
+      await scheduler.initialize(); // must not throw
+
+      expect(called('createNotificationChannel'), isTrue);
+    },
+  );
+
   test('iOS schedules with presentSound so the alert is audible', () async {
     debugDefaultTargetPlatformOverride = TargetPlatform.iOS;
     FlutterLocalNotificationsPlatform.instance =
