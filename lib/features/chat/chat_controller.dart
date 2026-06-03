@@ -74,6 +74,11 @@ class ChatController extends Notifier<ChatState> {
   StreamSubscription<int>? _checkInTapSubscription;
   int? _lastPromptedPlanId;
 
+  /// A leftover plan still unsettled this long after its end time is treated as
+  /// abandoned on restore — no point nagging a check-in for something that
+  /// ended yesterday.
+  static const _staleAbandonAfter = Duration(hours: 10);
+
   @override
   ChatState build() {
     _checkInTapSubscription = _reminderScheduler.onCheckInTapped.listen((
@@ -111,6 +116,17 @@ class ChatController extends Notifier<ChatState> {
   Future<void> _restoreActivePlan() async {
     final restoredPlan = await _repository.getActivePlan();
     if (restoredPlan == null || state.activePlan != null) {
+      return;
+    }
+
+    // Long-stale leftover: ended >10h ago and never settled. Mark it abandoned
+    // and drop it silently instead of opening a check-in for a task the user has
+    // clearly moved on from.
+    final overdueBy = DateTime.now().difference(restoredPlan.endAt);
+    final planId = restoredPlan.id;
+    if (overdueBy > _staleAbandonAfter && planId != null) {
+      await _repository.checkIn(id: planId, status: PlanStatus.abandoned);
+      await _reminderScheduler.cancel(planId);
       return;
     }
 

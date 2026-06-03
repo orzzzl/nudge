@@ -225,6 +225,61 @@ void main() {
     },
   );
 
+  test('auto-abandons a leftover plan unsettled for >10h (no prompt)', () {
+    fakeAsync((async) {
+      // Ended ~11.5h ago and never checked in.
+      final plan = _plan(
+        id: 70,
+        title: 'Nudge第二版',
+        durationSec: 30 * 60,
+        startAt: DateTime.now().subtract(const Duration(hours: 12)),
+      );
+      final repository = _ControllerRepository(activePlan: plan);
+      final scheduler = _RecordingReminderScheduler();
+      final container = _container(repository, scheduler);
+
+      container.read(chatControllerProvider);
+      async.flushMicrotasks();
+
+      final state = container.read(chatControllerProvider);
+      expect(state.activePlan, isNull); // not restored as active
+      expect(state.pendingCheckIn, isNull); // and not prompted
+      expect(repository.checkedInId, 70);
+      expect(repository.checkedInStatus, PlanStatus.abandoned);
+      expect(scheduler.canceledPlanIds, [70]);
+
+      container.dispose();
+      unawaited(scheduler.dispose());
+      async.flushMicrotasks();
+    });
+  });
+
+  test('still prompts a leftover plan ended LESS than 10h ago', () {
+    fakeAsync((async) {
+      // Ended ~1h ago -> within the window -> prompt, do not abandon.
+      final plan = _plan(
+        id: 71,
+        title: 'Recent leftover',
+        durationSec: 30 * 60,
+        startAt: DateTime.now().subtract(const Duration(hours: 1, minutes: 30)),
+      );
+      final repository = _ControllerRepository(activePlan: plan);
+      final scheduler = _RecordingReminderScheduler();
+      final container = _container(repository, scheduler);
+
+      container.read(chatControllerProvider);
+      async.flushMicrotasks();
+
+      final state = container.read(chatControllerProvider);
+      expect(state.pendingCheckIn?.id, 71);
+      expect(repository.checkedInStatus, isNull); // not abandoned
+
+      container.dispose();
+      unawaited(scheduler.dispose());
+      async.flushMicrotasks();
+    });
+  });
+
   test('prompts for a warm notification tap by loading the plan', () {
     fakeAsync((async) {
       final plan = _plan(id: 30, title: 'Tapped plan', startAt: DateTime.now());
