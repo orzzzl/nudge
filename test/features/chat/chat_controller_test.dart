@@ -65,7 +65,11 @@ void main() {
 
     await container
         .read(chatControllerProvider.notifier)
-        .createPlan(title: '  Focus block  ', durationSec: 45 * 60, locale: 'en');
+        .createPlan(
+          title: '  Focus block  ',
+          durationSec: 45 * 60,
+          locale: 'en',
+        );
 
     expect(scheduler.scheduled, hasLength(1));
     expect(scheduler.scheduled.single.planId, 10);
@@ -107,7 +111,11 @@ void main() {
       unawaited(
         container
             .read(chatControllerProvider.notifier)
-            .createPlan(title: 'Focus block', durationSec: 1 * 60, locale: 'en'),
+            .createPlan(
+              title: 'Focus block',
+              durationSec: 1 * 60,
+              locale: 'en',
+            ),
       );
       async.flushMicrotasks();
 

@@ -63,7 +63,10 @@ void main() {
     );
 
     // Fill the fixed-format input and start the block.
-    await tester.enterText(find.byKey(const Key('composerTitleField')), 'Write report');
+    await tester.enterText(
+      find.byKey(const Key('composerTitleField')),
+      'Write report',
+    );
     await tester.pump();
     await tester.tap(find.text(l10n.durationChipLabel(90)));
     await tester.pump();
@@ -73,7 +76,9 @@ void main() {
 
     // Confirmation bubble + capsule appear; the composer is gone.
     expect(
-      find.text(l10n.planConfirmation('Write report', l10n.durationChipLabel(90))),
+      find.text(
+        l10n.planConfirmation('Write report', l10n.durationChipLabel(90)),
+      ),
       findsOneWidget,
     );
     expect(find.text(l10n.capsuleCheckIn), findsOneWidget);
