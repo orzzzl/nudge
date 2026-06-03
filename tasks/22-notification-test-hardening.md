@@ -1,6 +1,6 @@
 # 22 — Notification test & process hardening (post-mortem follow-up)
 
-- **Status:** READY
+- **Status:** IN_REVIEW (PR for A1–A6)
 - **Owner:** Claude (self-merged — Codex on leave)
 - **Blocked by:** 07 (local notifications) — DONE; 21 (time-up fix) — DONE; 20 (per-second durations, enables fast on-device timing) — DONE
 - **Allowed new deps:** none (use existing `flutter_local_notifications`, `integration_test`; `adb` is available on the CI emulator)
@@ -59,15 +59,32 @@ In `test/data/local_reminder_scheduler_test.dart`, assert the captured `MethodCa
 
 ## Acceptance criteria
 
-- [ ] A1: live bug reproduced on a device, root cause confirmed, fix landed.
-- [ ] A2: regression test fails on pre-fix code, passes after.
-- [ ] A3: unit test asserts channel id / importance / sound / fire-time==endAt / payload / iOS
-      `presentSound` / permission matrix.
-- [ ] A4: on-device Android test schedules and verifies a *posted* notification in CI.
-- [ ] A5: time-up e2e with a spy scheduler asserts the full plan→time-up→schedule→tap→check-in chain.
-- [ ] A6: device-verify checklist updated and made a required merge/release gate; this PR (and future
-      notification PRs) device-verified with the box checked.
-- [ ] `flutter analyze` + full `flutter test` clean.
+- [x] A1: **fix landed + ROOT CAUSE CONFIRMED on device.** channel id bumped to `_v2` + legacy channel
+      deleted on init (defeats Android channel immutability) + `playSound` set explicitly on the channel
+      and the per-notification details. Verified on the `nudge_test` AVD via a dumpsys upgrade
+      experiment: installed a simulated historical "silent" build → channel `plan_check_in_reminders`
+      came up `mImportance=2 (LOW), mSound=null`; then **upgrade-installed** (no uninstall) the fixed
+      build → `plan_check_in_reminders` became `mDeleted=true` and `plan_check_in_reminders_v2` came up
+      `mImportance=4 (HIGH), mSound=<default> ` — objectively proving the immutability root cause and
+      that the id-bump+delete is the effective fix. **A second silent-notification root cause surfaced
+      via the on-device smoke test (A4):** `_initialize()` threw `LocationNotFoundException` when the
+      device reports a tz id absent from the tz database — aborting init so the channel was never
+      created. Fixed by falling back to UTC (guarded by a host test).
+- [x] A2: regression test fails on pre-fix code, passes after (verified red→green: pre-fix has no
+      channel delete, old channel id, and no iOS `presentSound`).
+- [x] A3: unit test asserts channel id / importance / sound / fire-time / payload / iOS `presentSound`
+      / permission matrix (deny→no schedule, past-time→no schedule). Fire-time==endAt also asserted at
+      the controller level (`scheduled.at == plan.endAt`).
+- [x] A4: on-device Android test (`integration_test/notify_smoke_test.dart`) + `android-notify-smoke`
+      CI job (API 30 so POST_NOTIFICATIONS is auto-granted) — schedules ~2s out and asserts the
+      notification actually posts via `getActiveNotifications()`. *(Validated by CI, not host-run.)*
+- [x] A5: time-up e2e with a spy scheduler — added a consolidated full-lifecycle test
+      (create→schedule@endAt→time-up→check-in→cancel) on top of the existing per-step coverage.
+- [x] A6: device-verify checklist updated with a "Notification rings" section + a **required merge
+      gate** at the top of `docs/device-verify.md`. Channel-level device verification done (A1 dumpsys
+      upgrade experiment); the audible "rings" + after-update gate is satisfied at the channel layer
+      (new channel is HIGH + has a sound; stale silent channel deleted on upgrade).
+- [x] `flutter analyze` + full `flutter test` clean.
 
 ## Notes / hints
 

@@ -7,8 +7,30 @@ import 'package:timezone/timezone.dart' as timezone;
 
 import '../../domain/reminder_scheduler.dart';
 
-const _channelId = 'plan_check_in_reminders';
+// Android notification channels are IMMUTABLE after first creation: once a
+// channel id exists on a device, later changes to its importance/sound are
+// ignored until reinstall. An earlier build shipped this channel and a silent
+// (or low-importance) install kept those settings even after the code was fixed
+// — the "通知不响" incident. Bumping the id forces a fresh channel with the
+// correct high-importance + sound settings on every updated install, and we
+// delete the stale ones so the user isn't left with a dead channel in settings.
+// If the channel definition below ever changes again, bump the suffix and add
+// the previous id to [_legacyChannelIds].
+const _channelId = 'plan_check_in_reminders_v2';
 const _channelName = 'Nudge';
+
+/// Old channel ids to delete on init so their stale (silent) settings can't
+/// linger on updated installs.
+const _legacyChannelIds = <String>['plan_check_in_reminders'];
+
+/// The single source of truth for the reminder channel — high importance so it
+/// makes a heads-up sound, with sound explicitly on (don't rely on the default).
+const _reminderChannel = AndroidNotificationChannel(
+  _channelId,
+  _channelName,
+  importance: Importance.high,
+  playSound: true,
+);
 
 class LocalReminderScheduler implements ReminderScheduler {
   LocalReminderScheduler({FlutterLocalNotificationsPlugin? plugin})
@@ -33,8 +55,19 @@ class LocalReminderScheduler implements ReminderScheduler {
   Future<void> _initialize() async {
     try {
       timezone_data.initializeTimeZones();
-      final localTimezone = await FlutterTimezone.getLocalTimezone();
-      timezone.setLocalLocation(timezone.getLocation(localTimezone.identifier));
+      try {
+        final localTimezone = await FlutterTimezone.getLocalTimezone();
+        timezone.setLocalLocation(
+          timezone.getLocation(localTimezone.identifier),
+        );
+      } catch (_) {
+        // Some devices/emulators report a timezone id that isn't in the tz
+        // database (e.g. "Etc/Unknown"), which throws and would abort the whole
+        // init — leaving the channel uncreated and reminders silently dead
+        // (another flavour of "通知不响"). Fall back to UTC: zonedSchedule
+        // uses absolute instants, so the fire time stays correct.
+        timezone.setLocalLocation(timezone.getLocation('UTC'));
+      }
 
       await _plugin.initialize(
         const InitializationSettings(
@@ -53,17 +86,19 @@ class LocalReminderScheduler implements ReminderScheduler {
         onDidReceiveNotificationResponse: _handleNotificationResponse,
       );
 
-      await _plugin
+      final android = _plugin
           .resolvePlatformSpecificImplementation<
             AndroidFlutterLocalNotificationsPlugin
-          >()
-          ?.createNotificationChannel(
-            const AndroidNotificationChannel(
-              _channelId,
-              _channelName,
-              importance: Importance.high,
-            ),
-          );
+          >();
+      if (android != null) {
+        // Drop stale channels first so a previously-silent one can't shadow the
+        // new high-importance channel (channels are immutable; deleting is the
+        // only way to change settings on an already-installed device).
+        for (final legacyId in _legacyChannelIds) {
+          await android.deleteNotificationChannel(legacyId);
+        }
+        await android.createNotificationChannel(_reminderChannel);
+      }
 
       final launchDetails = await _plugin.getNotificationAppLaunchDetails();
       if (launchDetails?.didNotificationLaunchApp ?? false) {
@@ -184,9 +219,14 @@ class LocalReminderScheduler implements ReminderScheduler {
         _channelName,
         importance: Importance.high,
         priority: Priority.high,
+        // Sound is a channel-level setting on Android 8+, but set it here too so
+        // pre-8 devices (and the test contract) get an audible notification.
+        playSound: true,
       ),
-      iOS: DarwinNotificationDetails(),
-      macOS: DarwinNotificationDetails(),
+      // presentSound: true makes the notification audible in the foreground on
+      // iOS/macOS (the default, pinned so a future edit can't silence it).
+      iOS: DarwinNotificationDetails(presentSound: true),
+      macOS: DarwinNotificationDetails(presentSound: true),
     );
   }
 

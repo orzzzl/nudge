@@ -6,6 +6,7 @@ on:
     # runs on every PR.
     paths:
       - 'lib/data/**'
+      - 'integration_test/**'
       - 'pubspec.yaml'
       - 'pubspec.lock'
       - 'android/**'
@@ -47,6 +48,45 @@ jobs:
           emulator-options: -no-window -gpu swiftshader_indirect -no-snapshot -noaudio -no-boot-anim -camera-back none
           disable-animations: true
           script: flutter test integration_test/db_smoke_test.dart
+
+  android-notify-smoke:
+    # Verifies the WHOLE native notification chain (channel + AlarmManager +
+    # the alarm firing + the notification posting) — the gap that let the
+    # silent-notification incidents reach users. Host tests only prove we call
+    # the plugin correctly; this proves it actually fires.
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Enable KVM
+        run: |
+          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+          sudo udevadm control --reload-rules
+          sudo udevadm trigger --name-match=kvm
+
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: 3.44.0
+          channel: stable
+          cache: true
+
+      - name: Install dependencies
+        run: flutter pub get
+
+      - name: Run notification smoke test on Android
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          # API 30 (Android 11) grants POST_NOTIFICATIONS by default — no
+          # runtime permission dialog to tap inside the headless test. The
+          # Android-13 deny path is covered by the host scheduler test instead.
+          api-level: 30
+          arch: x86_64
+          target: google_apis
+          profile: pixel_6
+          emulator-options: -no-window -gpu swiftshader_indirect -no-snapshot -no-boot-anim -camera-back none
+          disable-animations: true
+          script: flutter test integration_test/notify_smoke_test.dart
 
   ios-db-smoke:
     # iOS links sqlite3 through a completely different native path than Android
