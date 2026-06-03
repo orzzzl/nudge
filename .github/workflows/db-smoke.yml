@@ -1,4 +1,4 @@
-name: Android DB Smoke
+name: On-device DB Smoke
 
 on:
   pull_request:
@@ -10,7 +10,7 @@ on:
       - 'pubspec.lock'
       - 'android/**'
       - 'ios/**'
-      - '.github/workflows/android-smoke.yml'
+      - '.github/workflows/db-smoke.yml'
   push:
     branches: [main]
 
@@ -47,3 +47,36 @@ jobs:
           emulator-options: -no-window -gpu swiftshader_indirect -no-snapshot -noaudio -no-boot-anim -camera-back none
           disable-animations: true
           script: flutter test integration_test/db_smoke_test.dart
+
+  ios-db-smoke:
+    # iOS links sqlite3 through a completely different native path than Android
+    # (Swift Package Manager / CocoaPods, not Gradle), so a dep bump can break one
+    # platform while the other stays green — verify both. Needs a macOS runner for
+    # the iOS Simulator.
+    runs-on: macos-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: 3.44.0
+          channel: stable
+          cache: true
+
+      - name: Install dependencies
+        run: flutter pub get
+
+      - name: Boot iOS simulator
+        run: |
+          # Model names vary by the runner's Xcode version, so resolve the UDID of
+          # the first available iPhone simulator dynamically.
+          UDID=$(xcrun simctl list devices available | grep -m1 'iPhone' \
+            | grep -oE '[0-9A-F]{8}-([0-9A-F]{4}-){3}[0-9A-F]{12}')
+          echo "Booting simulator $UDID"
+          xcrun simctl boot "$UDID"
+          xcrun simctl bootstatus "$UDID" -b
+          echo "SIM_UDID=$UDID" >> "$GITHUB_ENV"
+
+      - name: Run DB smoke test on iOS
+        run: flutter test integration_test/db_smoke_test.dart -d "$SIM_UDID"
