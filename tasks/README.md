@@ -39,6 +39,7 @@ Each `NN-slug.md` is one self-contained, reviewable unit of work. Codex implemen
 | 16 | [团团 character art (CustomPaint mascot)](16-tuantuan-character-art.md) | DONE (PR #17) | 09 |
 | 17 | [Unbounded (multi-week) streak](17-multi-week-streak.md) | DONE (PR #19) | 06 |
 | 18 | [乖乖图 v2: line charts + range switcher (+streak rule B)](18-stats-line-charts.md) | DONE (PR #22) | 06, 17 |
+| 19 | [iOS DB smoke test (CI hardening)](19-ios-db-smoke.md) | DONE (PR #24) | 13 |
 
 ## Backlog — post-MVP, scoped
 
