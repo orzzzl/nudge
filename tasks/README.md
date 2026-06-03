@@ -40,6 +40,7 @@ Each `NN-slug.md` is one self-contained, reviewable unit of work. Codex implemen
 | 17 | [Unbounded (multi-week) streak](17-multi-week-streak.md) | DONE (PR #19) | 06 |
 | 18 | [乖乖图 v2: line charts + range switcher (+streak rule B)](18-stats-line-charts.md) | DONE (PR #22) | 06, 17 |
 | 19 | [iOS DB smoke test (CI hardening)](19-ios-db-smoke.md) | DONE (PR #24) | 13 |
+| 21 | [Fix: time-up reminder never fires (exact-alarm gate)](21-timeup-notification-fix.md) | IN_REVIEW | 07 |
 
 ## Backlog — post-MVP, scoped
 
