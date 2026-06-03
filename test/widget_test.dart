@@ -180,6 +180,7 @@ class _NoopReminderScheduler implements ReminderScheduler {
     required int planId,
     required String title,
     required DateTime at,
+    bool silent = false,
   }) async {}
 
   @override

@@ -196,6 +196,8 @@ class ChatController extends Notifier<ChatState> {
         planId: planId,
         title: trimmed,
         at: plan.endAt,
+        // In-app 勿扰: deliver the time-up reminder silently (no sound/vibration).
+        silent: ref.read(settingsControllerProvider).dnd,
       );
     }
   }
