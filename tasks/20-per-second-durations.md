@@ -1,6 +1,6 @@
 # 20 — Per-second durations + minutes/hours picker
 
-- **Status:** IN_REVIEW (PR #__)
+- **Status:** IN_REVIEW (PR #26)
 - **Owner:** Claude (self-merged — Codex on leave)
 - **Blocked by:** 02 (Drift schema), 05 (composer) — DONE
 
