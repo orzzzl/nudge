@@ -90,25 +90,17 @@ jobs:
 
   ios-db-smoke:
     # iOS links sqlite3 through a completely different native path than Android
-    # (Swift Package Manager / CocoaPods, not Gradle), so a dep bump can break one
-    # platform while the other stays green — verify both. Needs a macOS runner for
-    # the iOS Simulator.
+    # (Swift Package Manager, not Gradle), so a dep bump can break one platform
+    # while the other stays green — verify both. Needs a macOS runner.
+    #
+    # Driven by `xcodebuild test` against a native XCTest target: RunnerTests.m
+    # uses integration_test's INTEGRATION_TEST_IOS_RUNNER macro, so XCTest hosts
+    # the app in-process and surfaces the Dart integration test as XCTest cases.
+    # That path does NOT use the Flutter tool's mDNS VM-service discovery, which
+    # is what made `flutter test -d <sim>` hang for ~30min at "Waiting for VM
+    # Service port..." on CI simulators (no Local Network grant). So this is a
+    # real blocking gate again, not best-effort.
     runs-on: macos-latest
-    # KNOWN-FLAKY → non-blocking. On GitHub's macOS runners `flutter test -d
-    # <sim>` reliably hangs after "Xcode build done" at "Waiting for VM Service
-    # port to be available...": Flutter discovers the Dart VM service over mDNS
-    # (Info.plist NSBonjourServices=_dartVmService._tcp), which needs the Local
-    # Network privacy grant. A fresh CI simulator denies it and there's no
-    # `simctl privacy` service to pre-grant it, so discovery never completes. It
-    # passes locally (permission already granted). Until VM-service discovery is
-    # fixed this job is best-effort signal, NOT a merge gate. `continue-on-error`
-    # keeps a job *failure* from blocking main — note it does NOT cover a
-    # `timeout-minutes` *cancellation*, which is why the test step runs under its
-    # own watchdog (below) that turns a hang into a normal failure, not a cancel.
-    # The Android db/notify smoke jobs remain the hard DB gate.
-    continue-on-error: true
-    # Ultimate backstop only; the in-step watchdog fires first (~12min). This must
-    # stay above the watchdog so a hang fails (neutralized) rather than cancels.
     timeout-minutes: 25
     steps:
       - uses: actions/checkout@v5
@@ -122,37 +114,41 @@ jobs:
       - name: Install dependencies
         run: flutter pub get
 
-      - name: Boot iOS simulator
+      # Point the iOS build's FLUTTER_TARGET at the integration test and
+      # regenerate the SPM package; xcodebuild's build phase assembles the Dart
+      # bundle. --simulator => debug + simulator sdk.
+      - name: Configure iOS build for the integration test
+        run: flutter build ios --config-only integration_test/db_smoke_test.dart --simulator
+
+      - name: Run DB smoke test on iOS (xcodebuild)
+        working-directory: ios
         run: |
-          # Model names vary by the runner's Xcode version, so resolve the UDID of
-          # the first available iPhone simulator dynamically.
+          set -o pipefail
           UDID=$(xcrun simctl list devices available | grep -m1 'iPhone' \
             | grep -oE '[0-9A-F]{8}-([0-9A-F]{4}-){3}[0-9A-F]{12}')
-          echo "Booting simulator $UDID"
-          xcrun simctl boot "$UDID"
+          echo "Using simulator $UDID"
+          xcrun simctl boot "$UDID" 2>/dev/null || true
           xcrun simctl bootstatus "$UDID" -b
-          echo "SIM_UDID=$UDID" >> "$GITHUB_ENV"
-
-      - name: Run DB smoke test on iOS
-        # macOS runners ship no `timeout`, so watchdog the run by hand: kill it
-        # after 12min and exit with its real status. A kill -> non-zero exit is a
-        # step *failure* (neutralized by job-level continue-on-error -> green run),
-        # NOT a `timeout-minutes` cancellation (which would mark the run cancelled
-        # and is NOT covered by continue-on-error). A genuine future iOS failure
-        # still surfaces as a (non-blocking) red X. --verbose keeps the mDNS
-        # VM-service-discovery hang diagnosable in the log.
-        run: |
-          set +e
-          flutter test integration_test/db_smoke_test.dart -d "$SIM_UDID" --verbose &
-          TEST_PID=$!
-          ( sleep 720
-            echo "::warning::iOS DB smoke watchdog: flutter test still running after 12min (known mDNS VM-service hang) — killing."
-            kill -TERM "$TEST_PID" 2>/dev/null
-            sleep 5
-            kill -KILL "$TEST_PID" 2>/dev/null ) &
-          WATCHDOG_PID=$!
-          wait "$TEST_PID"
-          STATUS=$?
-          kill -TERM "$WATCHDOG_PID" 2>/dev/null
-          echo "iOS DB smoke exited with status $STATUS"
-          exit "$STATUS"
+          # A freshly-booted sim occasionally denies the first launch with
+          # "Application failed preflight checks (Busy)" — retry a couple times
+          # with a fresh boot. xcodebuild test itself can't hang (no mDNS).
+          attempt=1
+          while [ "$attempt" -le 3 ]; do
+            echo "=== xcodebuild test attempt $attempt ==="
+            if xcodebuild test \
+                -workspace Runner.xcworkspace \
+                -scheme Runner \
+                -configuration Debug \
+                -destination "platform=iOS Simulator,id=$UDID" \
+                -only-testing:RunnerTests; then
+              echo "iOS DB smoke passed."
+              exit 0
+            fi
+            echo "::warning::xcodebuild test attempt $attempt failed; re-booting sim and retrying."
+            xcrun simctl shutdown "$UDID" 2>/dev/null || true
+            xcrun simctl boot "$UDID" 2>/dev/null || true
+            xcrun simctl bootstatus "$UDID" -b 2>/dev/null || true
+            attempt=$((attempt + 1))
+          done
+          echo "iOS DB smoke failed after retries."
+          exit 1
