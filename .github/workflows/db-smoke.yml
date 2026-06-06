@@ -94,7 +94,22 @@ jobs:
     # platform while the other stays green — verify both. Needs a macOS runner for
     # the iOS Simulator.
     runs-on: macos-latest
-    timeout-minutes: 30
+    # KNOWN-FLAKY → non-blocking. On GitHub's macOS runners `flutter test -d
+    # <sim>` reliably hangs after "Xcode build done" at "Waiting for VM Service
+    # port to be available...": Flutter discovers the Dart VM service over mDNS
+    # (Info.plist NSBonjourServices=_dartVmService._tcp), which needs the Local
+    # Network privacy grant. A fresh CI simulator denies it and there's no
+    # `simctl privacy` service to pre-grant it, so discovery never completes. It
+    # passes locally (permission already granted). Until VM-service discovery is
+    # fixed this job is best-effort signal, NOT a merge gate. `continue-on-error`
+    # keeps a job *failure* from blocking main — note it does NOT cover a
+    # `timeout-minutes` *cancellation*, which is why the test step runs under its
+    # own watchdog (below) that turns a hang into a normal failure, not a cancel.
+    # The Android db/notify smoke jobs remain the hard DB gate.
+    continue-on-error: true
+    # Ultimate backstop only; the in-step watchdog fires first (~12min). This must
+    # stay above the watchdog so a hang fails (neutralized) rather than cancels.
+    timeout-minutes: 25
     steps:
       - uses: actions/checkout@v5
 
@@ -119,4 +134,25 @@ jobs:
           echo "SIM_UDID=$UDID" >> "$GITHUB_ENV"
 
       - name: Run DB smoke test on iOS
-        run: flutter test integration_test/db_smoke_test.dart -d "$SIM_UDID"
+        # macOS runners ship no `timeout`, so watchdog the run by hand: kill it
+        # after 12min and exit with its real status. A kill -> non-zero exit is a
+        # step *failure* (neutralized by job-level continue-on-error -> green run),
+        # NOT a `timeout-minutes` cancellation (which would mark the run cancelled
+        # and is NOT covered by continue-on-error). A genuine future iOS failure
+        # still surfaces as a (non-blocking) red X. --verbose keeps the mDNS
+        # VM-service-discovery hang diagnosable in the log.
+        run: |
+          set +e
+          flutter test integration_test/db_smoke_test.dart -d "$SIM_UDID" --verbose &
+          TEST_PID=$!
+          ( sleep 720
+            echo "::warning::iOS DB smoke watchdog: flutter test still running after 12min (known mDNS VM-service hang) — killing."
+            kill -TERM "$TEST_PID" 2>/dev/null
+            sleep 5
+            kill -KILL "$TEST_PID" 2>/dev/null ) &
+          WATCHDOG_PID=$!
+          wait "$TEST_PID"
+          STATUS=$?
+          kill -TERM "$WATCHDOG_PID" 2>/dev/null
+          echo "iOS DB smoke exited with status $STATUS"
+          exit "$STATUS"
