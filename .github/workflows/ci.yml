@@ -32,5 +32,17 @@ jobs:
       - name: Analyze
         run: flutter analyze
 
+      # AGENTS.md hard rule: no Chinese in hand-written code except inside *.arb
+      # (user-facing strings go through i18n; comments/identifiers stay English).
+      # rg is preinstalled on the runner and matches \p{Han} natively; it also
+      # skips the gitignored generated l10n. rg exits 0 when it finds a match, so
+      # a match here means the rule was violated -> fail the build.
+      - name: No Chinese outside ARB
+        run: |
+          if rg -n "\p{Han}" lib test --glob '!*.arb' --glob '!lib/l10n/generated/**'; then
+            echo "::error::Chinese (Han) characters found outside *.arb (AGENTS.md hard rule). Move user-facing strings to ARB; keep comments and identifiers in English."
+            exit 1
+          fi
+
       - name: Test
         run: flutter test
