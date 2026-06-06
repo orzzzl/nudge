@@ -179,8 +179,9 @@ a duration of ~10s via a debug build, or schedule directly. With media/ring volu
    verified by upgrading, never by a fresh install.
 3. **Heads-up:** if the screen is on, the notification appears as a heads-up banner (high importance),
    not just a silent status-bar entry.
-4. **DND:** with Do-Not-Disturb on, confirm the documented behavior (currently the in-app 勿扰 toggle
-   does **not** gate OS reminders — by design; note if that ever changes).
+4. **In-app 勿扰:** with the in-app 勿扰 toggle **on**, repeat step 1 → the time-up reminder still
+   posts but is **silent** (no sound/vibration — scheduled on the silent channel); with it **off** it's
+   loud (steps 1–3). OS-level Do-Not-Disturb always wins regardless of the in-app toggle.
 
 Record the result (incl. the OS version + whether it was a fresh install or an upgrade) in the PR and
 check the box. Do not merge a notification PR with this unchecked.
@@ -202,8 +203,8 @@ The mascot is a small circular badge (emoji + mood-tinted ring): happy 🌳 / ne
    composer hint, etc.). Tap **English** → switches back. Tap **System** → follows the device.
 3. **Persistence:** set 中文, fully quit (`q`) and relaunch (`flutter run` again, or cold-launch) →
    the app should come back in Chinese.
-4. **DND:** toggle the 勿扰 switch on, quit + relaunch → it should still be on (stored; it doesn't
-   gate the per-plan reminder yet — that's by design).
+4. **DND:** toggle the 勿扰 switch on, quit + relaunch → it should still be on (stored), and the
+   per-plan time-up reminder now arrives **silently** (silent channel) rather than loud.
 5. **About:** shows the app name + a real version string (e.g. from `pubspec.yaml`), not a placeholder.
 
 ---

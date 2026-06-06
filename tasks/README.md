@@ -42,7 +42,7 @@ Each `NN-slug.md` is one self-contained, reviewable unit of work. Codex implemen
 | 19 | [iOS DB smoke test (CI hardening)](19-ios-db-smoke.md) | DONE (PR #24) | 13 |
 | 20 | [Per-second durations + minutes/hours picker](20-per-second-durations.md) | DONE (PR #26) | 02, 05 |
 | 21 | [Fix: time-up reminder never fires (exact-alarm gate)](21-timeup-notification-fix.md) | DONE (PR #25) | 07 |
-| 22 | [Notification test & process hardening (post-mortem follow-up)](22-notification-test-hardening.md) | READY | 07, 21, 20 |
+| 22 | [Notification test & process hardening (post-mortem follow-up)](22-notification-test-hardening.md) | DONE (PR #28) | 07, 21, 20 |
 
 ## Backlog — post-MVP, scoped
 

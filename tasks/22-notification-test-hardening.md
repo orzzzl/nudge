@@ -1,6 +1,6 @@
 # 22 — Notification test & process hardening (post-mortem follow-up)
 
-- **Status:** IN_REVIEW (PR for A1–A6)
+- **Status:** DONE (PR #28 merged)
 - **Owner:** Claude (self-merged — Codex on leave)
 - **Blocked by:** 07 (local notifications) — DONE; 21 (time-up fix) — DONE; 20 (per-second durations, enables fast on-device timing) — DONE
 - **Allowed new deps:** none (use existing `flutter_local_notifications`, `integration_test`; `adb` is available on the CI emulator)
