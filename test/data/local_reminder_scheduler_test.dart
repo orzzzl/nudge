@@ -78,7 +78,7 @@ void main() {
   test(
     'creates a high-importance channel WITH SOUND and deletes the stale one',
     () async {
-      // Regression guard for the "通知不响" incident: Android channels are
+      // Regression guard for the silent-notification incident: Android channels are
       // immutable, so a previously-silent channel keeps its settings on an
       // updated install. The fix recreates under a new id (audible) and deletes
       // the legacy one. This fails on the pre-fix scheduler, which neither
@@ -169,7 +169,7 @@ void main() {
   test(
     'schedules on the silent channel (no sound) when silent: true',
     () async {
-      // Backs the in-app 勿扰 setting: still delivered, but quiet.
+      // Backs the in-app DND setting: still delivered, but quiet.
       final scheduler = LocalReminderScheduler();
 
       await scheduler.scheduleCheckInReminder(
@@ -190,7 +190,7 @@ void main() {
   test(
     'schedules a check-in reminder even when exact-alarm permission is denied',
     () async {
-      // Guards the earlier "计时到点收不到提醒" fix: notifications granted +
+      // Guards the earlier "no reminder at time-up" fix: notifications granted +
       // exact-alarm denied (Android 12+ default) must still schedule.
       final scheduler = LocalReminderScheduler();
 

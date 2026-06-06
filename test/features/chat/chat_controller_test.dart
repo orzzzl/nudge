@@ -13,9 +13,9 @@ import 'package:nudge/features/chat/chat_controller.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 void main() {
-  // createPlan now reads the settings (for 勿扰); the default SettingsController
+  // createPlan now reads the settings (for DND); the default SettingsController
   // loads SharedPreferences, so give the tests an initialized binding + empty
-  // prefs (= 勿扰 off) unless a test overrides settingsControllerProvider.
+  // prefs (= DND off) unless a test overrides settingsControllerProvider.
   TestWidgetsFlutterBinding.ensureInitialized();
   SharedPreferences.setMockInitialValues(<String, Object>{});
 
@@ -83,11 +83,11 @@ void main() {
     expect(scheduler.scheduled.single.planId, 10);
     expect(scheduler.scheduled.single.title, 'Focus block');
     expect(scheduler.scheduled.single.at, repository.createdPlan?.endAt);
-    // 勿扰 defaults off -> the reminder is loud.
+    // DND defaults off -> the reminder is loud.
     expect(scheduler.scheduled.single.silent, isFalse);
   });
 
-  test('schedules a SILENT reminder when 勿扰 (DND) is on', () async {
+  test('schedules a SILENT reminder when DND is on', () async {
     final repository = _ControllerRepository();
     final scheduler = _RecordingReminderScheduler();
     final container = ProviderContainer(
@@ -108,7 +108,7 @@ void main() {
   });
 
   test(
-    'flipping 勿扰 mid-block re-schedules the active reminder to match',
+    'flipping DND mid-block re-schedules the active reminder to match',
     () async {
       final repository = _ControllerRepository();
       final scheduler = _RecordingReminderScheduler();
@@ -128,9 +128,9 @@ void main() {
         durationSec: 30 * 60,
         locale: 'en',
       );
-      expect(scheduler.scheduled.single.silent, isFalse); // 勿扰 off at start
+      expect(scheduler.scheduled.single.silent, isFalse); // DND off at start
 
-      // Turn 勿扰 ON before time-up -> the pending reminder is re-armed silent.
+      // Turn DND ON before time-up -> the pending reminder is re-armed silent.
       await container.read(settingsControllerProvider.notifier).setDnd(true);
       await Future<void>.delayed(Duration.zero);
       expect(scheduler.scheduled.last.planId, 10);
@@ -230,7 +230,7 @@ void main() {
       // Ended ~11.5h ago and never checked in.
       final plan = _plan(
         id: 70,
-        title: 'Nudge第二版',
+        title: 'Nudge v2',
         durationSec: 30 * 60,
         startAt: DateTime.now().subtract(const Duration(hours: 12)),
       );
@@ -707,7 +707,7 @@ class _RecordingReminderScheduler implements ReminderScheduler {
   }
 }
 
-/// Settings stub with 勿扰 on, without touching SharedPreferences (build()
+/// Settings stub with DND on, without touching SharedPreferences (build()
 /// returns the state directly instead of loading it).
 class _DndOnSettings extends SettingsController {
   @override
@@ -715,7 +715,7 @@ class _DndOnSettings extends SettingsController {
       const AppSettings(dnd: true, localeOverride: LocaleOverride.system);
 }
 
-/// Settings stub starting with 勿扰 off and no async load, so a test can flip
+/// Settings stub starting with DND off and no async load, so a test can flip
 /// `setDnd` deterministically (no SharedPreferences race resetting the state).
 class _FlippableSettings extends SettingsController {
   @override

@@ -11,8 +11,8 @@ import '../../domain/reminder_scheduler.dart';
 // channel id exists on a device, later changes to its importance/sound are
 // ignored until reinstall. An earlier build shipped this channel and a silent
 // (or low-importance) install kept those settings even after the code was fixed
-// — the "通知不响" incident. Bumping the id forces a fresh channel with the
-// correct high-importance + sound settings on every updated install, and we
+// — the silent-notification incident. Bumping the id forces a fresh channel
+// with the correct high-importance + sound settings on every updated install, and we
 // delete the stale ones so the user isn't left with a dead channel in settings.
 // If the channel definition below ever changes again, bump the suffix and add
 // the previous id to [_legacyChannelIds].
@@ -21,7 +21,7 @@ const _channelName = 'Nudge';
 
 // Channel sound/importance is IMMUTABLE per channel, so "loud" and "silent" must
 // be two separate channels picked at schedule time — we can't toggle one
-// channel's sound at runtime. The silent channel backs the in-app 勿扰 setting.
+// channel's sound at runtime. The silent channel backs the in-app DND setting.
 const _silentChannelId = 'plan_check_in_reminders_silent';
 const _silentChannelName = 'Nudge (quiet)';
 
@@ -38,7 +38,7 @@ const _reminderChannel = AndroidNotificationChannel(
   playSound: true,
 );
 
-/// The quiet channel for in-app 勿扰 — still shows in the shade, but low
+/// The quiet channel for in-app DND — still shows in the shade, but low
 /// importance with no sound and no vibration.
 const _silentChannel = AndroidNotificationChannel(
   _silentChannelId,
@@ -80,8 +80,8 @@ class LocalReminderScheduler implements ReminderScheduler {
         // Some devices/emulators report a timezone id that isn't in the tz
         // database (e.g. "Etc/Unknown"), which throws and would abort the whole
         // init — leaving the channel uncreated and reminders silently dead
-        // (another flavour of "通知不响"). Fall back to UTC: zonedSchedule
-        // uses absolute instants, so the fire time stays correct.
+        // (another flavour of the silent-notification bug). Fall back to UTC:
+        // zonedSchedule uses absolute instants, so the fire time stays correct.
         timezone.setLocalLocation(timezone.getLocation('UTC'));
       }
 
@@ -232,7 +232,7 @@ class LocalReminderScheduler implements ReminderScheduler {
 
   NotificationDetails _notificationDetails({required bool silent}) {
     if (silent) {
-      // In-app 勿扰: deliver quietly via the silent channel. iOS/pre-8 Android
+      // In-app DND: deliver quietly via the silent channel. iOS/pre-8 Android
       // honour the per-notification flags too, so set sound off there as well.
       return const NotificationDetails(
         android: AndroidNotificationDetails(

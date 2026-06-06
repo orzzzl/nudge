@@ -110,7 +110,7 @@ DateTime _previousDay(DateTime day) {
 }
 
 // ===========================================================================
-// 乖乖图 v2 — time-series for the planned-hours + completion-rate line charts.
+// Good-behavior chart v2 — time-series for the planned-hours + completion-rate line charts.
 // ===========================================================================
 
 /// The selectable time windows for the stats line charts (stock-style).
