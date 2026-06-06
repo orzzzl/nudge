@@ -1,7 +1,7 @@
 import 'dart:async';
 
 abstract class ReminderScheduler {
-  /// Schedules the time-up reminder. When [silent] is true (the in-app 勿扰 /
+  /// Schedules the time-up reminder. When [silent] is true (the in-app
   /// Do-Not-Disturb setting), the notification still fires but makes no sound or
   /// vibration — independent of the phone's own silent/DND mode.
   Future<void> scheduleCheckInReminder({

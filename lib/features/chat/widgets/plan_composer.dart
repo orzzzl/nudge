@@ -104,8 +104,8 @@ class _PlanComposerState extends State<PlanComposer> {
     DurationUnit.hours => l10n.durationHoursLabel(value),
   };
 
-  // Hint for the narrow custom-amount field: "X 分钟" / "X 小时" — no separate
-  // "自定义" + unit suffix that would overflow the field.
+  // Hint for the narrow custom-amount field: "X min" / "X hr" — no separate
+  // "custom" label + unit suffix that would overflow the field.
   String _customHint(AppLocalizations l10n) => switch (_unit) {
     DurationUnit.minutes => l10n.composerHintMinutes,
     DurationUnit.hours => l10n.composerHintHours,
@@ -278,7 +278,7 @@ class _PlanComposerState extends State<PlanComposer> {
   }
 }
 
-/// A unified two-segment toggle (e.g. 分钟 | 小时): one rounded pill whose
+/// A unified two-segment toggle (e.g. minutes | hours): one rounded pill whose
 /// selected segment is filled peach (the fill animates as you switch sides).
 /// Replaces the separate unit chips with one compact control.
 class _UnitToggle extends StatelessWidget {

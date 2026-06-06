@@ -16,7 +16,7 @@ List<BoxShadow> candyShadow(Color color, {double dy = 5}) {
 enum CandyVariant { matcha, peach }
 
 /// A pill button with a gradient fill, a matching candy shadow, and white
-/// bold text — the mockup's 开始这一格 / 再安排下一个 buttons. Pass [expand]
+/// bold text — the mockup's "start this slot" / "plan the next one" buttons. Pass [expand]
 /// false to size to content instead of filling the available width.
 class CandyButton extends StatelessWidget {
   const CandyButton({
