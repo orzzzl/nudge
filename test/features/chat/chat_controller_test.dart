@@ -379,6 +379,86 @@ void main() {
     });
   });
 
+  test('abandons (no prompt) a warm notification tap for a >10h stale plan', () {
+    fakeAsync((async) {
+      // Tapped a reminder for a plan that ended ~11h ago and was never settled.
+      final plan = _plan(
+        id: 80,
+        title: 'Stale tapped plan',
+        durationSec: 30 * 60,
+        startAt: DateTime.now().subtract(const Duration(hours: 11)),
+      );
+      final repository = _ControllerRepository(plans: [plan]);
+      final scheduler = _RecordingReminderScheduler();
+      final container = _container(repository, scheduler);
+
+      container.read(chatControllerProvider);
+      scheduler.emitTap(80);
+      async.flushMicrotasks();
+
+      // The stale guard drops it instead of opening a check-in.
+      expect(container.read(chatControllerProvider).pendingCheckIn, isNull);
+      expect(repository.checkedInId, 80);
+      expect(repository.checkedInStatus, PlanStatus.abandoned);
+      expect(scheduler.canceledPlanIds, [80]);
+
+      container.dispose();
+      unawaited(scheduler.dispose());
+      async.flushMicrotasks();
+    });
+  });
+
+  test('abandons (no prompt) a cold-start tap for a >10h stale plan', () {
+    fakeAsync((async) {
+      final plan = _plan(
+        id: 81,
+        title: 'Stale cold-start plan',
+        durationSec: 30 * 60,
+        startAt: DateTime.now().subtract(const Duration(hours: 11)),
+      );
+      final repository = _ControllerRepository(plans: [plan]);
+      final scheduler = _RecordingReminderScheduler(initialTappedPlanId: 81);
+      final container = _container(repository, scheduler);
+
+      container.read(chatControllerProvider);
+      async.flushMicrotasks();
+
+      expect(container.read(chatControllerProvider).pendingCheckIn, isNull);
+      expect(repository.checkedInId, 81);
+      expect(repository.checkedInStatus, PlanStatus.abandoned);
+      expect(scheduler.canceledPlanIds, [81]);
+
+      container.dispose();
+      unawaited(scheduler.dispose());
+      async.flushMicrotasks();
+    });
+  });
+
+  test('still prompts a tapped plan that ended LESS than 10h ago', () {
+    fakeAsync((async) {
+      final plan = _plan(
+        id: 82,
+        title: 'Recent tapped plan',
+        durationSec: 30 * 60,
+        startAt: DateTime.now().subtract(const Duration(hours: 1, minutes: 30)),
+      );
+      final repository = _ControllerRepository(plans: [plan]);
+      final scheduler = _RecordingReminderScheduler();
+      final container = _container(repository, scheduler);
+
+      container.read(chatControllerProvider);
+      scheduler.emitTap(82);
+      async.flushMicrotasks();
+
+      expect(container.read(chatControllerProvider).pendingCheckIn?.id, 82);
+      expect(repository.checkedInStatus, isNull); // not abandoned
+
+      container.dispose();
+      unawaited(scheduler.dispose());
+      async.flushMicrotasks();
+    });
+  });
+
   // End-to-end of the time-up chain in one test, using the spy scheduler:
   // create -> schedule a reminder AT endAt -> time-up prompts -> check-in
   // records the outcome AND cancels the reminder. This is the flow the silent
