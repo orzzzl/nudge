@@ -6,7 +6,14 @@ import 'package:nudge/domain/plan.dart';
 import 'package:nudge/domain/plan_repository.dart';
 
 void main() {
-  IntegrationTestWidgetsFlutterBinding.ensureInitialized();
+  final binding = IntegrationTestWidgetsFlutterBinding.ensureInitialized();
+  // The native XCTest runner enables iOS accessibility while the test is
+  // running. That opens Flutter's platform-owned SemanticsHandle after
+  // testWidgets has recorded its baseline, so flutter_test reports a leak even
+  // though the app code did not create one. Pin the test dispatcher to
+  // semantics-on before testWidgets records its baseline; the platform-owned
+  // handle is then part of the expected count for this non-UI smoke test.
+  binding.platformDispatcher.semanticsEnabledTestValue = true;
 
   late AppDatabase database;
   late PlanRepository repository;
@@ -20,18 +27,7 @@ void main() {
     await database.close();
   });
 
-  testWidgets('round-trips a plan through the on-device database', (
-    tester,
-  ) async {
-    // Running under the native XCTest runner (`xcodebuild test`) turns on iOS
-    // accessibility, which makes the engine open a SemanticsHandle mid-test that
-    // flutter_test's end-of-test leak check flags ("A SemanticsHandle was active
-    // at the end of the test"). The `flutter test -d <sim>` path never enables
-    // accessibility, so this only bites under XCTest. Hold semantics on for the
-    // whole body and dispose it before returning, so the handle count ends back
-    // at its baseline. Cheap no-op for this non-UI test.
-    final semantics = tester.ensureSemantics();
-
+  testWidgets('round-trips a plan through the on-device database', (_) async {
     final startAt = DateTime.now();
 
     final plan = await repository.createPlan(
@@ -57,7 +53,5 @@ void main() {
 
     expect(checkedInPlan, isNotNull);
     expect(checkedInPlan!.status, PlanStatus.done);
-
-    semantics.dispose();
   });
 }
