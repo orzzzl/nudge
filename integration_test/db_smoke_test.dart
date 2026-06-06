@@ -20,7 +20,18 @@ void main() {
     await database.close();
   });
 
-  testWidgets('round-trips a plan through the on-device database', (_) async {
+  testWidgets('round-trips a plan through the on-device database', (
+    tester,
+  ) async {
+    // Running under the native XCTest runner (`xcodebuild test`) turns on iOS
+    // accessibility, which makes the engine open a SemanticsHandle mid-test that
+    // flutter_test's end-of-test leak check flags ("A SemanticsHandle was active
+    // at the end of the test"). The `flutter test -d <sim>` path never enables
+    // accessibility, so this only bites under XCTest. Hold semantics on for the
+    // whole body and dispose it before returning, so the handle count ends back
+    // at its baseline. Cheap no-op for this non-UI test.
+    final semantics = tester.ensureSemantics();
+
     final startAt = DateTime.now();
 
     final plan = await repository.createPlan(
@@ -46,5 +57,7 @@ void main() {
 
     expect(checkedInPlan, isNotNull);
     expect(checkedInPlan!.status, PlanStatus.done);
+
+    semantics.dispose();
   });
 }
