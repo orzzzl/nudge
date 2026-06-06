@@ -118,20 +118,33 @@ class ChatController extends Notifier<ChatState> {
     if (restoredPlan == null || state.activePlan != null) {
       return;
     }
-
-    // Long-stale leftover: ended >10h ago and never settled. Mark it abandoned
-    // and drop it silently instead of opening a check-in for a task the user has
-    // clearly moved on from.
-    final overdueBy = DateTime.now().difference(restoredPlan.endAt);
-    final planId = restoredPlan.id;
-    if (overdueBy > _staleAbandonAfter && planId != null) {
-      await _repository.checkIn(id: planId, status: PlanStatus.abandoned);
-      await _reminderScheduler.cancel(planId);
+    if (await _abandonIfStale(restoredPlan)) {
       return;
     }
 
     state = state.copyWith(activePlan: restoredPlan);
     _armCheckInTimer(restoredPlan);
+  }
+
+  /// A leftover plan that ended >10h ago and was never settled is treated as
+  /// abandoned: mark it so and cancel its reminder, instead of opening a
+  /// check-in for a task the user has clearly moved on from. Returns true when
+  /// it handled (dropped) the plan, so callers stop and skip the prompt.
+  ///
+  /// This guards both entry points — restore and a tapped notification — so a
+  /// stale reminder tapped long after the fact can't slip past the window.
+  Future<bool> _abandonIfStale(Plan plan) async {
+    final planId = plan.id;
+    if (planId == null || plan.status != PlanStatus.running) {
+      return false;
+    }
+    final overdueBy = DateTime.now().difference(plan.endAt);
+    if (overdueBy <= _staleAbandonAfter) {
+      return false;
+    }
+    await _repository.checkIn(id: planId, status: PlanStatus.abandoned);
+    await _reminderScheduler.cancel(planId);
+    return true;
   }
 
   /// Re-arms the active plan's OS reminder on the loud or silent channel after
@@ -164,7 +177,13 @@ class ChatController extends Notifier<ChatState> {
 
   Future<void> _promptCheckInById(int planId) async {
     final plan = await _repository.getPlanById(planId);
-    if (!ref.mounted || plan == null) {
+    if (plan == null) {
+      return;
+    }
+    if (await _abandonIfStale(plan)) {
+      return;
+    }
+    if (!ref.mounted) {
       return;
     }
 
