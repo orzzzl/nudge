@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Nudge 下一格 · 清单详情 / 状态</title>
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; -webkit-font-smoothing:antialiased; }
+  body {
+    font-family:-apple-system,"PingFang SC","Microsoft YaHei",sans-serif;
+    background:#fff7ef;
+    background-image:
+      radial-gradient(circle at 12% 8%, #ffe9d6 0%, transparent 32%),
+      radial-gradient(circle at 88% 92%, #e2f5e6 0%, transparent 34%),
+      radial-gradient(circle at 60% 20%, #f3e6ff 0%, transparent 28%);
+    min-height:100vh; padding:42px 24px 70px; color:#5a4a3f;
+  }
+  .page-title{ text-align:center; font-size:28px; font-weight:900; letter-spacing:-0.5px; color:#3f7d5c;}
+  .page-title span{ color:#ff9b6a; }
+  .page-sub{ text-align:center; margin:8px 0 40px; color:#b6a395; font-size:15px; font-weight:600;}
+  .screens{ display:flex; flex-wrap:wrap; gap:34px 48px; justify-content:center; align-items:flex-start; max-width:820px; margin:0 auto;}
+  .frame-wrap{ display:flex; flex-direction:column; align-items:center; gap:14px;}
+  .frame-label{ font-size:14px; color:#a8917f; font-weight:700; text-align:center;}
+  .frame-label b{ color:#3f7d5c;}
+
+  .phone{ width:320px; height:664px; background:#fffdfa; border-radius:46px; box-shadow:0 0 0 12px #6b5a4d, 0 0 0 15px #54463b, 0 30px 60px rgba(120,90,60,0.25); overflow:hidden; position:relative; display:flex; flex-direction:column;}
+  .notch{ position:absolute; top:0; left:50%; transform:translateX(-50%); width:120px; height:26px; background:#6b5a4d; border-radius:0 0 16px 16px; z-index:60;}
+  .statusbar{ height:44px; display:flex; align-items:center; justify-content:space-between; padding:8px 26px 0; font-size:13px; font-weight:700; color:#9a8576;}
+  .nav{ padding:6px 18px 8px; display:flex; align-items:center; justify-content:space-between;}
+  .brand{ font-size:20px; font-weight:900; letter-spacing:-0.3px; color:#3f7d5c; display:flex; align-items:center; gap:6px;}
+  .brand .heart{ font-size:15px;}
+  .brand.sub{ font-size:15px; color:#a8917f;}
+  .gear{ width:34px; height:34px; border-radius:50%; background:#fff2e4; display:flex; align-items:center; justify-content:center; font-size:15px; box-shadow:0 2px 0 #f0ddca;}
+  .back{ width:34px; height:34px; border-radius:50%; background:#fff2e4; display:flex; align-items:center; justify-content:center; font-size:19px; color:#a8917f; box-shadow:0 2px 0 #f0ddca;}
+
+  .mascot{ position:relative; }
+  .blob{ position:relative; background:linear-gradient(160deg,#b8e6c4,#8ad6a3); border-radius:50% 50% 48% 48%/55% 55% 45% 45%; box-shadow:0 6px 0 #6cc488, inset 0 -6px 10px rgba(255,255,255,0.4);}
+  .blob.sm{ width:44px; height:42px;}
+  .blob .leaf{ position:absolute; top:-9px; left:50%; transform:translateX(-50%) rotate(-12deg); font-size:15px;}
+  .blob .eye{ position:absolute; top:42%; width:6px; height:8px; background:#3a4a3f; border-radius:50%;}
+  .blob.sm .eye.l{ left:30%;} .blob.sm .eye.r{ right:30%;}
+  .blob .cheek{ position:absolute; top:58%; width:7px; height:5px; background:#ff9b8a; border-radius:50%; opacity:.6;}
+  .blob.sm .cheek.l{ left:22%;} .blob.sm .cheek.r{ right:22%;}
+  .blob .mouth{ position:absolute; top:60%; left:50%; transform:translateX(-50%); width:9px; height:5px; border:1.6px solid #3a4a3f; border-top:none; border-radius:0 0 9px 9px;}
+
+  /* ===== 清单列表 ===== */
+  .todo-body{ flex:1; padding:2px 16px 8px;}
+  .todo-hi{ display:flex; align-items:center; gap:10px; margin:2px 2px 12px;}
+  .todo-hi .say{ background:#fff; border:2px solid #eadfd2; border-radius:18px; border-bottom-left-radius:7px; padding:9px 14px; font-size:13.5px; font-weight:700; color:#5a4a3f;}
+  .section-t{ font-size:13px; font-weight:800; color:#a8917f; margin:4px 2px 7px; display:flex; align-items:center; justify-content:space-between;}
+  .section-t .count{ color:#cdb9a8; font-weight:800;}
+  .todo-list{ display:flex; flex-direction:column; gap:7px;}
+  .titem{ display:flex; align-items:center; gap:11px; background:#fff; border:2px solid #f1e7da; border-radius:16px; padding:9px 12px; box-shadow:0 3px 0 #f4ece1;}
+  .titem.arch{ box-shadow:none; background:#f9f3ea; border-color:#efe6da;}
+  .tbody{ flex:1; min-width:0;}
+  .tname{ font-size:15px; font-weight:700; color:#5a4a3f; line-height:1.25;}
+  .titem.arch .tname{ text-decoration:line-through; color:#b6a395;}
+  .tprev{ font-size:11.5px; font-weight:600; color:#b6a395; margin-top:3px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
+  .tchev{ flex:0 0 auto; color:#d8c6b4; font-size:18px; font-weight:900;}
+
+  /* 状态图标（列表左侧） */
+  .tstat{ flex:0 0 auto; width:25px; height:25px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:11px; font-weight:900; border:2.5px solid;}
+  .tstat.todo{ border-color:#dcccba; background:#f8f2ea; color:transparent;}
+  .tstat.doing{ border-color:#5cc78f; background:linear-gradient(135deg,#8ad6a3,#5cc78f); color:#fff;}
+  .tstat.pause{ border-color:#ffce73; background:#fff6e6; color:#dd9b2e;}
+  .tstat.done{ border-color:#5cc78f; background:linear-gradient(135deg,#8ad6a3,#5cc78f); color:#fff;}
+  .tstat.drop{ border-color:#dcccba; background:#efe7dc; color:#b6a395;}
+
+  /* 优先级小标 + 截止文字 */
+  .pflag{ flex:0 0 auto; border-radius:10px; padding:3px 7px; font-size:11px; font-weight:900; border:2px solid;}
+  .pflag.p0{ color:#d9745f; background:#fdeeeb; border-color:#f3d4cd;}
+  .pflag.p1{ color:#dd9b2e; background:#fff6e6; border-color:#ffe1a8;}
+  .pflag.p2{ color:#3f9e6b; background:#eafaf0; border-color:#c4ebd1;}
+  .due-txt{ color:#c4b09c;}
+  .due-txt.over{ color:#d9745f;}
+
+  .add-wrap{ padding:8px 16px 10px; background:#fffdfa; border-top:2px solid #f4e7d8;}
+  .add-field{ display:flex; align-items:center; gap:9px; background:#fff3e8; border:2px solid #ffe3cd; border-radius:18px; padding:10px 12px 10px 15px;}
+  .add-field .plus{ width:24px; height:24px; border-radius:50%; background:linear-gradient(135deg,#8ad6a3,#5cc78f); color:#fff; font-weight:900; font-size:16px; display:flex; align-items:center; justify-content:center; box-shadow:0 2px 0 #4fb87f;}
+  .add-field .ph{ font-size:14px; font-weight:600; color:#cbb09b;}
+
+  .tabbar{ height:64px; background:#fffdfa; border-top:2px solid #f4e7d8; display:flex;}
+  .tab{ flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:3px; font-size:11px; color:#cbb6a3; font-weight:800;}
+  .tab.active{ color:#3f7d5c;}
+  .tab .ti{ font-size:21px;}
+  .tab.active .pill{ background:#eafaf0;}
+  .pill{ padding:3px 13px; border-radius:14px;}
+
+  /* 序列号 */
+  .tnum{ flex:0 0 auto; font-size:12px; font-weight:800; color:#c4b09c; font-variant-numeric:tabular-nums;}
+  .dnum{ color:#cdb9a8; font-weight:900;}
+
+  /* ===== 聊天页（开始这一格 → 跳这里，标题已填） ===== */
+  .chat{ flex:1; padding:10px 16px; display:flex; flex-direction:column; gap:12px;}
+  .ai-row{ display:flex; align-items:flex-end; gap:8px; align-self:flex-start; max-width:90%;}
+  .bubble{ padding:11px 15px; font-size:14.5px; line-height:1.5; border-radius:22px; border-bottom-left-radius:7px; font-weight:600; background:#fff; border:2px solid #eadfd2; color:#5a4a3f;}
+  .composer{ padding:10px 14px 14px; background:#fffdfa; border-top:2px solid #f4e7d8;}
+  .composer-q{ font-size:12px; font-weight:800; color:#a8917f; margin:2px 2px 6px;}
+  .from-todo{ display:inline-flex; align-items:center; gap:5px; font-size:11.5px; font-weight:800; color:#3f9e6b; background:#eafaf0; border:2px solid #c4ebd1; border-radius:12px; padding:4px 9px; margin:0 2px 9px;}
+  .composer-field{ background:#fff3e8; border:2px solid #ffcf9f; border-radius:18px; padding:11px 16px; font-size:14px; font-weight:600; color:#5a4a3f; margin-bottom:10px; display:flex; align-items:center; justify-content:space-between;}
+  .composer-field .num{ font-size:12px; color:#cdb9a8; font-weight:800;}
+  .composer .dur-chips{ justify-content:flex-start; gap:7px; margin-bottom:0;}
+  .composer .dchip{ padding:6px 11px; font-size:13px;}
+  .composer .start-btn{ padding:12px;}
+  /* 任务名字段里来自清单的可删 chip */
+  .composer-field.haschip{ padding:8px 10px;}
+  .task-chip{ display:inline-flex; align-items:center; gap:7px; background:#eafaf0; border:2px solid #c4ebd1; border-radius:13px; padding:5px 5px 5px 11px; font-size:14px; font-weight:700; color:#3f7d5c;}
+  .task-chip .cnum{ font-size:11px; color:#7fb89a; font-weight:800;}
+  .task-chip .chip-x{ width:18px; height:18px; border-radius:50%; background:#cfead9; color:#3f7d5c; font-size:13px; line-height:1; display:flex; align-items:center; justify-content:center; font-weight:900;}
+  /* 自定义时长 + 分钟/小时段切换 */
+  .dur-row2{ display:flex; align-items:center; gap:10px; margin:10px 2px 12px;}
+  .custom-field{ width:116px; background:#fff3e8; border:2px solid #ffe0c2; border-radius:15px; padding:9px 12px; font-size:13px; font-weight:600; color:#cbb09b;}
+  .unit-toggle{ margin-left:auto; display:inline-flex; background:#fff; border:2px solid #ffe0c2; border-radius:20px; padding:3px;}
+  .unit-toggle .seg{ width:46px; text-align:center; padding:5px 0; font-size:13px; font-weight:800; color:#c89368; border-radius:14px;}
+  .unit-toggle .seg.on{ background:linear-gradient(135deg,#ffb07c,#ff9b6a); color:#fff;}
+
+  /* ===== 详情页 ===== */
+  .detail-body{ flex:1; overflow:hidden; padding:4px 20px 8px;}
+  .detail-title{ font-size:23px; font-weight:900; color:#5a4a3f; letter-spacing:-0.3px; margin:2px 0 12px;}
+  .detail-sec{ font-size:12px; font-weight:800; color:#a8917f; margin:6px 2px 8px;}
+  .note{ background:#fffdf8; border:2px solid #f4e7d8; border-radius:16px; padding:12px 15px; font-size:13.5px; line-height:1.6; color:#6a594c; font-weight:600;}
+
+  /* 标题下一行：可编辑 状态 · 优先级 · 截止 */
+  .dmeta{ display:flex; gap:7px; align-items:center; flex-wrap:wrap; margin-bottom:16px;}
+  .mpill{ border-radius:12px; padding:5px 9px; font-size:12.5px; font-weight:800; border:2px solid; display:flex; align-items:center; gap:5px;}
+  .mpill .ed{ font-size:10px; opacity:.55; font-weight:900;}
+  .mpill.p0{ color:#d9745f; background:#fdeeeb; border-color:#f3d4cd;}
+  .mpill.due{ color:#c89368; background:#fff3e8; border-color:#ffe3cd;}
+  .mpill.todo{ color:#a8917f; background:#f6efe6; border-color:#eadfd2;}
+  .mpill.doing{ color:#3f9e6b; background:#eafaf0; border-color:#c4ebd1;}
+  .mpill.pause{ color:#dd9b2e; background:#fff6e6; border-color:#ffe1a8;}
+  .mpill.done{ color:#2e9e6b; background:#eafaf0; border-color:#bfe9cd;}
+  .mpill.drop{ color:#b6a395; background:#f3ece3; border-color:#e6dccf;}
+
+  /* 更新日志 */
+  .log{ display:flex; flex-direction:column;}
+  .logrow{ display:flex; gap:11px; padding-bottom:13px; position:relative;}
+  .logrow:not(:last-child)::before{ content:""; position:absolute; left:5px; top:13px; bottom:-1px; width:2px; background:#f1e7da;}
+  .ldot{ flex:0 0 auto; width:12px; height:12px; border-radius:50%; background:#fff; border:3px solid #8ad6a3; margin-top:1px; z-index:1;}
+  .ldot.auto{ border-color:#ffc59a;}
+  .lc{ flex:1;}
+  .lt{ font-size:11px; font-weight:800; color:#b6a395; margin-bottom:2px;}
+  .lx{ font-size:13.5px; font-weight:600; color:#5a4a3f; line-height:1.45;}
+  .lx .tagk{ font-size:10.5px; font-weight:800; color:#c89368; background:#fff3e8; border:1.5px solid #ffe3cd; border-radius:8px; padding:1px 6px; margin-right:5px;}
+  .logadd{ background:#fff3e8; border:2px dashed #ffe3cd; border-radius:14px; padding:9px 14px; font-size:13px; font-weight:700; color:#c0a994; margin-top:2px;}
+
+  .detail-actions{ padding:10px 16px 16px; background:#fffdfa; border-top:2px solid #f4e7d8; display:flex; gap:10px;}
+  .start-btn{ text-align:center; background:linear-gradient(135deg,#8ad6a3,#5cc78f); color:#fff; border-radius:18px; padding:12px; font-size:15px; font-weight:800; box-shadow:0 5px 0 #4fb87f;}
+  .detail-actions .start-btn{ flex:1;}
+  .ghost-btn{ flex:0 0 auto; background:#fff2e4; color:#a8917f; border-radius:18px; padding:12px 15px; font-size:14px; font-weight:800; box-shadow:0 3px 0 #f0ddca; display:flex; align-items:center;}
+
+  /* ===== 底部弹出面板 ===== */
+  .dim{ position:absolute; inset:0; background:rgba(92,116,98,0.5); z-index:40; display:flex; align-items:flex-end;}
+  .sheet{ width:100%; background:#fffdfa; border-radius:28px 28px 0 0; padding:8px 18px 18px; box-shadow:0 -10px 40px rgba(80,60,40,0.28); display:flex; flex-direction:column;}
+  .handle{ width:40px; height:5px; border-radius:3px; background:#eadfd2; margin:4px auto 14px;}
+  .panel-title{ font-size:16px; font-weight:900; color:#5a4a3f; text-align:center; margin-bottom:14px;}
+  .dur-chips{ display:flex; gap:9px; flex-wrap:wrap; justify-content:center; margin-bottom:16px;}
+  .dchip{ background:#fff; border:2px solid #ffe0c2; border-radius:16px; padding:10px 16px; font-size:14px; font-weight:800; color:#c89368;}
+  .dchip.on{ background:linear-gradient(135deg,#ffb07c,#ff9b6a); border-color:#ff9b6a; color:#fff; box-shadow:0 3px 0 #f08a55;}
+  .dchip.alt{ color:#b6a395; border-style:dashed;}
+
+  /* 状态选择面板 */
+  .stopt{ display:flex; align-items:center; gap:12px; padding:13px 6px; border-bottom:2px solid #f7efe5;}
+  .stopt:last-child{ border-bottom:none;}
+  .stopt .si{ flex:0 0 auto; width:30px; height:30px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:13px; font-weight:900; border:2.5px solid;}
+  .si.todo{ border-color:#dcccba; background:#f8f2ea; color:transparent;}
+  .si.doing{ border-color:#5cc78f; background:linear-gradient(135deg,#8ad6a3,#5cc78f); color:#fff;}
+  .si.pause{ border-color:#ffce73; background:#fff6e6; color:#dd9b2e;}
+  .si.done{ border-color:#5cc78f; background:linear-gradient(135deg,#8ad6a3,#5cc78f); color:#fff;}
+  .si.drop{ border-color:#dcccba; background:#efe7dc; color:#b6a395;}
+  .snm{ flex:1; font-size:15px; font-weight:800; color:#5a4a3f;}
+  .stopt.sel{ }
+  .stopt.sel .snm{ color:#2e9e6b;}
+  .sck{ color:#2e9e6b; font-size:18px; font-weight:900;}
+
+  .legend{ max-width:880px; margin:50px auto 0; background:#fff; border-radius:24px; padding:26px 30px; box-shadow:0 6px 22px rgba(150,110,70,0.1); border:2px solid #f4e7d8;}
+  .legend h3{ font-size:17px; margin-bottom:14px; color:#3f7d5c;}
+  .legend ul{ list-style:none; display:grid; grid-template-columns:1fr 1fr; gap:12px 28px;}
+  .legend li{ font-size:14px; line-height:1.55; color:#6a594c; padding-left:24px; position:relative; font-weight:600;}
+  .legend li::before{ content:"🌱"; position:absolute; left:0; font-size:13px;}
+  .legend li b{ color:#3f7d5c;}
+  .legend .q{ margin-top:16px; font-size:13.5px; color:#a8917f; font-weight:700; border-top:2px dashed #f4e7d8; padding-top:14px; line-height:1.7;}
+  .legend .q b{ color:#ff9b6a;}
+  .statusrow{ margin-top:14px; display:flex; gap:8px; flex-wrap:wrap; font-size:12px; font-weight:800;}
+  .stag{ border-radius:11px; padding:4px 9px; border:2px solid;}
+</style>
+</head>
+<body>
+
+  <div class="page-title">Nudge · 下一格 <span>· 清单详情 / 状态</span></div>
+  <div class="page-sub">任务状态 5 态（手动改）· 详情一行 meta · 开始这一格弹时长 · 更新日志 🌱</div>
+
+  <div class="screens">
+
+    <!-- ① 清单列表（5 种状态） -->
+    <div class="frame-wrap">
+      <div class="frame-label">①　<b>清单</b>（左侧图标即状态）</div>
+      <div class="phone">
+        <div class="notch"></div>
+        <div class="statusbar"><span>9:41</span><span>📶 🔋</span></div>
+        <div class="nav"><div class="brand">想做点啥 <span class="heart">🌱</span></div><div class="gear">⚙️</div></div>
+        <div class="todo-body">
+          <div class="section-t"><span>在做 · 想做</span><span class="count">3</span></div>
+          <div class="todo-list">
+            <div class="titem"><div class="tstat doing">▶</div><span class="tnum">#1</span><div class="tbody"><div class="tname">写周报</div><div class="tprev"><span class="due-txt">📅 明天</span> · 进行中</div></div><span class="pflag p0">P0</span><div class="tchev">›</div></div>
+            <div class="titem"><div class="tstat todo"></div><span class="tnum">#2</span><div class="tbody"><div class="tname">读 2 篇论文</div><div class="tprev"><span class="due-txt over">📅 逾期 1 天</span> · 未开始</div></div><span class="pflag p1">P1</span><div class="tchev">›</div></div>
+            <div class="titem"><div class="tstat pause">⏸</div><span class="tnum">#3</span><div class="tbody"><div class="tname">去健身房</div><div class="tprev"><span class="due-txt">📅 无期限</span> · 暂停</div></div><span class="pflag p2">P2</span><div class="tchev">›</div></div>
+          </div>
+          <div class="section-t" style="margin-top:9px;"><span>归档</span></div>
+          <div class="todo-list">
+            <div class="titem arch"><div class="tstat done">✓</div><span class="tnum">#4</span><div class="tbody"><div class="tname">整理桌面</div><div class="tprev">完成 · 今天</div></div></div>
+            <div class="titem arch"><div class="tstat drop">✕</div><span class="tnum">#5</span><div class="tbody"><div class="tname">学吉他</div><div class="tprev">遗弃 · 算了</div></div></div>
+          </div>
+        </div>
+        <div class="add-wrap"><div class="add-field"><span class="plus">＋</span><span class="ph">还想做点什么…</span></div></div>
+        <div class="tabbar">
+          <div class="tab"><span class="ti">💬</span><span class="pill">聊天</span></div>
+          <div class="tab active"><span class="ti">📋</span><span class="pill">清单</span></div>
+          <div class="tab"><span class="ti">📊</span><span class="pill">乖乖图</span></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ② 详情页 -->
+    <div class="frame-wrap">
+      <div class="frame-label">②　<b>详情</b>（状态·P0·截止 + 更新日志）</div>
+      <div class="phone">
+        <div class="notch"></div>
+        <div class="statusbar"><span>9:41</span><span>📶 🔋</span></div>
+        <div class="nav"><div class="back">‹</div><div class="brand sub">清单</div><div class="gear">⋯</div></div>
+        <div class="detail-body">
+          <div class="detail-title"><span class="dnum">#1</span> 写周报</div>
+          <div class="dmeta">
+            <span class="mpill doing">▶ 进行中 <span class="ed">⌄</span></span>
+            <span class="mpill p0">P0 <span class="ed">⌄</span></span>
+            <span class="mpill due">📅 明天 <span class="ed">⌄</span></span>
+          </div>
+          <div class="detail-sec">具体内容</div>
+          <div class="note">重点写「清单 tab」的进展，贴上 mockup 链接；语气轻松点，老板爱看图。</div>
+          <div class="detail-sec">更新日志</div>
+          <div class="log">
+            <div class="logrow"><span class="ldot"></span><div class="lc"><div class="lt">昨天 21:30</div><div class="lx">列完大纲 ✅，比想象快</div></div></div>
+            <div class="logrow"><span class="ldot auto"></span><div class="lc"><div class="lt">今天 14:20</div><div class="lx"><span class="tagk">做了 1h</span>开头两段写完，配图还没弄</div></div></div>
+          </div>
+          <div class="logadd">＋ 记一笔进展…</div>
+        </div>
+        <div class="detail-actions">
+          <div class="start-btn">▶ 开始这一格</div>
+          <div class="ghost-btn">⋯</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ③ 开始这一格 → 跳聊天，标题已填 -->
+    <div class="frame-wrap">
+      <div class="frame-label">③　开始这一格 → <b>跳聊天 · 任务名作可删 chip</b></div>
+      <div class="phone">
+        <div class="notch"></div>
+        <div class="statusbar"><span>9:41</span><span>📶 🔋</span></div>
+        <div class="nav"><div class="brand">下一格 <span class="heart">🌱</span></div><div class="gear">⚙️</div></div>
+        <div class="chat">
+          <div class="ai-row">
+            <div class="mascot"><div class="blob sm"><span class="leaf">🌱</span><span class="eye l"></span><span class="eye r"></span><span class="cheek l"></span><span class="cheek r"></span><span class="mouth"></span></div></div>
+            <div class="bubble">从清单挑好啦～<br>这一格打算花多久？🌿</div>
+          </div>
+        </div>
+        <div class="composer">
+          <div class="composer-q">接下来想做什么？</div>
+          <div class="composer-field haschip">
+            <span class="task-chip"><span class="cnum">#1</span> 写周报 <span class="chip-x">×</span></span>
+          </div>
+          <div class="composer-q">打算花多久？</div>
+          <div class="dur-chips">
+            <span class="dchip">30 分钟</span><span class="dchip on">60 分钟</span><span class="dchip">90 分钟</span><span class="dchip">120 分钟</span>
+          </div>
+          <div class="dur-row2">
+            <span class="custom-field">X 分钟</span>
+            <span class="unit-toggle"><span class="seg on">分钟</span><span class="seg">小时</span></span>
+          </div>
+          <div class="start-btn">开始这一格</div>
+        </div>
+        <div class="tabbar">
+          <div class="tab active"><span class="ti">💬</span><span class="pill">聊天</span></div>
+          <div class="tab"><span class="ti">📋</span><span class="pill">清单</span></div>
+          <div class="tab"><span class="ti">📊</span><span class="pill">乖乖图</span></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ④ 改状态 → 状态面板 -->
+    <div class="frame-wrap">
+      <div class="frame-label">④　点状态 ⌄ → <b>手动改状态</b></div>
+      <div class="phone">
+        <div class="notch"></div>
+        <div class="statusbar"><span>9:41</span><span>📶 🔋</span></div>
+        <div class="nav"><div class="back">‹</div><div class="brand sub">清单</div><div class="gear">⋯</div></div>
+        <div class="detail-body">
+          <div class="detail-title"><span class="dnum">#1</span> 写周报</div>
+          <div class="dmeta">
+            <span class="mpill doing">▶ 进行中 <span class="ed">⌄</span></span>
+            <span class="mpill p0">P0 <span class="ed">⌄</span></span>
+            <span class="mpill due">📅 明天 <span class="ed">⌄</span></span>
+          </div>
+          <div class="detail-sec">具体内容</div>
+          <div class="note">重点写「清单 tab」的进展…</div>
+        </div>
+        <div class="dim">
+          <div class="sheet">
+            <div class="handle"></div>
+            <div class="panel-title">任务状态</div>
+            <div class="stopt"><span class="si todo"></span><span class="snm">未开始</span></div>
+            <div class="stopt sel"><span class="si doing">▶</span><span class="snm">进行中</span><span class="sck">✓</span></div>
+            <div class="stopt"><span class="si pause">⏸</span><span class="snm">暂停</span></div>
+            <div class="stopt"><span class="si done">✓</span><span class="snm">完成</span></div>
+            <div class="stopt"><span class="si drop">✕</span><span class="snm">遗弃</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="legend">
+    <h3>这版加了什么 🌱</h3>
+    <ul>
+      <li><b>任务状态（5 态）</b>：未开始 ○ / 进行中 ▶ / 暂停 ⏸ / 完成 ✓ / 遗弃 ✕。在清单里<b>手动改</b>（图④点状态 ⌄ 选），列表左侧图标一眼看出状态，完成/遗弃沉到「归档」并划线淡化。</li>
+      <li><b>详情标题下一行</b>（图②）= 可点编辑的 <b>状态 · P0 · 截止</b> 三个小标，点 ⌄ 就地改，不占大块。</li>
+      <li>每条清单有<b>序列号 #1 #2…</b>（列表 + 详情都显示），方便引用、对号。</li>
+      <li><b>开始这一格</b>（图③）= 跳<b>聊天页</b>。任务名作为一个<b>可删 chip</b>「写周报 #1 ×」塞进输入框，点 × 删掉即可手动输入；时长沿用真实 app 的<b>分钟/小时切换 + 预设 + 自定义</b>，不再是原来那排假 chip。</li>
+      <li><b>不自动完成</b>：到点 check-in 后<b>只往更新日志记一笔进展</b>（图②那条「做了 1h」带橙点=系统自动记的），<b>状态不动</b>——大任务做两小时≠做完，完成与否你手动定。</li>
+      <li>更新日志：系统自动记的（每格 check-in）+ 你随手「＋ 记一笔」混在一条时间线上。</li>
+    </ul>
+    <div class="statusrow">
+      <span class="stag" style="color:#a8917f;background:#f6efe6;border-color:#eadfd2;">○ 未开始</span>
+      <span class="stag" style="color:#3f9e6b;background:#eafaf0;border-color:#c4ebd1;">▶ 进行中</span>
+      <span class="stag" style="color:#dd9b2e;background:#fff6e6;border-color:#ffe1a8;">⏸ 暂停</span>
+      <span class="stag" style="color:#2e9e6b;background:#eafaf0;border-color:#bfe9cd;">✓ 完成</span>
+      <span class="stag" style="color:#b6a395;background:#f3ece3;border-color:#e6dccf;">✕ 遗弃</span>
+    </div>
+    <div class="q">
+      还想定：① 列表<b>默认排序</b>（优先级 / 截止 / 手动 / 按状态分组）？　② 要不要<b>到期提醒</b>（到日子推通知）？　③ <b>分类/标签</b>（工作/学习…）留不留？　④ 开格 check-in 自动记的那条日志，要不要<b>带上 ✅/🍃/😴 的结果</b>？
+    </div>
+  </div>
+
+</body>
+</html>
