@@ -4,8 +4,17 @@ name: CI
 # status stops depending on someone remembering to run them by hand.
 on:
   pull_request:
+    # Pure architecture docs and task specs do not need host checks; mixed
+    # code/config changes still run because paths-ignore only skips when all
+    # changed files match these patterns.
+    paths-ignore:
+      - 'docs/**'
+      - 'tasks/**'
   push:
     branches: [main]
+    paths-ignore:
+      - 'docs/**'
+      - 'tasks/**'
 
 jobs:
   check:
