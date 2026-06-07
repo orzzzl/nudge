@@ -11,13 +11,14 @@
 ## Scope
 - in:
   - `lib/domain/todo.dart`：`enum TodoStatus { notStarted, inProgress, paused, done, dropped }`、`enum TodoPriority { p0, p1, p2 }`、`enum TodoLogKind { manual, auto }`；不可变类 `Todo`（`id?`, `seq`, `title`, `status`, `priority`, `dueDate?`, `note?`, `createdAt`, `updatedAt`）与 `TodoLog`（`id?`, `todoId`, `text`, `kind`, `createdAt`），各带 `copyWith` + `==`/`hashCode`（仿 `lib/domain/plan.dart`）。
-  - `lib/data/db/app_database.dart`：新增 `Todos`、`TodoLogs` 两张 `Table`；给 `Plans` 加 `IntColumn get todoId => integer().nullable()()`；`schemaVersion` 2→3；`onUpgrade` 里 `if (from < 3)` 用 `m.createTable(todos)` / `m.createTable(todoLogs)` / `m.addColumn(plans, plans.todoId)`。枚举列存 `text`（值 = `enum.name`，对齐现有 `status`）。`seq` 为非空 int 列。
+  - `lib/data/db/app_database.dart`：新增 `Todos`、`TodoLogs` 两张 `Table`；给 `Plans` 加 `IntColumn get todoId => integer().nullable()()`；`schemaVersion` 2→3；`onUpgrade` 里 `if (from < 3)` 用 `m.createTable(todos)` / `m.createTable(todoLogs)` / `m.addColumn(plans, plans.todoId)`。枚举列存 `text`（值 = `enum.name`，对齐现有 `status`）。`seq` 为非空 int 列，**加 unique 约束**（`integer().unique()()`），防并发/双击产生重复 `#N`。
 - out: `TodosDao`/`TodoLogsDao`、`TodoRepository`、DI、UI（task 24+）。先不建 DAO（24 一起建）——本 task 只到表定义 + 实体 + migration + 生成代码。
 
 ## Acceptance criteria
 - [ ] `dart run build_runner build` 生成 `app_database.g.dart` 通过；`Todos`/`TodoLogs`/`plans.todoId` 出现在生成代码。
 - [ ] `Todo`/`TodoLog` 实体单测：`copyWith` 改单字段、`==`/`hashCode` 行为正确。
 - [ ] migration 单测：用 drift 的 schema 测试或 `AppDatabase.forTesting` 在内存库建 v3、能 `createAll`；若可行，补 v2→v3 升级测（参考现有 v1→v2 测）。
+- [ ] `seq` 的 unique 约束体现在生成的 schema 里。
 - [ ] `flutter analyze` 无新警告；`dart format` 无改动。
 
 ## Notes / hints

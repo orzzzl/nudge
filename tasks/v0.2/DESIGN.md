@@ -15,7 +15,7 @@
 | 字段 | 类型 | 说明 |
 |---|---|---|
 | `id` | int (autoIncrement) | 主键（drift 内部用）。|
-| `seq` | int | **展示序号 `#N`**。创建时分配 = `max(seq)+1`，**不复用**（删除留洞没关系，引用稳定优先）。用户可用它指代（"开始 #3"）。|
+| `seq` | int **unique** | **展示序号 `#N`**。创建时**在事务里**分配 = `max(seq)+1`，**不复用**（删洞没关系，引用稳定优先）；unique 约束防并发/双击重复。用户可用它指代（"开始 #3"）。|
 | `title` | text(1..200) | 标题，必填。|
 | `status` | text(enum) | 5 态，见下。默认 `notStarted`。|
 | `priority` | text(enum) | `p0`/`p1`/`p2`。默认 `p2`。|
@@ -38,8 +38,9 @@
 
 日志在详情页**时间正序**显示（早在上、新在下）。`auto` 那条视觉上有区分（设计稿②里橙点 + 「做了 1h」小标）。
 
-### plans 表新增一列
+### plans 表新增一列 + Plan domain
 - `plans.todoId` int? —— 一格**来自**哪条 todo（可空；手动输入的格没有）。check-in 回写靠它找到 todo。
+- **domain 的 `Plan`（`lib/domain/plan.dart`）也要加 `int? todoId`**（不止 DB 列）：check-in 只拿到 `Plan` 对象，没有这个字段就读不到关联。须纳入 `copyWith`/`==`/`hashCode` 与 `_mapRow`/各查询的 round-trip（见 task 32）。
 
 枚举一律存为 `enum.name` 文本（与现有 `PlanStatus` 一致，见 `plan_repository_impl.dart`）。
 
@@ -68,7 +69,7 @@
 - **到期 / 逾期提醒**：要不要到日子推通知？（依赖现有 `ReminderScheduler` seam，**单列为后续 task，不在本批 MVP**。）
 - **分类 / 标签**（工作/学习/生活）：留不留？面板分组与筛选依赖它。（暂**不做**，本批不含。）
 - **check-in 自动日志**是否带 `✅/🍃/😴` 结果？（暂定：**带**。）
-- **删除 vs 遗弃**：「遗弃」是状态（保留留痕）；是否还需要硬删除？（暂定：详情「⋯」里提供"删除"，列表不直接删。）
+- **删除 vs 遗弃（已定，采纳 Codex 审核）**：MVP **不做 hard delete**——"不想做了"就把状态改成 `dropped`（留痕、沉「归档」）。`TodoRepository.deleteTodo` 作为能力保留，但**实现为事务内 cascade 删该 todo 的 logs + 把 `plans.todoId == id` 置 null** 再删 todo（防 FK 失败/悬空指针）；UI 本批**不暴露**硬删除入口。check-in 回写（task 34）对"todo 已不存在"**no-op** 防御。
 
 ## 6. 拆分原则
 

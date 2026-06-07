@@ -13,9 +13,9 @@
   - `lib/domain/todo_repository.dart`（抽象类，仿 `plan_repository.dart`）：
     - `Stream<List<Todo>> watchTodos()`（按 [DESIGN.md](DESIGN.md) §5 暂定排序：活跃组 `priority asc, dueDate asc nulls last, seq asc`，归档组 `updatedAt desc`；或先按 `seq` 返回、分组/排序交给 controller——**实现者二选一并在 PR 说明**）。
     - `Future<Todo> getTodoById(int id)` / `Future<Todo?>`。
-    - `Future<Todo> createTodo({required String title, TodoPriority priority = TodoPriority.p2, DateTime? dueDate})`（分配 `seq = max(seq)+1`，`status=notStarted`，`createdAt/updatedAt=now`）。
+    - `Future<Todo> createTodo({required String title, TodoPriority priority = TodoPriority.p2, DateTime? dueDate})`：**在 `db.transaction` 内**分配 `seq = max(seq)+1` 并插入（避免并发/双击重复，配合 task 23 的 unique 约束），`status=notStarted`，`createdAt/updatedAt=now`。
     - `Future<void> updateTodo({required int id, String? title, TodoStatus? status, TodoPriority? priority, DateTime? dueDate, bool clearDueDate, String? note, bool clearNote})`（任一字段，更新 `updatedAt`）。
-    - `Future<void> deleteTodo(int id)`。
+    - `Future<void> deleteTodo(int id)`：**事务内** cascade —— 删该 todo 的 logs + 把 `plans.todoId == id` 置 null，再删 todo（采纳 Codex 审核，防 FK 失败/悬空指针）。**MVP UI 不暴露**此入口（见 task 28），但 repository 须实现且测到。
     - `Stream<List<TodoLog>> watchLogs(int todoId)`（按 `createdAt asc` 正序）+ `Future<void> addLog({required int todoId, required String text, required TodoLogKind kind})`。
   - `lib/data/db/app_database.dart`：`TodosDao`、`TodoLogsDao`（`@DriftAccessor`）。
   - `lib/data/repositories/todo_repository_impl.dart`：实现 + `_mapRow`/`_mapLog` + 枚举 `byName`（仿 `plan_repository_impl.dart`）。
@@ -24,6 +24,7 @@
 
 ## Acceptance criteria
 - [ ] 单测（`AppDatabase.forTesting` 内存库，仿现有 dao/repo 测）：create 分配递增 `seq` 且不复用（删后新建 seq 继续增）；update 各字段 + `clearDueDate`/`clearNote`；watchTodos 发射更新；addLog + watchLogs 正序。
+- [ ] `deleteTodo` cascade 测：删一条有 log 且被某 plan 关联的 todo → 该 todo 的 logs 没了、关联 plan 的 `todoId` 变 null、不抛 FK 错误。
 - [ ] `flutter analyze` 干净；`dart format` 无改动；`flutter test` 通过。
 
 ## Notes / hints

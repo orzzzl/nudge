@@ -12,7 +12,7 @@
 - in:
   - 路由：`GoRoute(path: '/todos/:id', …)` 或在 todos branch 下嵌套；从列表项点击进入。
   - `lib/features/todos/todo_detail_screen.dart`：
-    - 顶部返回 + 「⋯」（更多：先放"删除" → `deleteTodo` + 返回）。
+    - 顶部返回 + 「⋯」（更多菜单）。**MVP 不放 hard delete**（采纳 Codex 审核）——"不想做了"通过状态面板改「遗弃」`dropped`（task 29）。「⋯」本批可留空/占位或放无副作用项（如"复制标题"）。
     - 大标题 `#seq 标题`，标题可编辑（失焦/提交 → `updateTodo(title:)`）。
     - 标题下**一行** meta：状态 chip、`P0/P1/P2` chip、`📅 截止` chip（**本 task 只读展示**，带 `⌄` 暗示可编辑；点击的编辑面板由 29/30 接）。
     - 「具体内容」备注：多行编辑 → `updateTodo(note:/clearNote)`。
@@ -21,7 +21,7 @@
 - out: 状态/优先级/截止的**编辑**（29/30）；更新日志（31）；开始这一格跳转（33）。
 
 ## Acceptance criteria
-- [ ] widget test：进入详情显示标题/序号/meta/备注；改标题、改备注持久化（mock repo 收到 update）；删除返回列表。
+- [ ] widget test：进入详情显示标题/序号/meta/备注；改标题、改备注持久化（mock repo 收到 update）。
 - [ ] meta 三个 chip 的颜色/文案正确（状态/优先级/截止），逾期截止标红。
 - [ ] 无硬编码中文；analyze/format/test 干净。
 
