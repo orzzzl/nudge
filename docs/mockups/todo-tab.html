@@ -52,6 +52,7 @@
   .todo-list{ display:flex; flex-direction:column; gap:7px;}
   .titem{ display:flex; align-items:center; gap:11px; background:#fff; border:2px solid #f1e7da; border-radius:16px; padding:9px 12px; box-shadow:0 3px 0 #f4ece1;}
   .titem.arch{ box-shadow:none; background:#f9f3ea; border-color:#efe6da;}
+  .titem.perm{ background:#faf6ff; border-color:#ece0fb;}
   .tbody{ flex:1; min-width:0;}
   .tname{ font-size:15px; font-weight:700; color:#5a4a3f; line-height:1.25;}
   .titem.arch .tname{ text-decoration:line-through; color:#b6a395;}
@@ -71,6 +72,7 @@
   .pflag.p0{ color:#d9745f; background:#fdeeeb; border-color:#f3d4cd;}
   .pflag.p1{ color:#dd9b2e; background:#fff6e6; border-color:#ffe1a8;}
   .pflag.p2{ color:#3f9e6b; background:#eafaf0; border-color:#c4ebd1;}
+  .pflag.perm{ color:#8a6fb0; background:#f3e6ff; border-color:#e0ccf5;}
   .due-txt{ color:#c4b09c;}
   .due-txt.over{ color:#d9745f;}
 
@@ -78,6 +80,31 @@
   .add-field{ display:flex; align-items:center; gap:9px; background:#fff3e8; border:2px solid #ffe3cd; border-radius:18px; padding:10px 12px 10px 15px;}
   .add-field .plus{ width:24px; height:24px; border-radius:50%; background:linear-gradient(135deg,#8ad6a3,#5cc78f); color:#fff; font-weight:900; font-size:16px; display:flex; align-items:center; justify-content:center; box-shadow:0 2px 0 #4fb87f;}
   .add-field .ph{ font-size:14px; font-weight:600; color:#cbb09b;}
+  /* 「＋ 新建清单项」按钮（点了跳新建编辑页，不是对话框） */
+  .add-btn{ display:flex; align-items:center; justify-content:center; gap:7px; background:linear-gradient(135deg,#8ad6a3,#5cc78f); color:#fff; border-radius:18px; padding:12px; font-size:15px; font-weight:800; box-shadow:0 4px 0 #4fb87f;}
+  .add-btn .bplus{ font-size:18px; font-weight:900;}
+
+  /* 新建 / 编辑清单项页（全屏 push 页） */
+  .edit-title{ background:#fff3e8; border:2px solid #ffcf9f; border-radius:16px; padding:13px 15px; font-size:18px; font-weight:800; margin:2px 0 16px; color:#5a4a3f;}
+  .edit-title.ghost{ color:#cbb09b;}
+  .pick-row{ display:flex; gap:8px; flex-wrap:wrap; margin-bottom:16px;}
+  .ppick{ border-radius:13px; padding:7px 14px; font-size:14px; font-weight:800; border:2px solid;}
+  .ppick.p0{ color:#d9745f; background:#fdeeeb; border-color:#f3d4cd;}
+  .ppick.p1{ color:#dd9b2e; background:#fff6e6; border-color:#ffe1a8;}
+  .ppick.p2{ color:#3f9e6b; background:#eafaf0; border-color:#c4ebd1;}
+  .ppick.p0.on{ background:linear-gradient(135deg,#ff9b8a,#f47c66); color:#fff; border-color:#f47c66; box-shadow:0 3px 0 #e06b55;}
+  .ppick.p1.on{ background:linear-gradient(135deg,#ffb07c,#ff9b6a); color:#fff; border-color:#ff9b6a; box-shadow:0 3px 0 #f08a55;}
+  .ppick.p2.on{ background:linear-gradient(135deg,#8ad6a3,#5cc78f); color:#fff; border-color:#5cc78f; box-shadow:0 3px 0 #4fb87f;}
+  .ppick.perm{ color:#8a6fb0; background:#f3e6ff; border-color:#e0ccf5;}
+  .ppick.perm.on{ background:linear-gradient(135deg,#b89be4,#9d7fd0); color:#fff; border-color:#9d7fd0; box-shadow:0 3px 0 #8a6fb0;}
+  .duepick{ background:#fff; border:2px solid #ffe0c2; border-radius:13px; padding:6px 12px; font-size:13px; font-weight:800; color:#c89368;}
+  .duepick.on{ background:linear-gradient(135deg,#ffb07c,#ff9b6a); border-color:#ff9b6a; color:#fff; box-shadow:0 3px 0 #f08a55;}
+  .duepick.cal{ border-style:dashed; color:#b6a395;}
+  .note.ghost{ color:#cbb09b;}
+  /* 新建页：具体内容做成大多行框，撑满剩余屏幕 */
+  .detail-body.editform{ display:flex; flex-direction:column; min-height:0;}
+  .edit-note{ flex:1; min-height:96px; background:#fffdf8; border:2px solid #f4e7d8; border-radius:16px; padding:13px 15px; font-size:13.5px; line-height:1.6; color:#6a594c; font-weight:600;}
+  .edit-note.ghost{ color:#cbb09b;}
 
   .tabbar{ height:64px; background:#fffdfa; border-top:2px solid #f4e7d8; display:flex;}
   .tab{ flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:3px; font-size:11px; color:#cbb6a3; font-weight:800;}
@@ -200,23 +227,58 @@
         <div class="statusbar"><span>9:41</span><span>📶 🔋</span></div>
         <div class="nav"><div class="brand">想做点啥 <span class="heart">🌱</span></div><div class="gear">⚙️</div></div>
         <div class="todo-body">
-          <div class="section-t"><span>在做 · 想做</span><span class="count">3</span></div>
+          <div class="section-t"><span>在做 · 想做</span><span class="count">2</span></div>
           <div class="todo-list">
-            <div class="titem"><div class="tstat doing">▶</div><span class="tnum">#1</span><div class="tbody"><div class="tname">写周报</div><div class="tprev"><span class="due-txt">📅 明天</span> · 进行中</div></div><span class="pflag p0">P0</span><div class="tchev">›</div></div>
-            <div class="titem"><div class="tstat todo"></div><span class="tnum">#2</span><div class="tbody"><div class="tname">读 2 篇论文</div><div class="tprev"><span class="due-txt over">📅 逾期 1 天</span> · 未开始</div></div><span class="pflag p1">P1</span><div class="tchev">›</div></div>
-            <div class="titem"><div class="tstat pause">⏸</div><span class="tnum">#3</span><div class="tbody"><div class="tname">去健身房</div><div class="tprev"><span class="due-txt">📅 无期限</span> · 暂停</div></div><span class="pflag p2">P2</span><div class="tchev">›</div></div>
+            <div class="titem"><div class="tstat doing">▶</div><span class="tnum">#3</span><div class="tbody"><div class="tname">写周报</div><div class="tprev"><span class="due-txt">📅 明天</span> · 进行中</div></div><span class="pflag p0">P0</span><div class="tchev">›</div></div>
+            <div class="titem"><div class="tstat todo"></div><span class="tnum">#4</span><div class="tbody"><div class="tname">读 2 篇论文</div><div class="tprev"><span class="due-txt over">📅 逾期 1 天</span> · 未开始</div></div><span class="pflag p1">P1</span><div class="tchev">›</div></div>
+          </div>
+          <div class="section-t" style="margin-top:9px;"><span>♾️ 永久</span><span class="count">2</span></div>
+          <div class="todo-list">
+            <div class="titem perm"><span class="tnum">#1</span><div class="tbody"><div class="tname">吃饭</div></div><span class="pflag perm">永久</span><div class="tchev">›</div></div>
+            <div class="titem perm"><span class="tnum">#2</span><div class="tbody"><div class="tname">睡觉</div></div><span class="pflag perm">永久</span><div class="tchev">›</div></div>
           </div>
           <div class="section-t" style="margin-top:9px;"><span>归档</span></div>
           <div class="todo-list">
-            <div class="titem arch"><div class="tstat done">✓</div><span class="tnum">#4</span><div class="tbody"><div class="tname">整理桌面</div><div class="tprev">完成 · 今天</div></div></div>
-            <div class="titem arch"><div class="tstat drop">✕</div><span class="tnum">#5</span><div class="tbody"><div class="tname">学吉他</div><div class="tprev">遗弃 · 算了</div></div></div>
+            <div class="titem arch"><div class="tstat done">✓</div><span class="tnum">#5</span><div class="tbody"><div class="tname">整理桌面</div><div class="tprev">完成 · 今天</div></div></div>
           </div>
         </div>
-        <div class="add-wrap"><div class="add-field"><span class="plus">＋</span><span class="ph">还想做点什么…</span></div></div>
+        <div class="add-wrap"><div class="add-btn"><span class="bplus">＋</span> 新建清单项</div></div>
         <div class="tabbar">
           <div class="tab"><span class="ti">💬</span><span class="pill">聊天</span></div>
           <div class="tab active"><span class="ti">📋</span><span class="pill">清单</span></div>
           <div class="tab"><span class="ti">📊</span><span class="pill">乖乖图</span></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ①b 新建/编辑页（点「＋」跳转，不是对话框） -->
+    <div class="frame-wrap">
+      <div class="frame-label">①b　点「＋」→ <b>新建编辑页</b>（专门页，非对话框）</div>
+      <div class="phone">
+        <div class="notch"></div>
+        <div class="statusbar"><span>9:41</span><span>📶 🔋</span></div>
+        <div class="nav"><div class="back">‹</div><div class="brand sub">新建清单项</div><div class="gear" style="visibility:hidden">·</div></div>
+        <div class="detail-body editform">
+          <div class="detail-sec">想做什么</div>
+          <div class="edit-title ghost">写个标题…</div>
+          <div class="detail-sec">重要程度</div>
+          <div class="pick-row">
+            <span class="ppick p0">P0</span>
+            <span class="ppick p1">P1</span>
+            <span class="ppick p2 on">P2</span>
+            <span class="ppick perm">♾️ 永久</span>
+          </div>
+          <div class="detail-sec">预期完成</div>
+          <div class="pick-row">
+            <span class="duepick">今天</span>
+            <span class="duepick on">明天</span>
+            <span class="duepick cal">选日期 📅</span>
+          </div>
+          <div class="detail-sec">具体内容（可选）</div>
+          <div class="edit-note ghost">写点细节…</div>
+        </div>
+        <div class="detail-actions">
+          <div class="start-btn" style="flex:1;">＋ 创建</div>
         </div>
       </div>
     </div>
@@ -227,9 +289,9 @@
       <div class="phone">
         <div class="notch"></div>
         <div class="statusbar"><span>9:41</span><span>📶 🔋</span></div>
-        <div class="nav"><div class="back">‹</div><div class="brand sub">清单</div><div class="gear">⋯</div></div>
+        <div class="nav"><div class="back">‹</div><div class="brand sub">清单</div><div class="gear" style="visibility:hidden">·</div></div>
         <div class="detail-body">
-          <div class="detail-title"><span class="dnum">#1</span> 写周报</div>
+          <div class="detail-title"><span class="dnum">#3</span> 写周报</div>
           <div class="dmeta">
             <span class="mpill doing">▶ 进行中 <span class="ed">⌄</span></span>
             <span class="mpill p0">P0 <span class="ed">⌄</span></span>
@@ -267,7 +329,7 @@
         <div class="composer">
           <div class="composer-q">接下来想做什么？</div>
           <div class="composer-field haschip">
-            <span class="task-chip"><span class="cnum">#1</span> 写周报 <span class="chip-x">×</span></span>
+            <span class="task-chip"><span class="cnum">#3</span> 写周报 <span class="chip-x">×</span></span>
           </div>
           <div class="composer-q">打算花多久？</div>
           <div class="dur-chips">
@@ -293,9 +355,9 @@
       <div class="phone">
         <div class="notch"></div>
         <div class="statusbar"><span>9:41</span><span>📶 🔋</span></div>
-        <div class="nav"><div class="back">‹</div><div class="brand sub">清单</div><div class="gear">⋯</div></div>
+        <div class="nav"><div class="back">‹</div><div class="brand sub">清单</div><div class="gear" style="visibility:hidden">·</div></div>
         <div class="detail-body">
-          <div class="detail-title"><span class="dnum">#1</span> 写周报</div>
+          <div class="detail-title"><span class="dnum">#3</span> 写周报</div>
           <div class="dmeta">
             <span class="mpill doing">▶ 进行中 <span class="ed">⌄</span></span>
             <span class="mpill p0">P0 <span class="ed">⌄</span></span>

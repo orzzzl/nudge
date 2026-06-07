@@ -10,9 +10,10 @@
 
 ## Scope
 - in:
-  - `lib/domain/todo.dart`：`enum TodoStatus { notStarted, inProgress, paused, done, dropped }`、`enum TodoPriority { p0, p1, p2 }`、`enum TodoLogKind { manual, auto }`；不可变类 `Todo`（`id?`, `seq`, `title`, `status`, `priority`, `dueDate?`, `note?`, `createdAt`, `updatedAt`）与 `TodoLog`（`id?`, `todoId`, `text`, `kind`, `createdAt`），各带 `copyWith` + `==`/`hashCode`（仿 `lib/domain/plan.dart`）。
+  - `lib/domain/todo.dart`：`enum TodoStatus { notStarted, inProgress, paused, done, dropped }`、`enum TodoPriority { p0, p1, p2, permanent }`、`enum TodoLogKind { manual, auto }`；不可变类 `Todo`（`id?`, `seq`, `title`, `status`, `priority`, `dueDate?`, `note?`, `createdAt`, `updatedAt`）与 `TodoLog`（`id?`, `todoId`, `text`, `kind`, `createdAt`），各带 `copyWith` + `==`/`hashCode`（仿 `lib/domain/plan.dart`）。`permanent` 项语义：无 `dueDate`、不参与 `status`（见 DESIGN §2/§3）。
   - `lib/data/db/app_database.dart`：新增 `Todos`、`TodoLogs` 两张 `Table`；给 `Plans` 加 `IntColumn get todoId => integer().nullable()()`；`schemaVersion` 2→3；`onUpgrade` 里 `if (from < 3)` 用 `m.createTable(todos)` / `m.createTable(todoLogs)` / `m.addColumn(plans, plans.todoId)`。枚举列存 `text`（值 = `enum.name`，对齐现有 `status`）。`seq` 为非空 int 列，**加 unique 约束**（`integer().unique()()`），防并发/双击产生重复 `#N`。
-- out: `TodosDao`/`TodoLogsDao`、`TodoRepository`、DI、UI（task 24+）。先不建 DAO（24 一起建）——本 task 只到表定义 + 实体 + migration + 生成代码。
+  - **seed 默认永久项**：`onCreate` **以及** `onUpgrade(from<3)`（已有用户升级时清单表才刚建）都种入两条 `permanent` todo「吃饭」「睡觉」，占最早的 `seq` `#1`/`#2`。文案走 i18n（en/zh）。
+- out: `TodosDao`/`TodoLogsDao`、`TodoRepository`、DI、UI（task 24+）。先不建 DAO（24 一起建）——本 task 到表定义 + 实体 + migration + seed + 生成代码。
 
 ## Acceptance criteria
 - [ ] `dart run build_runner build` 生成 `app_database.g.dart` 通过；`Todos`/`TodoLogs`/`plans.todoId` 出现在生成代码。
