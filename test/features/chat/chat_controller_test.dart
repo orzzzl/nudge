@@ -87,6 +87,31 @@ void main() {
     expect(scheduler.scheduled.single.silent, isFalse);
   });
 
+  test('createPlan threads todoId through to the repository', () async {
+    final repository = _ControllerRepository();
+    final scheduler = _RecordingReminderScheduler();
+    final container = ProviderContainer(
+      overrides: [
+        planRepositoryProvider.overrideWithValue(repository),
+        reminderSchedulerProvider.overrideWithValue(scheduler),
+      ],
+    );
+    addTearDown(container.dispose);
+    addTearDown(scheduler.dispose);
+
+    await container
+        .read(chatControllerProvider.notifier)
+        .createPlan(
+          title: 'From the list',
+          durationSec: 30 * 60,
+          locale: 'en',
+          todoId: 7,
+        );
+
+    expect(repository.createdTodoId, 7);
+    expect(repository.createdPlan?.todoId, 7);
+  });
+
   test('schedules a SILENT reminder when DND is on', () async {
     final repository = _ControllerRepository();
     final scheduler = _RecordingReminderScheduler();
@@ -521,6 +546,7 @@ class _DelayedRestoreRepository implements PlanRepository {
     required int durationSec,
     required DateTime startAt,
     required String locale,
+    int? todoId,
   }) async {
     _createdPlan = _plan(
       id: 2,
@@ -528,6 +554,7 @@ class _DelayedRestoreRepository implements PlanRepository {
       durationSec: durationSec,
       startAt: startAt,
       locale: locale,
+      todoId: todoId,
     );
 
     return _createdPlan!;
@@ -594,6 +621,7 @@ class _ControllerRepository implements PlanRepository {
 
   Plan? createdPlan;
   Plan? activePlan;
+  int? createdTodoId;
   int? checkedInId;
   PlanStatus? checkedInStatus;
   final requestedPlanIds = <int>[];
@@ -605,13 +633,16 @@ class _ControllerRepository implements PlanRepository {
     required int durationSec,
     required DateTime startAt,
     required String locale,
+    int? todoId,
   }) async {
+    createdTodoId = todoId;
     createdPlan = _plan(
       id: 10,
       title: title,
       durationSec: durationSec,
       startAt: startAt,
       locale: locale,
+      todoId: todoId,
     );
     activePlan = createdPlan;
     _plansById[createdPlan!.id!] = createdPlan!;
@@ -743,10 +774,11 @@ Plan _plan({
   required DateTime startAt,
   String locale = 'en',
   PlanStatus status = PlanStatus.running,
+  int? todoId,
 }) {
   return Plan(
     id: id,
-    todoId: null,
+    todoId: todoId,
     title: title,
     durationSec: durationSec,
     startAt: startAt,

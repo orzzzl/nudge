@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../app/cute_palette.dart';
 import '../../../app/widgets/candy.dart';
 import '../../../l10n/generated/app_localizations.dart';
+import '../pending_composer_todo.dart';
 
 /// The unit a user picks a duration in. Internally everything is stored in
 /// seconds; the unit only decides the presets shown and how the typed amount is
@@ -23,17 +25,18 @@ enum DurationUnit {
 /// duration presets plus a custom amount. No sentence parsing and no AI — the
 /// duration is computed from the chosen unit and reported to [onStart] in
 /// **seconds** (the storage unit).
-class PlanComposer extends StatefulWidget {
+class PlanComposer extends ConsumerStatefulWidget {
   const PlanComposer({required this.onStart, super.key});
 
-  /// Called with the task name and the chosen duration in seconds.
-  final void Function(String title, int durationSec) onStart;
+  /// Called with the task name, the chosen duration in seconds, and the id of
+  /// the originating todo (null for plain manual input).
+  final void Function(String title, int durationSec, int? todoId) onStart;
 
   @override
-  State<PlanComposer> createState() => _PlanComposerState();
+  ConsumerState<PlanComposer> createState() => _PlanComposerState();
 }
 
-class _PlanComposerState extends State<PlanComposer> {
+class _PlanComposerState extends ConsumerState<PlanComposer> {
   final TextEditingController _titleController = TextEditingController();
   final TextEditingController _customController = TextEditingController();
 
@@ -46,13 +49,41 @@ class _PlanComposerState extends State<PlanComposer> {
   DurationUnit _unit = DurationUnit.minutes;
   int _selectedValue = 60; // in _unit's terms; defaults to the 60-min preset
 
+  // When set, the task name is locked to this todo's chip instead of the text
+  // field, and starting carries its id onto the plan.
+  PendingComposerTodo? _todo;
+
   @override
   void initState() {
     super.initState();
     // Rebuild as the fields change (custom-amount border + preset highlight).
     _titleController.addListener(_onChanged);
     _customController.addListener(_onChanged);
+    // Drain any todo queued before this composer mounted (e.g. set on the list
+    // tab, then we switch back to an already-active chat tab).
+    _adoptPendingTodo(ref.read(pendingComposerTodoProvider));
   }
+
+  // Take ownership of an incoming todo and empty the shared inbox so re-entering
+  // the tab doesn't re-add it. Safe to call from initState (no setState before
+  // the first build) and from the listener (setState rebuilds the chip).
+  void _adoptPendingTodo(PendingComposerTodo? todo) {
+    if (todo == null) {
+      return;
+    }
+    _todo = todo;
+    if (mounted) {
+      setState(() {});
+    }
+    // Reset outside the current frame: provider state can't change during build.
+    Future.microtask(() {
+      if (mounted) {
+        ref.read(pendingComposerTodoProvider.notifier).clear();
+      }
+    });
+  }
+
+  void _clearTodo() => setState(() => _todo = null);
 
   @override
   void dispose() {
@@ -123,8 +154,11 @@ class _PlanComposerState extends State<PlanComposer> {
   );
 
   void _start() {
+    final todo = _todo;
+    // A chip locks the task name to the todo title; otherwise use the field.
+    final title = todo?.title ?? _titleController.text;
     // Nudge the user to name the task instead of silently doing nothing.
-    if (_titleController.text.trim().isEmpty) {
+    if (title.trim().isEmpty) {
       final l10n = AppLocalizations.of(context);
       ScaffoldMessenger.of(context)
         ..hideCurrentSnackBar()
@@ -140,15 +174,24 @@ class _PlanComposerState extends State<PlanComposer> {
     if (!_hasValidDuration) {
       return; // the custom field's deeper-peach border already flags this
     }
-    widget.onStart(_titleController.text, _durationSec);
+    widget.onStart(title, _durationSec, todo?.todoId);
     _titleController.clear();
     _customController.clear();
+    if (todo != null) {
+      _clearTodo();
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
     final theme = Theme.of(context);
+
+    // Pick up a todo queued while this composer is alive (the common path:
+    // tapping "start this block" on the list/detail screen, task 33).
+    ref.listen<PendingComposerTodo?>(pendingComposerTodoProvider, (_, next) {
+      _adoptPendingTodo(next);
+    });
 
     return Container(
       // Cream composer panel sitting above the gradient (mockup `.composer`).
@@ -173,39 +216,42 @@ class _PlanComposerState extends State<PlanComposer> {
               ),
             ),
           ),
-          TextField(
-            key: const Key('composerTitleField'),
-            controller: _titleController,
-            textInputAction: TextInputAction.done,
-            onSubmitted: (_) => _start(),
-            style: theme.textTheme.bodyMedium?.copyWith(
-              color: CuteColors.textBrown,
-              fontWeight: FontWeight.w600,
-            ),
-            decoration: InputDecoration(
-              hintText: l10n.composerTaskHint,
-              hintStyle: theme.textTheme.bodyMedium?.copyWith(
-                color: CuteColors.textFaint2,
+          if (_todo case final todo?)
+            _TodoChip(seq: todo.seq, title: todo.title, onRemove: _clearTodo)
+          else
+            TextField(
+              key: const Key('composerTitleField'),
+              controller: _titleController,
+              textInputAction: TextInputAction.done,
+              onSubmitted: (_) => _start(),
+              style: theme.textTheme.bodyMedium?.copyWith(
+                color: CuteColors.textBrown,
                 fontWeight: FontWeight.w600,
               ),
-              filled: true,
-              fillColor: CuteColors.fieldBg,
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(18),
-                borderSide: const BorderSide(
-                  color: CuteColors.borderPeach2,
-                  width: 2,
+              decoration: InputDecoration(
+                hintText: l10n.composerTaskHint,
+                hintStyle: theme.textTheme.bodyMedium?.copyWith(
+                  color: CuteColors.textFaint2,
+                  fontWeight: FontWeight.w600,
                 ),
-              ),
-              enabledBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(18),
-                borderSide: const BorderSide(
-                  color: CuteColors.borderPeach2,
-                  width: 2,
+                filled: true,
+                fillColor: CuteColors.fieldBg,
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(18),
+                  borderSide: const BorderSide(
+                    color: CuteColors.borderPeach2,
+                    width: 2,
+                  ),
+                ),
+                enabledBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(18),
+                  borderSide: const BorderSide(
+                    color: CuteColors.borderPeach2,
+                    width: 2,
+                  ),
                 ),
               ),
             ),
-          ),
           const SizedBox(height: 12),
           // Row 1: duration presets for the selected unit.
           Wrap(
@@ -272,6 +318,73 @@ class _PlanComposerState extends State<PlanComposer> {
           ),
           const SizedBox(height: 14),
           CandyButton(label: l10n.startButton, onPressed: _start),
+        ],
+      ),
+    );
+  }
+}
+
+/// The "from the list" task-name chip that replaces the text field: shows
+/// `#seq title` with a × to drop back to manual input. Matcha-tinted so it reads
+/// as "came from the list tab", distinct from the peach duration controls.
+class _TodoChip extends StatelessWidget {
+  const _TodoChip({
+    required this.seq,
+    required this.title,
+    required this.onRemove,
+  });
+
+  final int seq;
+  final String title;
+  final VoidCallback onRemove;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      key: const Key('composerTodoChip'),
+      padding: const EdgeInsets.fromLTRB(14, 12, 8, 12),
+      decoration: BoxDecoration(
+        color: CuteColors.mintConfirm,
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(color: CuteColors.borderMint, width: 2),
+      ),
+      child: Row(
+        children: [
+          Text(
+            '#$seq',
+            style: const TextStyle(
+              color: CuteColors.matchaVivid,
+              fontWeight: FontWeight.w900,
+              fontSize: 14,
+            ),
+          ),
+          const SizedBox(width: 8),
+          Expanded(
+            child: Text(
+              title,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: const TextStyle(
+                color: CuteColors.matcha,
+                fontWeight: FontWeight.w700,
+                fontSize: 14,
+              ),
+            ),
+          ),
+          const SizedBox(width: 6),
+          Material(
+            color: Colors.transparent,
+            shape: const CircleBorder(),
+            child: InkWell(
+              key: const Key('composerTodoChipRemove'),
+              onTap: onRemove,
+              customBorder: const CircleBorder(),
+              child: const Padding(
+                padding: EdgeInsets.all(4),
+                child: Icon(Icons.close, size: 18, color: CuteColors.matcha),
+              ),
+            ),
+          ),
         ],
       ),
     );
