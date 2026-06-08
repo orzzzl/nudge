@@ -3,6 +3,7 @@ import 'package:go_router/go_router.dart';
 import '../features/chat/chat_screen.dart';
 import '../features/settings/settings_screen.dart';
 import '../features/stats/stats_screen.dart';
+import '../features/todos/todo_detail_screen.dart';
 import '../features/todos/todos_screen.dart';
 import 'navigation_shell.dart';
 
@@ -12,6 +13,13 @@ final appRouter = GoRouter(
     GoRoute(
       path: '/settings',
       builder: (context, state) => const SettingsScreen(),
+    ),
+    GoRoute(
+      path: '/todos/:id',
+      builder: (context, state) {
+        final id = int.tryParse(state.pathParameters['id'] ?? '');
+        return TodoDetailScreen(todoId: id ?? 0);
+      },
     ),
     StatefulShellRoute.indexedStack(
       builder: (context, state, navigationShell) {

@@ -11,6 +11,8 @@ import 'package:nudge/domain/plan.dart';
 import 'package:nudge/domain/plan_repository.dart';
 import 'package:nudge/domain/reminder_scheduler.dart';
 import 'package:nudge/domain/settings_repository.dart';
+import 'package:nudge/domain/todo.dart';
+import 'package:nudge/domain/todo_repository.dart';
 import 'package:nudge/features/pet/pet_mood.dart';
 import 'package:nudge/features/pet/pet_providers.dart';
 import 'package:nudge/l10n/generated/app_localizations_en.dart';
@@ -108,6 +110,7 @@ Widget _buildApp({_InMemorySettingsRepository? settingsRepository}) {
   return ProviderScope(
     overrides: [
       planRepositoryProvider.overrideWithValue(const _EmptyPlanRepository()),
+      todoRepositoryProvider.overrideWithValue(const _EmptyTodoRepository()),
       reminderSchedulerProvider.overrideWithValue(
         const _NoopReminderScheduler(),
       ),
@@ -175,6 +178,48 @@ class _EmptyPlanRepository implements PlanRepository {
   }) {
     return Stream.value(const []);
   }
+}
+
+class _EmptyTodoRepository implements TodoRepository {
+  const _EmptyTodoRepository();
+
+  @override
+  Stream<List<Todo>> watchTodos() => Stream.value(const []);
+
+  @override
+  Future<Todo?> getTodoById(int id) async => null;
+
+  @override
+  Future<Todo> createTodo({
+    required String title,
+    TodoPriority priority = TodoPriority.p2,
+    DateTime? dueDate,
+  }) => throw UnimplementedError();
+
+  @override
+  Future<void> updateTodo({
+    required int id,
+    String? title,
+    TodoStatus? status,
+    TodoPriority? priority,
+    DateTime? dueDate,
+    bool clearDueDate = false,
+    String? note,
+    bool clearNote = false,
+  }) => throw UnimplementedError();
+
+  @override
+  Future<void> deleteTodo(int id) => throw UnimplementedError();
+
+  @override
+  Stream<List<TodoLog>> watchLogs(int todoId) => Stream.value(const []);
+
+  @override
+  Future<void> addLog({
+    required int todoId,
+    required String text,
+    required TodoLogKind kind,
+  }) => throw UnimplementedError();
 }
 
 class _NoopReminderScheduler implements ReminderScheduler {

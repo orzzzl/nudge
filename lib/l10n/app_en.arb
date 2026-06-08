@@ -24,6 +24,61 @@
   "@todosEmptyBody": {
     "description": "Body text for the empty state on the todo list tab."
   },
+  "todosLoadError": "The list could not load.",
+  "@todosLoadError": {
+    "description": "Error message shown when the todo list fails to load."
+  },
+  "todosSectionActive": "Doing & up next",
+  "@todosSectionActive": {
+    "description": "Header for the active todos group (not-started / in-progress / paused)."
+  },
+  "todosSectionPermanent": "Always",
+  "@todosSectionPermanent": {
+    "description": "Header for the permanent todos group (everyday, no due date / status)."
+  },
+  "todosSectionArchived": "Archived",
+  "@todosSectionArchived": {
+    "description": "Header for the archived todos group (done / dropped)."
+  },
+  "todoStatusNotStarted": "Not started",
+  "@todoStatusNotStarted": {
+    "description": "Todo status label: not started."
+  },
+  "todoStatusInProgress": "In progress",
+  "@todoStatusInProgress": {
+    "description": "Todo status label: in progress."
+  },
+  "todoStatusPaused": "Paused",
+  "@todoStatusPaused": {
+    "description": "Todo status label: paused."
+  },
+  "todoStatusDone": "Done",
+  "@todoStatusDone": {
+    "description": "Todo status label: done."
+  },
+  "todoStatusDropped": "Dropped",
+  "@todoStatusDropped": {
+    "description": "Todo status label: dropped."
+  },
+  "todoPriorityPermanent": "Always",
+  "@todoPriorityPermanent": {
+    "description": "Priority flag label for permanent todos."
+  },
+  "todoDueToday": "Today",
+  "@todoDueToday": {
+    "description": "Due-date preview: the todo is due today."
+  },
+  "todoDueTomorrow": "Tomorrow",
+  "@todoDueTomorrow": {
+    "description": "Due-date preview: the todo is due tomorrow."
+  },
+  "todoDueOverdue": "{days}d overdue",
+  "@todoDueOverdue": {
+    "description": "Due-date preview when a todo is past its due date.",
+    "placeholders": {
+      "days": { "type": "int", "example": "2" }
+    }
+  },
   "statsScreenTitle": "This week",
   "@statsScreenTitle": {
     "description": "Title for the stats screen."
