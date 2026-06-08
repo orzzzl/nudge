@@ -15,6 +15,7 @@ class PlanRepositoryImpl implements PlanRepository {
     required int durationSec,
     required DateTime startAt,
     required String locale,
+    int? todoId,
   }) async {
     final endAt = startAt.add(Duration(seconds: durationSec));
     final id = await _plansDao.insertPlan(
@@ -26,13 +27,14 @@ class PlanRepositoryImpl implements PlanRepository {
         status: drift.Value(PlanStatus.running.name),
         note: const drift.Value<String?>(null),
         locale: drift.Value(locale),
+        todoId: drift.Value(todoId),
         createdAt: startAt,
       ),
     );
 
     return Plan(
       id: id,
-      todoId: null,
+      todoId: todoId,
       title: title,
       durationSec: durationSec,
       startAt: startAt,

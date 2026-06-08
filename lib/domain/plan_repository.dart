@@ -6,6 +6,7 @@ abstract class PlanRepository {
     required int durationSec,
     required DateTime startAt,
     required String locale,
+    int? todoId,
   });
 
   Future<void> checkIn({

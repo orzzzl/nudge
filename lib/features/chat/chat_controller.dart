@@ -228,6 +228,7 @@ class ChatController extends Notifier<ChatState> {
     required String title,
     required int durationSec,
     required String locale,
+    int? todoId,
   }) async {
     final trimmed = title.trim();
     if (trimmed.isEmpty || state.activePlan != null) {
@@ -239,6 +240,7 @@ class ChatController extends Notifier<ChatState> {
       durationSec: durationSec,
       startAt: DateTime.now(),
       locale: locale,
+      todoId: todoId,
     );
 
     state = state.copyWith(

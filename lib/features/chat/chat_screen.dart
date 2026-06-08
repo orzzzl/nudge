@@ -69,11 +69,13 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
               ),
               if (state.activePlan == null)
                 PlanComposer(
-                  onStart: (title, durationSec) => controller.createPlan(
-                    title: title,
-                    durationSec: durationSec,
-                    locale: Localizations.localeOf(context).languageCode,
-                  ),
+                  onStart: (title, durationSec, todoId) =>
+                      controller.createPlan(
+                        title: title,
+                        durationSec: durationSec,
+                        locale: Localizations.localeOf(context).languageCode,
+                        todoId: todoId,
+                      ),
                 )
               else
                 CountdownCapsule(

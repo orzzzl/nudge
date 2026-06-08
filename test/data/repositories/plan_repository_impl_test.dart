@@ -22,12 +22,14 @@ void main() {
   Future<Plan> createPlan({
     String title = 'Write weekly report',
     DateTime? startAt,
+    int? todoId,
   }) {
     return repository.createPlan(
       title: title,
       durationSec: 60 * 60,
       startAt: startAt ?? _day.add(const Duration(hours: 9)),
       locale: 'en',
+      todoId: todoId,
     );
   }
 
@@ -174,6 +176,32 @@ void main() {
 
     expect(plan, isNotNull);
     expect(plan!.todoId, todoId);
+  });
+
+  test('createPlan persists todoId and round-trips it', () async {
+    final todoId = await database
+        .into(database.todos)
+        .insert(
+          db.TodosCompanion.insert(
+            seq: 5,
+            title: 'Linked todo',
+            createdAt: _day,
+            updatedAt: _day,
+          ),
+        );
+
+    final plan = await createPlan(title: 'From the list', todoId: todoId);
+
+    expect(plan.todoId, todoId);
+    expect((await repository.getPlanById(plan.id!))!.todoId, todoId);
+    expect((await repository.getActivePlan())!.todoId, todoId);
+  });
+
+  test('createPlan without a todoId stores null', () async {
+    final plan = await createPlan(title: 'Manual task');
+
+    expect(plan.todoId, isNull);
+    expect((await repository.getActivePlan())!.todoId, isNull);
   });
 
   test('PlanStatus values round-trip through DB text', () async {
