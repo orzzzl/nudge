@@ -1,7 +1,7 @@
 # 25 — 接入第三个「清单」tab（路由 + 导航 + 占位页）
 
-- **Status:** READY
-- **Owner:** Codex
+- **Status:** IN PROGRESS
+- **Owner:** Claude
 - **Blocked by:** —（用占位页，不依赖数据层）
 - **Allowed new deps:** none
 
