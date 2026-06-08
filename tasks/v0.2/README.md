@@ -11,7 +11,7 @@
 |---|------|------|------------|
 | 23 | [Todo 数据模型 + Drift schema（migration v3）](23-todo-data-model.md) | READY | — |
 | 24 | [TodoRepository seam + Drift 实现 + DI](24-todo-repository.md) | BLOCKED | 23 |
-| 25 | [接入第三个「清单」tab（路由+导航+占位页）](25-todos-tab-shell.md) | IN PROGRESS (Claude, PR #41) | — |
+| 25 | [接入第三个「清单」tab（路由+导航+占位页）](25-todos-tab-shell.md) | DONE (Claude, PR #41) | — |
 | 26 | [清单列表页（controller + 分组列表 UI）](26-todos-list.md) | BLOCKED | 24, 25 |
 | 27 | [添加 todo（「＋」入口）](27-todos-add.md) | BLOCKED | 26 |
 | 28 | [详情页骨架（标题 + 备注 + meta 展示）](28-todos-detail.md) | BLOCKED | 24, 26 |

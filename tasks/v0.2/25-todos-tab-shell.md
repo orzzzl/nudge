@@ -1,6 +1,6 @@
 # 25 — 接入第三个「清单」tab（路由 + 导航 + 占位页）
 
-- **Status:** IN PROGRESS
+- **Status:** DONE (PR #41)
 - **Owner:** Claude
 - **Blocked by:** —（用占位页，不依赖数据层）
 - **Allowed new deps:** none
