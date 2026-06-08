@@ -68,6 +68,45 @@ abstract final class CuteColors {
   // Ledger row divider (mockup `.li border-bottom #f7efe5`).
   static const rowDivider = Color(0xFFF7EFE5);
 
+  // ── Todo list — mockup `todo-tab.html` ────────────────────────────────────
+  // List item card: white fill, cream border, hard offset shadow.
+  static const todoCardBorder = Color(0xFFF1E7DA);
+  static const todoCardShadow = Color(0xFFF4ECE1);
+  // Archived item: flatter, dimmed via colour (never opacity — see task 26).
+  static const todoArchBg = Color(0xFFF9F3EA);
+  static const todoArchBorder = Color(0xFFEFE6DA);
+  // Permanent item: lavender-tinted card.
+  static const todoPermBg = Color(0xFFFAF6FF);
+  static const todoPermBorder = Color(0xFFECE0FB);
+
+  // Status dot (`.tstat`): border + fill + glyph colour per the 5 states.
+  static const todoStatusTodoBorder = Color(0xFFDCCCBA);
+  static const todoStatusTodoBg = Color(0xFFF8F2EA);
+  static const todoStatusPauseBorder = Color(0xFFFFCE73);
+  static const todoStatusPauseBg = Color(0xFFFFF6E6);
+  static const todoStatusPauseGlyph = Color(0xFFDD9B2E);
+  static const todoStatusDropBorder = Color(0xFFDCCCBA);
+  static const todoStatusDropBg = Color(0xFFEFE7DC);
+  static const todoStatusDropGlyph = Color(0xFFB6A395);
+
+  // Priority flag (`.pflag`): text / bg / border per priority.
+  static const todoP0Text = Color(0xFFD9745F);
+  static const todoP0Bg = Color(0xFFFDEEEB);
+  static const todoP0Border = Color(0xFFF3D4CD);
+  static const todoP1Text = Color(0xFFDD9B2E);
+  static const todoP1Bg = Color(0xFFFFF6E6);
+  static const todoP1Border = Color(0xFFFFE1A8);
+  static const todoP2Text = Color(0xFF3F9E6B);
+  static const todoP2Bg = Color(0xFFEAFAF0);
+  static const todoP2Border = Color(0xFFC4EBD1);
+  static const todoPermText = Color(0xFF8A6FB0);
+  static const todoPermFlagBg = Color(0xFFF3E6FF);
+  static const todoPermFlagBorder = Color(0xFFE0CCF5);
+
+  // Due-date preview text: muted normally, coral when overdue.
+  static const todoDueText = textFaint2;
+  static const todoDueOver = Color(0xFFD9745F);
+
   // Gradients used widely enough to name once.
   static const matchaGradient = LinearGradient(
     begin: Alignment.topLeft,
