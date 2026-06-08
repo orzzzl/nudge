@@ -1,8 +1,14 @@
 # 32 — 聊天 composer 支持「来自清单」任务名 chip + plan 关联 todoId
 
-- **Status:** READY
-- **Owner:** Codex
+- **Status:** IN PROGRESS
+- **Owner:** Claude
 - **Blocked by:** 23 ✅ (merged, PR #42)
+
+> **Note (post-#42):** task 23 already landed `Plan.todoId`, the `plans.todoId` column, and the
+> `_mapRow` round-trip (so `getActivePlan`/`getPlanById`/`watchPlans*` already carry `todoId`).
+> Remaining for this task: thread `todoId` through `createPlan` (interface → impl companion →
+> controller → composer `onStart`), the removable composer chip, and `pendingComposerTodoProvider`.
+> `insertPlan` is companion-based, so **no `app_database.dart` change** — stays off Codex's task-24 files.
 - **Allowed new deps:** none
 
 ## Goal

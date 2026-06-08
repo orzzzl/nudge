@@ -18,7 +18,7 @@
 | 29 | [详情：状态编辑（5 态面板）](29-todos-status-edit.md) | BLOCKED | 28 |
 | 30 | [详情：优先级 + 截止日期编辑](30-todos-priority-due-edit.md) | BLOCKED | 28 |
 | 31 | [更新日志（时间线 + 手动记一笔）](31-todos-update-log.md) | BLOCKED | 24, 28 |
-| 32 | [composer「来自清单」chip + plan 关联 todoId](32-composer-todo-chip.md) | READY | 23 ✅ |
+| 32 | [composer「来自清单」chip + plan 关联 todoId](32-composer-todo-chip.md) | IN PROGRESS (Claude) | 23 ✅ |
 | 33 | [「开始这一格」从清单跳聊天预填](33-start-from-todo.md) | BLOCKED | 28, 32, 25 |
 | 34 | [check-in 回写更新日志（auto，不改状态）](34-checkin-writeback.md) | BLOCKED | 24, 32 |
 
