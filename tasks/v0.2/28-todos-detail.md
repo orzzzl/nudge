@@ -2,7 +2,11 @@
 
 - **Status:** BLOCKED
 - **Owner:** Codex
-- **Blocked by:** 24, 26, 27
+- **Blocked by:** 24 ✅, 26 ✅, 27
+
+> **Note (post-#45):** task 26 already added the `/todos/:id` route + a `TodoDetailScreen` placeholder
+> + `todoByIdProvider`. This task fleshes out that screen (don't re-add the route). Still blocked on
+> 27 because the "⋯ → 编辑" action pushes task 27's edit page.
 - **Allowed new deps:** none
 
 ## Goal

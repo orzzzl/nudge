@@ -1,8 +1,13 @@
 # 26 — 清单列表页（controller + 分组列表 UI）
 
-- **Status:** READY
-- **Owner:** Codex
+- **Status:** DONE (PR #45)
+- **Owner:** Claude
 - **Blocked by:** 24 ✅ (PR #44), 25 ✅ (PR #41)
+
+> **Landed for downstream (task 27/28):** `/todos/:id` route → `TodoDetailScreen` placeholder
+> (28 fleshes it out); `todoByIdProvider` (FutureProvider.family) for fetching one todo;
+> `todoGroupsProvider` + `groupTodos` in `todos_controller.dart`; `TodoListItem` widget + the
+> `todo*` palette colours. List rows already `context.push('/todos/<id>')`.
 - **Allowed new deps:** none
 
 ## Goal

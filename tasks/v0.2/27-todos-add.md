@@ -1,8 +1,8 @@
 # 27 — 新建清单项（「＋」→ 全屏新建编辑页）
 
-- **Status:** BLOCKED
+- **Status:** READY
 - **Owner:** Codex
-- **Blocked by:** 26
+- **Blocked by:** 26 ✅ (PR #45)
 - **Allowed new deps:** none
 
 ## Goal
