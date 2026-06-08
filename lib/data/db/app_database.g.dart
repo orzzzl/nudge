@@ -1797,6 +1797,8 @@ abstract class _$AppDatabase extends GeneratedDatabase {
   late final $PetConfigsTable petConfigs = $PetConfigsTable(this);
   late final $TodoLogsTable todoLogs = $TodoLogsTable(this);
   late final PlansDao plansDao = PlansDao(this as AppDatabase);
+  late final TodosDao todosDao = TodosDao(this as AppDatabase);
+  late final TodoLogsDao todoLogsDao = TodoLogsDao(this as AppDatabase);
   @override
   Iterable<TableInfo<Table, Object?>> get allTables =>
       allSchemaEntities.whereType<TableInfo<Table, Object?>>();
@@ -3171,4 +3173,34 @@ class PlansDaoManager {
       $$TodosTableTableManager(_db.attachedDatabase, _db.todos);
   $$PlansTableTableManager get plans =>
       $$PlansTableTableManager(_db.attachedDatabase, _db.plans);
+}
+
+mixin _$TodosDaoMixin on DatabaseAccessor<AppDatabase> {
+  $TodosTable get todos => attachedDatabase.todos;
+  $PlansTable get plans => attachedDatabase.plans;
+  TodosDaoManager get managers => TodosDaoManager(this);
+}
+
+class TodosDaoManager {
+  final _$TodosDaoMixin _db;
+  TodosDaoManager(this._db);
+  $$TodosTableTableManager get todos =>
+      $$TodosTableTableManager(_db.attachedDatabase, _db.todos);
+  $$PlansTableTableManager get plans =>
+      $$PlansTableTableManager(_db.attachedDatabase, _db.plans);
+}
+
+mixin _$TodoLogsDaoMixin on DatabaseAccessor<AppDatabase> {
+  $TodosTable get todos => attachedDatabase.todos;
+  $TodoLogsTable get todoLogs => attachedDatabase.todoLogs;
+  TodoLogsDaoManager get managers => TodoLogsDaoManager(this);
+}
+
+class TodoLogsDaoManager {
+  final _$TodoLogsDaoMixin _db;
+  TodoLogsDaoManager(this._db);
+  $$TodosTableTableManager get todos =>
+      $$TodosTableTableManager(_db.attachedDatabase, _db.todos);
+  $$TodoLogsTableTableManager get todoLogs =>
+      $$TodoLogsTableTableManager(_db.attachedDatabase, _db.todoLogs);
 }

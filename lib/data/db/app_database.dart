@@ -53,7 +53,10 @@ class PetConfigs extends Table {
   DateTimeColumn get updatedAt => dateTime()();
 }
 
-@DriftDatabase(tables: [Plans, PetConfigs, Todos, TodoLogs], daos: [PlansDao])
+@DriftDatabase(
+  tables: [Plans, PetConfigs, Todos, TodoLogs],
+  daos: [PlansDao, TodosDao, TodoLogsDao],
+)
 class AppDatabase extends _$AppDatabase {
   AppDatabase({String? seedLocaleName})
     : _seedTitles = _todoSeedTitlesFor(seedLocaleName ?? Platform.localeName),
@@ -211,6 +214,72 @@ class PlansDao extends DatabaseAccessor<AppDatabase> with _$PlansDaoMixin {
       ]);
 
     return query.watch();
+  }
+}
+
+@DriftAccessor(tables: [Todos, Plans])
+class TodosDao extends DatabaseAccessor<AppDatabase> with _$TodosDaoMixin {
+  TodosDao(super.db);
+
+  Stream<List<TodoRow>> watchTodos() {
+    return select(todos).watch();
+  }
+
+  Future<TodoRow?> getTodoById(int id) {
+    final query = select(todos)..where((todo) => todo.id.equals(id));
+
+    return query.getSingleOrNull();
+  }
+
+  Future<int> getNextSeqCandidate() async {
+    final maxSeq = todos.seq.max();
+    final query = selectOnly(todos)..addColumns([maxSeq]);
+    final row = await query.getSingle();
+
+    return (row.read(maxSeq) ?? 0) + 1;
+  }
+
+  Future<int> insertTodo(TodosCompanion todo) {
+    return into(todos).insert(todo);
+  }
+
+  Future<int> updateTodoById({required int id, required TodosCompanion todo}) {
+    return (update(todos)..where((todo) => todo.id.equals(id))).write(todo);
+  }
+
+  Future<int> deleteTodoById(int id) {
+    return (delete(todos)..where((todo) => todo.id.equals(id))).go();
+  }
+
+  Future<int> clearPlansTodoId(int todoId) {
+    return (update(plans)..where((plan) => plan.todoId.equals(todoId))).write(
+      const PlansCompanion(todoId: Value<int?>(null)),
+    );
+  }
+}
+
+@DriftAccessor(tables: [TodoLogs])
+class TodoLogsDao extends DatabaseAccessor<AppDatabase>
+    with _$TodoLogsDaoMixin {
+  TodoLogsDao(super.db);
+
+  Stream<List<TodoLogRow>> watchLogsForTodo(int todoId) {
+    final query = select(todoLogs)
+      ..where((log) => log.todoId.equals(todoId))
+      ..orderBy([
+        (log) => OrderingTerm.asc(log.createdAt),
+        (log) => OrderingTerm.asc(log.id),
+      ]);
+
+    return query.watch();
+  }
+
+  Future<int> insertLog(TodoLogsCompanion log) {
+    return into(todoLogs).insert(log);
+  }
+
+  Future<int> deleteLogsForTodo(int todoId) {
+    return (delete(todoLogs)..where((log) => log.todoId.equals(todoId))).go();
   }
 }
 
