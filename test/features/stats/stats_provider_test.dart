@@ -132,6 +132,7 @@ Plan _plan({
 }) {
   return Plan(
     id: id,
+    todoId: null,
     title: 'Focus',
     durationSec: durationSec,
     startAt: startAt,

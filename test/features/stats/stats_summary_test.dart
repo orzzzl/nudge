@@ -310,6 +310,7 @@ Plan _plan({
 }) {
   return Plan(
     id: id,
+    todoId: null,
     title: title,
     durationSec: durationSec,
     startAt: startAt,

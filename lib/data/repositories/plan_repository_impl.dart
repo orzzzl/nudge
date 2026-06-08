@@ -32,6 +32,7 @@ class PlanRepositoryImpl implements PlanRepository {
 
     return Plan(
       id: id,
+      todoId: null,
       title: title,
       durationSec: durationSec,
       startAt: startAt,
@@ -90,6 +91,7 @@ class PlanRepositoryImpl implements PlanRepository {
   Plan _mapRow(db.Plan row) {
     return Plan(
       id: row.id,
+      todoId: row.todoId,
       title: row.title,
       durationSec: row.durationSec,
       startAt: row.startAt,
