@@ -1,8 +1,13 @@
 # 24 — TodoRepository seam + Drift 实现 + DI
 
-- **Status:** READY
+- **Status:** DONE (PR #44)
 - **Owner:** Codex
 - **Blocked by:** 23 ✅ (merged, PR #42)
+
+> **Frozen contract for downstream (task 26+):** `watchTodos()` returns a **sorted flat list** —
+> active (`priority asc, dueDate asc nulls-last, seq asc`) → permanent (`seq asc`) → archived
+> (`updatedAt desc`); the controller groups it for display. Offline `#N` (`seq`) effectively tracks
+> the autoincrement `id` so it never reuses a deleted number.
 - **Allowed new deps:** none
 
 ## Goal

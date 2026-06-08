@@ -1,8 +1,8 @@
 # 34 — check-in 回写更新日志（auto，不改状态）
 
-- **Status:** BLOCKED
+- **Status:** READY
 - **Owner:** Codex
-- **Blocked by:** 24, 32
+- **Blocked by:** 24 ✅ (PR #44), 32 ✅ (PR #43)
 - **Allowed new deps:** none
 
 ## Goal

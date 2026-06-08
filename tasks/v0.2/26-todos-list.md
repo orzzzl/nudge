@@ -1,8 +1,8 @@
 # 26 — 清单列表页（controller + 分组列表 UI）
 
-- **Status:** BLOCKED
+- **Status:** READY
 - **Owner:** Codex
-- **Blocked by:** 24, 25
+- **Blocked by:** 24 ✅ (PR #44), 25 ✅ (PR #41)
 - **Allowed new deps:** none
 
 ## Goal

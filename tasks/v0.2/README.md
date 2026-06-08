@@ -10,17 +10,17 @@
 | # | 任务 | 状态 | Blocked by |
 |---|------|------|------------|
 | 23 | [Todo 数据模型 + Drift schema（migration v3）](23-todo-data-model.md) | DONE (Codex, PR #42) | — |
-| 24 | [TodoRepository seam + Drift 实现 + DI](24-todo-repository.md) | READY (Codex) | 23 ✅ |
+| 24 | [TodoRepository seam + Drift 实现 + DI](24-todo-repository.md) | DONE (Codex, PR #44) | 23 ✅ |
 | 25 | [接入第三个「清单」tab（路由+导航+占位页）](25-todos-tab-shell.md) | DONE (Claude, PR #41) | — |
-| 26 | [清单列表页（controller + 分组列表 UI）](26-todos-list.md) | BLOCKED | 24, 25 |
+| 26 | [清单列表页（controller + 分组列表 UI）](26-todos-list.md) | READY | 24 ✅, 25 ✅ |
 | 27 | [添加 todo（「＋」入口）](27-todos-add.md) | BLOCKED | 26 |
-| 28 | [详情页骨架（标题 + 备注 + meta 展示）](28-todos-detail.md) | BLOCKED | 24, 26 |
+| 28 | [详情页骨架（标题 + 备注 + meta 展示）](28-todos-detail.md) | BLOCKED | 24 ✅, 26 |
 | 29 | [详情：状态编辑（5 态面板）](29-todos-status-edit.md) | BLOCKED | 28 |
 | 30 | [详情：优先级 + 截止日期编辑](30-todos-priority-due-edit.md) | BLOCKED | 28 |
-| 31 | [更新日志（时间线 + 手动记一笔）](31-todos-update-log.md) | BLOCKED | 24, 28 |
-| 32 | [composer「来自清单」chip + plan 关联 todoId](32-composer-todo-chip.md) | IN PROGRESS (Claude) | 23 ✅ |
-| 33 | [「开始这一格」从清单跳聊天预填](33-start-from-todo.md) | BLOCKED | 28, 32, 25 |
-| 34 | [check-in 回写更新日志（auto，不改状态）](34-checkin-writeback.md) | BLOCKED | 24, 32 |
+| 31 | [更新日志（时间线 + 手动记一笔）](31-todos-update-log.md) | BLOCKED | 24 ✅, 28 |
+| 32 | [composer「来自清单」chip + plan 关联 todoId](32-composer-todo-chip.md) | DONE (Claude, PR #43) | 23 ✅ |
+| 33 | [「开始这一格」从清单跳聊天预填](33-start-from-todo.md) | BLOCKED | 28, 32 ✅, 25 ✅ |
+| 34 | [check-in 回写更新日志（auto，不改状态）](34-checkin-writeback.md) | READY | 24 ✅, 32 ✅ |
 
 **起步可并行**：`23`（数据模型）和 `25`（tab 壳）无依赖，可同时开；`32` 只等 `23`。其余按 `Blocked by` 解锁。
 每个 task 自带测试，UI task 自带 i18n（**lib/test 内不得有中文**，CI `rg \p{Han}` 守卫）。
