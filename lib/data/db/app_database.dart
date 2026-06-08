@@ -5,10 +5,15 @@ import 'package:drift/native.dart';
 import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
 
+import '../../domain/todo.dart' as domain;
+import '../../l10n/generated/app_localizations_en.dart';
+import '../../l10n/generated/app_localizations_zh.dart';
+
 part 'app_database.g.dart';
 
 class Plans extends Table {
   IntColumn get id => integer().autoIncrement()();
+  IntColumn get todoId => integer().nullable().references(Todos, #id)();
   TextColumn get title => text().withLength(min: 1, max: 200)();
   IntColumn get durationSec => integer()();
   DateTimeColumn get startAt => dateTime()();
@@ -19,6 +24,28 @@ class Plans extends Table {
   DateTimeColumn get createdAt => dateTime()();
 }
 
+@DataClassName('TodoRow')
+class Todos extends Table {
+  IntColumn get id => integer().autoIncrement()();
+  IntColumn get seq => integer().unique()();
+  TextColumn get title => text().withLength(min: 1, max: 200)();
+  TextColumn get status => text().withDefault(const Constant('notStarted'))();
+  TextColumn get priority => text().withDefault(const Constant('p2'))();
+  DateTimeColumn get dueDate => dateTime().nullable()();
+  TextColumn get note => text().nullable()();
+  DateTimeColumn get createdAt => dateTime()();
+  DateTimeColumn get updatedAt => dateTime()();
+}
+
+@DataClassName('TodoLogRow')
+class TodoLogs extends Table {
+  IntColumn get id => integer().autoIncrement()();
+  IntColumn get todoId => integer().references(Todos, #id)();
+  TextColumn get entryText => text().named('text')();
+  TextColumn get kind => text()();
+  DateTimeColumn get createdAt => dateTime()();
+}
+
 class PetConfigs extends Table {
   IntColumn get id => integer().autoIncrement()();
   IntColumn get schemaVer => integer().withDefault(const Constant(1))();
@@ -26,19 +53,27 @@ class PetConfigs extends Table {
   DateTimeColumn get updatedAt => dateTime()();
 }
 
-@DriftDatabase(tables: [Plans, PetConfigs], daos: [PlansDao])
+@DriftDatabase(tables: [Plans, PetConfigs, Todos, TodoLogs], daos: [PlansDao])
 class AppDatabase extends _$AppDatabase {
-  AppDatabase() : super(_openConnection());
+  AppDatabase({String? seedLocaleName})
+    : _seedTitles = _todoSeedTitlesFor(seedLocaleName ?? Platform.localeName),
+      super(_openConnection());
 
-  AppDatabase.forTesting(super.executor);
+  AppDatabase.forTesting(super.executor, {String seedLocaleName = 'en'})
+    : _seedTitles = _todoSeedTitlesFor(seedLocaleName);
+
+  final _TodoSeedTitles _seedTitles;
 
   @override
-  int get schemaVersion => 2;
+  int get schemaVersion => 3;
 
   @override
   MigrationStrategy get migration {
     return MigrationStrategy(
-      onCreate: (migrator) => migrator.createAll(),
+      onCreate: (migrator) async {
+        await migrator.createAll();
+        await _seedDefaultTodos();
+      },
       onUpgrade: (migrator, from, to) async {
         // v2: durations are stored in seconds instead of minutes. Recreate the
         // table so the old `duration_min` column is dropped, backfilling the new
@@ -56,12 +91,65 @@ class AppDatabase extends _$AppDatabase {
                 plans.durationSec: const CustomExpression<int>(
                   'duration_min * 60',
                 ),
+                plans.todoId: const CustomExpression<int>('NULL'),
               },
             ),
           );
         }
+        if (from < 3) {
+          await migrator.createTable(todos);
+          await migrator.createTable(todoLogs);
+          if (!await _hasColumn(tableName: 'plans', columnName: 'todo_id')) {
+            await migrator.addColumn(plans, plans.todoId);
+          }
+          await _seedDefaultTodos();
+        }
       },
     );
+  }
+
+  Future<void> _seedDefaultTodos() async {
+    final now = DateTime.now();
+    await batch((batch) {
+      batch.insertAll(todos, [
+        _defaultTodoCompanion(
+          seq: 1,
+          title: _seedTitles.eatTitle,
+          timestamp: now,
+        ),
+        _defaultTodoCompanion(
+          seq: 2,
+          title: _seedTitles.sleepTitle,
+          timestamp: now,
+        ),
+      ]);
+    });
+  }
+
+  TodosCompanion _defaultTodoCompanion({
+    required int seq,
+    required String title,
+    required DateTime timestamp,
+  }) {
+    return TodosCompanion.insert(
+      seq: seq,
+      title: title,
+      status: Value(domain.TodoStatus.notStarted.name),
+      priority: Value(domain.TodoPriority.permanent.name),
+      dueDate: const Value<DateTime?>(null),
+      note: const Value<String?>(null),
+      createdAt: timestamp,
+      updatedAt: timestamp,
+    );
+  }
+
+  Future<bool> _hasColumn({
+    required String tableName,
+    required String columnName,
+  }) async {
+    final rows = await customSelect('PRAGMA table_info($tableName)').get();
+
+    return rows.any((row) => row.data['name'] == columnName);
   }
 }
 
@@ -133,4 +221,30 @@ LazyDatabase _openConnection() {
 
     return NativeDatabase.createInBackground(file);
   });
+}
+
+class _TodoSeedTitles {
+  const _TodoSeedTitles({required this.eatTitle, required this.sleepTitle});
+
+  final String eatTitle;
+  final String sleepTitle;
+}
+
+_TodoSeedTitles _todoSeedTitlesFor(String localeName) {
+  final languageCode = localeName.split(RegExp('[-_]')).first.toLowerCase();
+  if (languageCode == 'zh') {
+    final localizations = AppLocalizationsZh();
+
+    return _TodoSeedTitles(
+      eatTitle: localizations.todoSeedEatTitle,
+      sleepTitle: localizations.todoSeedSleepTitle,
+    );
+  }
+
+  final localizations = AppLocalizationsEn();
+
+  return _TodoSeedTitles(
+    eatTitle: localizations.todoSeedEatTitle,
+    sleepTitle: localizations.todoSeedSleepTitle,
+  );
 }

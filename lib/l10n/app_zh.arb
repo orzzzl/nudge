@@ -50,6 +50,8 @@
   "resultDone": "记下啦,搞定 ✅",
   "resultPartial": "记下啦,做了点 🍃",
   "resultMissed": "记下啦,没关系,下一格重新来 😴",
+  "todoSeedEatTitle": "吃饭",
+  "todoSeedSleepTitle": "睡觉",
   "settingsTitle": "设置",
   "@settingsTitle": {
     "description": "Title for the settings screen."

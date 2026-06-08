@@ -228,6 +228,14 @@
   "@resultMissed": {
     "description": "Result bubble after checking in as missed."
   },
+  "todoSeedEatTitle": "Eat",
+  "@todoSeedEatTitle": {
+    "description": "Default permanent todo seeded when the local database is first created."
+  },
+  "todoSeedSleepTitle": "Sleep",
+  "@todoSeedSleepTitle": {
+    "description": "Default permanent todo seeded when the local database is first created."
+  },
   "settingsTitle": "Settings",
   "@settingsTitle": {
     "description": "Title for the settings screen."

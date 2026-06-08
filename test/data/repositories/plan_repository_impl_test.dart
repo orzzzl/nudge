@@ -1,3 +1,4 @@
+import 'package:drift/drift.dart' as drift;
 import 'package:drift/native.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:nudge/data/db/app_database.dart' as db;
@@ -47,6 +48,7 @@ void main() {
     expect(plan.endAt, startAt.add(const Duration(minutes: 90)));
     expect(plan.status, PlanStatus.running);
     expect(plan.note, isNull);
+    expect(plan.todoId, isNull);
     expect(plan.locale, 'en');
     expect(plan.createdAt, startAt);
   });
@@ -144,6 +146,36 @@ void main() {
     expect(await repository.getPlanById(999), isNull);
   });
 
+  test('getPlanById maps todoId from the database row', () async {
+    final todoId = await database
+        .into(database.todos)
+        .insert(
+          db.TodosCompanion.insert(
+            seq: 3,
+            title: 'Linked todo',
+            createdAt: _day,
+            updatedAt: _day,
+          ),
+        );
+    final startAt = _day.add(const Duration(hours: 9));
+    final planId = await database.plansDao.insertPlan(
+      db.PlansCompanion.insert(
+        todoId: drift.Value(todoId),
+        title: 'Linked plan',
+        durationSec: 60 * 60,
+        startAt: startAt,
+        endAt: startAt.add(const Duration(hours: 1)),
+        locale: const drift.Value('en'),
+        createdAt: startAt,
+      ),
+    );
+
+    final plan = await repository.getPlanById(planId);
+
+    expect(plan, isNotNull);
+    expect(plan!.todoId, todoId);
+  });
+
   test('PlanStatus values round-trip through DB text', () async {
     for (final (index, status) in PlanStatus.values.indexed) {
       final plan = await createPlan(
@@ -174,6 +206,8 @@ void main() {
     expect(plan.copyWith(note: 'A note').note, 'A note');
     expect(plan.copyWith(note: null).note, isNull);
     expect(plan.copyWith(id: null).id, isNull);
+    expect(plan.copyWith(todoId: 1).todoId, 1);
+    expect(plan.copyWith(todoId: null).todoId, isNull);
   });
 }
 

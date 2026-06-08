@@ -1,6 +1,9 @@
 import 'package:drift/native.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:nudge/data/db/app_database.dart';
+import 'package:nudge/domain/todo.dart' as domain;
+import 'package:nudge/l10n/generated/app_localizations_en.dart';
+import 'package:nudge/l10n/generated/app_localizations_zh.dart';
 
 void main() {
   late AppDatabase database;
@@ -13,6 +16,52 @@ void main() {
 
   tearDown(() async {
     await database.close();
+  });
+
+  test('seeds default permanent todos from English localizations', () async {
+    final localizations = AppLocalizationsEn();
+
+    final todos = await database.select(database.todos).get();
+
+    expect(todos, hasLength(2));
+    expect(todos.map((todo) => todo.seq), [1, 2]);
+    expect(todos.map((todo) => todo.title), [
+      localizations.todoSeedEatTitle,
+      localizations.todoSeedSleepTitle,
+    ]);
+    expect(
+      todos.map((todo) => todo.priority),
+      everyElement(domain.TodoPriority.permanent.name),
+    );
+    expect(
+      todos.map((todo) => todo.status),
+      everyElement(domain.TodoStatus.notStarted.name),
+    );
+    expect(todos.map((todo) => todo.dueDate), everyElement(isNull));
+  });
+
+  test('can seed default permanent todos from Chinese localizations', () async {
+    await database.close();
+    final zhDatabase = AppDatabase.forTesting(
+      NativeDatabase.memory(),
+      seedLocaleName: 'zh',
+    );
+    database = zhDatabase;
+    final localizations = AppLocalizationsZh();
+
+    final todos = await zhDatabase.select(zhDatabase.todos).get();
+
+    expect(todos.map((todo) => todo.title), [
+      localizations.todoSeedEatTitle,
+      localizations.todoSeedSleepTitle,
+    ]);
+  });
+
+  test('enforces unique todo seq values', () async {
+    await expectLater(
+      database.into(database.todos).insert(_todoCompanion(seq: 1)),
+      throwsA(isA<SqliteException>()),
+    );
   });
 
   test('inserts a plan with forward-compatible text defaults', () async {
@@ -134,5 +183,17 @@ PlansCompanion _planCompanion({
     startAt: resolvedStartAt,
     endAt: endAt ?? resolvedStartAt.add(const Duration(hours: 1)),
     createdAt: _day,
+  );
+}
+
+TodosCompanion _todoCompanion({
+  required int seq,
+  String title = 'Duplicate todo',
+}) {
+  return TodosCompanion.insert(
+    seq: seq,
+    title: title,
+    createdAt: _day,
+    updatedAt: _day,
   );
 }

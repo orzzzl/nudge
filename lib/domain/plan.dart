@@ -3,6 +3,7 @@ enum PlanStatus { running, done, partial, missed, abandoned }
 class Plan {
   const Plan({
     required this.id,
+    required this.todoId,
     required this.title,
     required this.durationSec,
     required this.startAt,
@@ -14,6 +15,7 @@ class Plan {
   });
 
   final int? id;
+  final int? todoId;
   final String title;
   final int durationSec;
   final DateTime startAt;
@@ -25,6 +27,7 @@ class Plan {
 
   Plan copyWith({
     Object? id = _unset,
+    Object? todoId = _unset,
     String? title,
     int? durationSec,
     DateTime? startAt,
@@ -36,6 +39,7 @@ class Plan {
   }) {
     return Plan(
       id: identical(id, _unset) ? this.id : id as int?,
+      todoId: identical(todoId, _unset) ? this.todoId : todoId as int?,
       title: title ?? this.title,
       durationSec: durationSec ?? this.durationSec,
       startAt: startAt ?? this.startAt,
@@ -52,6 +56,7 @@ class Plan {
     return identical(this, other) ||
         other is Plan &&
             other.id == id &&
+            other.todoId == todoId &&
             other.title == title &&
             other.durationSec == durationSec &&
             other.startAt == startAt &&
@@ -66,6 +71,7 @@ class Plan {
   int get hashCode {
     return Object.hash(
       id,
+      todoId,
       title,
       durationSec,
       startAt,
