@@ -3,6 +3,7 @@ import 'package:go_router/go_router.dart';
 import '../features/chat/chat_screen.dart';
 import '../features/settings/settings_screen.dart';
 import '../features/stats/stats_screen.dart';
+import '../features/todos/todos_screen.dart';
 import 'navigation_shell.dart';
 
 final appRouter = GoRouter(
@@ -22,6 +23,14 @@ final appRouter = GoRouter(
             GoRoute(
               path: '/chat',
               builder: (context, state) => const ChatScreen(),
+            ),
+          ],
+        ),
+        StatefulShellBranch(
+          routes: [
+            GoRoute(
+              path: '/todos',
+              builder: (context, state) => const TodosScreen(),
             ),
           ],
         ),

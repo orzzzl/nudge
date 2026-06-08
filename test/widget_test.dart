@@ -17,19 +17,29 @@ import 'package:nudge/l10n/generated/app_localizations_en.dart';
 import 'package:nudge/l10n/generated/app_localizations_zh.dart';
 
 void main() {
-  testWidgets('shows the two-tab shell and switches tabs', (tester) async {
+  testWidgets('shows the three-tab shell and switches tabs', (tester) async {
     final localizations = AppLocalizationsEn();
 
     await tester.pumpWidget(_buildApp());
     await tester.pumpAndSettle();
 
     expect(find.text(localizations.chatTabLabel), findsAtLeastNWidgets(1));
+    expect(find.text(localizations.todosTabLabel), findsAtLeastNWidgets(1));
     expect(find.text(localizations.statsTabLabel), findsAtLeastNWidgets(1));
 
+    // Chat → List: the placeholder empty state shows.
+    await tester.tap(find.text(localizations.todosTabLabel).first);
+    await tester.pumpAndSettle();
+    expect(find.text(localizations.todosEmptyTitle), findsOneWidget);
+
+    // List → Stats, then back to Chat: the list tab is no longer on screen.
     await tester.tap(find.text(localizations.statsTabLabel).first);
     await tester.pumpAndSettle();
+    expect(find.text(localizations.todosEmptyTitle), findsNothing);
 
-    expect(find.text(localizations.statsTabLabel), findsAtLeastNWidgets(1));
+    await tester.tap(find.text(localizations.chatTabLabel).first);
+    await tester.pumpAndSettle();
+    expect(find.text(localizations.todosEmptyTitle), findsNothing);
   });
 
   testWidgets('shows Chinese labels for the zh locale', (tester) async {

@@ -56,6 +56,11 @@ class NudgeNavigationShell extends StatelessWidget {
             label: localizations.chatTabLabel,
           ),
           NavigationDestination(
+            icon: const Icon(Icons.checklist_outlined),
+            selectedIcon: const Icon(Icons.checklist),
+            label: localizations.todosTabLabel,
+          ),
+          NavigationDestination(
             icon: const Icon(Icons.bar_chart_outlined),
             selectedIcon: const Icon(Icons.bar_chart),
             label: localizations.statsTabLabel,

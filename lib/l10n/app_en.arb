@@ -12,6 +12,18 @@
   "@statsTabLabel": {
     "description": "Bottom navigation label for the stats tab."
   },
+  "todosTabLabel": "List",
+  "@todosTabLabel": {
+    "description": "Bottom navigation label for the todo list tab."
+  },
+  "todosEmptyTitle": "Your list is empty",
+  "@todosEmptyTitle": {
+    "description": "Title for the empty state on the todo list tab."
+  },
+  "todosEmptyBody": "Jot down what you'd like to get to.",
+  "@todosEmptyBody": {
+    "description": "Body text for the empty state on the todo list tab."
+  },
   "statsScreenTitle": "This week",
   "@statsScreenTitle": {
     "description": "Title for the stats screen."
