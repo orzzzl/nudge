@@ -1,6 +1,6 @@
 # 23 — Todo 数据模型 + Drift schema（migration v3）
 
-- **Status:** READY
+- **Status:** DONE (PR #42)
 - **Owner:** Codex
 - **Blocked by:** —
 - **Allowed new deps:** none

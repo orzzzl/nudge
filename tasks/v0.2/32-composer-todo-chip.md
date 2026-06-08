@@ -1,8 +1,8 @@
 # 32 — 聊天 composer 支持「来自清单」任务名 chip + plan 关联 todoId
 
-- **Status:** BLOCKED
+- **Status:** READY
 - **Owner:** Codex
-- **Blocked by:** 23
+- **Blocked by:** 23 ✅ (merged, PR #42)
 - **Allowed new deps:** none
 
 ## Goal

@@ -1,8 +1,8 @@
 # 24 — TodoRepository seam + Drift 实现 + DI
 
-- **Status:** BLOCKED
+- **Status:** READY
 - **Owner:** Codex
-- **Blocked by:** 23
+- **Blocked by:** 23 ✅ (merged, PR #42)
 - **Allowed new deps:** none
 
 ## Goal
