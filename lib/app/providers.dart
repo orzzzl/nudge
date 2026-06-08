@@ -6,11 +6,13 @@ import 'package:package_info_plus/package_info_plus.dart';
 import '../data/db/app_database.dart';
 import '../data/notify/local_reminder_scheduler.dart';
 import '../data/repositories/plan_repository_impl.dart';
+import '../data/repositories/todo_repository_impl.dart';
 import '../data/settings/shared_prefs_settings_repository.dart';
 import '../domain/app_settings.dart';
 import '../domain/plan_repository.dart';
 import '../domain/reminder_scheduler.dart';
 import '../domain/settings_repository.dart';
+import '../domain/todo_repository.dart';
 
 final appDatabaseProvider = Provider<AppDatabase>((ref) {
   final database = AppDatabase();
@@ -23,6 +25,12 @@ final planRepositoryProvider = Provider<PlanRepository>((ref) {
   final database = ref.watch(appDatabaseProvider);
 
   return PlanRepositoryImpl(database.plansDao);
+});
+
+final todoRepositoryProvider = Provider<TodoRepository>((ref) {
+  final database = ref.watch(appDatabaseProvider);
+
+  return TodoRepositoryImpl(database);
 });
 
 final reminderSchedulerProvider = Provider<ReminderScheduler>((ref) {
