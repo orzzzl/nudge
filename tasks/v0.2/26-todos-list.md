@@ -10,7 +10,7 @@
 
 ## Scope
 - in:
-  - `lib/features/todos/todos_controller.dart`：Notifier/AsyncNotifier，watch `todoRepository.watchTodos()`，拆成两组——**活跃**（`notStarted`/`inProgress`/`paused`）与**归档**（`done`/`dropped`）。
+  - `lib/features/todos/todos_controller.dart`：Notifier/AsyncNotifier，watch `todoRepository.watchTodos()`，拆成**三组**——**活跃**（非永久任务里 `notStarted`/`inProgress`/`paused`）、**♾️ 永久**（`priority==permanent`，紫色卡片 + 紫「永久」标、**无状态图标、无截止**）、**归档**（`done`/`dropped`，划线淡化）。
   - `lib/features/todos/todos_screen.dart` + `widgets/todo_list_item.dart`：
     - 列表项：左 5 态图标（未开始空心○ / 进行中▶ / 暂停⏸ / 完成✓ / 遗弃✕，配色见设计稿）；`#seq`；标题；第二行 = 截止（逾期 `dueDate < today` 标红）+ 状态/备注预览；右 `P0/P1/P2` 小标 + `›`。归档项划线淡化（用颜色，**不用 `opacity`**，见下）。
     - 分组标题「在做 · 想做」/「归档」。空状态（无 todo 时团团语气）。
