@@ -6,6 +6,7 @@ import 'package:nudge/app/providers.dart';
 import 'package:nudge/domain/todo.dart';
 import 'package:nudge/domain/todo_repository.dart';
 import 'package:nudge/features/todos/todo_detail_screen.dart';
+import 'package:nudge/features/todos/todo_edit_screen.dart';
 import 'package:nudge/features/todos/todos_controller.dart';
 import 'package:nudge/features/todos/todos_screen.dart';
 import 'package:nudge/l10n/generated/app_localizations.dart';
@@ -108,6 +109,16 @@ void main() {
 
     expect(find.byKey(const Key('todoDetailScreen')), findsOneWidget);
   });
+
+  testWidgets('the add button opens the new-item page', (tester) async {
+    final l10n = AppLocalizationsEn();
+    await _pump(tester, const []);
+
+    await tester.tap(find.text('＋ ${l10n.todoAddButton}'));
+    await tester.pumpAndSettle();
+
+    expect(find.byKey(const Key('todoEditScreen')), findsOneWidget);
+  });
 }
 
 Future<void> _pump(WidgetTester tester, List<Todo> todos) async {
@@ -115,6 +126,7 @@ Future<void> _pump(WidgetTester tester, List<Todo> todos) async {
     initialLocation: '/todos',
     routes: [
       GoRoute(path: '/todos', builder: (_, _) => const TodosScreen()),
+      GoRoute(path: '/todos/new', builder: (_, _) => const TodoEditScreen()),
       GoRoute(
         path: '/todos/:id',
         builder: (_, state) =>
@@ -183,6 +195,7 @@ class _FakeTodoRepository implements TodoRepository {
     required String title,
     TodoPriority priority = TodoPriority.p2,
     DateTime? dueDate,
+    String? note,
   }) => throw UnimplementedError();
 
   @override

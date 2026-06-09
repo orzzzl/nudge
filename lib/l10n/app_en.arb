@@ -79,6 +79,50 @@
       "days": { "type": "int", "example": "2" }
     }
   },
+  "todoDuePick": "Pick a date",
+  "@todoDuePick": {
+    "description": "Due-date option that opens a date picker."
+  },
+  "todoAddButton": "New list item",
+  "@todoAddButton": {
+    "description": "Button at the bottom of the list that opens the new-item page."
+  },
+  "todoNewItemTitle": "New item",
+  "@todoNewItemTitle": {
+    "description": "App-bar title of the new list-item page."
+  },
+  "todoFormTitleLabel": "What do you want to do?",
+  "@todoFormTitleLabel": {
+    "description": "Section label above the title field on the todo edit form."
+  },
+  "todoFormTitleHint": "Write a title…",
+  "@todoFormTitleHint": {
+    "description": "Placeholder in the todo title field."
+  },
+  "todoFormPriorityLabel": "Priority",
+  "@todoFormPriorityLabel": {
+    "description": "Section label above the priority picker."
+  },
+  "todoFormDueLabel": "Due",
+  "@todoFormDueLabel": {
+    "description": "Section label above the due-date picker."
+  },
+  "todoFormNoteLabel": "Notes (optional)",
+  "@todoFormNoteLabel": {
+    "description": "Section label above the note field."
+  },
+  "todoFormNoteHint": "A few details…",
+  "@todoFormNoteHint": {
+    "description": "Placeholder in the todo note field."
+  },
+  "todoCreateButton": "Create",
+  "@todoCreateButton": {
+    "description": "Button that creates the new todo."
+  },
+  "todoNeedTitle": "Give it a name first ~",
+  "@todoNeedTitle": {
+    "description": "Reminder shown when Create is tapped with an empty title."
+  },
   "statsScreenTitle": "This week",
   "@statsScreenTitle": {
     "description": "Title for the stats screen."

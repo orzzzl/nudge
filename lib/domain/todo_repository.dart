@@ -9,6 +9,7 @@ abstract class TodoRepository {
     required String title,
     TodoPriority priority = TodoPriority.p2,
     DateTime? dueDate,
+    String? note,
   });
 
   Future<void> updateTodo({

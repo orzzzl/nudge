@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:nudge/l10n/generated/app_localizations.dart';
 
 import '../../app/cute_palette.dart';
+import '../../app/widgets/candy.dart';
 import '../../domain/todo.dart';
 import 'todos_controller.dart';
 import 'widgets/todo_list_item.dart';
@@ -22,16 +23,30 @@ class TodosScreen extends ConsumerWidget {
     return Scaffold(
       backgroundColor: Colors.transparent,
       body: SafeArea(
-        child: groupsAsync.when(
-          data: (groups) =>
-              groups.isEmpty ? const _EmptyState() : _TodoList(groups: groups),
-          loading: () => const Center(child: CircularProgressIndicator()),
-          error: (_, _) => Center(
-            child: Text(
-              l10n.todosLoadError,
-              style: const TextStyle(color: CuteColors.textMuted2),
+        child: Column(
+          children: [
+            Expanded(
+              child: groupsAsync.when(
+                data: (groups) => groups.isEmpty
+                    ? const _EmptyState()
+                    : _TodoList(groups: groups),
+                loading: () => const Center(child: CircularProgressIndicator()),
+                error: (_, _) => Center(
+                  child: Text(
+                    l10n.todosLoadError,
+                    style: const TextStyle(color: CuteColors.textMuted2),
+                  ),
+                ),
+              ),
             ),
-          ),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 4, 16, 12),
+              child: CandyButton(
+                label: '＋ ${l10n.todoAddButton}',
+                onPressed: () => context.push('/todos/new'),
+              ),
+            ),
+          ],
         ),
       ),
     );
