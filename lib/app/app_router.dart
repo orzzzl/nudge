@@ -4,6 +4,7 @@ import '../features/chat/chat_screen.dart';
 import '../features/settings/settings_screen.dart';
 import '../features/stats/stats_screen.dart';
 import '../features/todos/todo_detail_screen.dart';
+import '../features/todos/todo_edit_screen.dart';
 import '../features/todos/todos_screen.dart';
 import 'navigation_shell.dart';
 
@@ -13,6 +14,10 @@ final appRouter = GoRouter(
     GoRoute(
       path: '/settings',
       builder: (context, state) => const SettingsScreen(),
+    ),
+    GoRoute(
+      path: '/todos/new',
+      builder: (context, state) => const TodoEditScreen(),
     ),
     GoRoute(
       path: '/todos/:id',

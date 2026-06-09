@@ -34,6 +34,7 @@ class TodoRepositoryImpl implements TodoRepository {
     required String title,
     TodoPriority priority = TodoPriority.p2,
     DateTime? dueDate,
+    String? note,
   }) {
     return _database.transaction(() async {
       final seqCandidate = await _todosDao.getNextSeqCandidate();
@@ -48,7 +49,7 @@ class TodoRepositoryImpl implements TodoRepository {
           status: drift.Value(TodoStatus.notStarted.name),
           priority: drift.Value(priority.name),
           dueDate: drift.Value(storedDueDate),
-          note: const drift.Value<String?>(null),
+          note: drift.Value(note),
           createdAt: now,
           updatedAt: now,
         ),
