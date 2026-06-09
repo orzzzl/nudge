@@ -1,7 +1,7 @@
 # 30 — 详情：优先级 + 截止日期编辑
 
-- **Status:** READY
-- **Owner:** Codex
+- **Status:** DONE (PR #50)
+- **Owner:** Claude
 - **Blocked by:** 28
 - **Allowed new deps:** none
 

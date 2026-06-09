@@ -16,7 +16,7 @@
 | 27 | [添加 todo（「＋」入口）](27-todos-add.md) | DONE (Claude, PR #46) | 26 ✅ |
 | 28 | [详情页骨架（标题 + 备注 + meta 展示）](28-todos-detail.md) | DONE (Claude, PR #47) | 24 ✅, 26 ✅, 27 ✅ |
 | 29 | [详情：状态编辑（5 态面板）](29-todos-status-edit.md) | DONE (Claude, PR #48) | 28 ✅ |
-| 30 | [详情：优先级 + 截止日期编辑](30-todos-priority-due-edit.md) | READY | 28 ✅ |
+| 30 | [详情：优先级 + 截止日期编辑](30-todos-priority-due-edit.md) | DONE (Claude, PR #50) | 28 ✅ |
 | 31 | [更新日志（时间线 + 手动记一笔）](31-todos-update-log.md) | READY | 24 ✅, 28 ✅ |
 | 32 | [composer「来自清单」chip + plan 关联 todoId](32-composer-todo-chip.md) | DONE (Claude, PR #43) | 23 ✅ |
 | 33 | [「开始这一格」从清单跳聊天预填](33-start-from-todo.md) | READY | 28 ✅, 32 ✅, 25 ✅ |
