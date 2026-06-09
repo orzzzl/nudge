@@ -1,7 +1,7 @@
 # 31 — 更新日志（时间线 + 手动记一笔）
 
-- **Status:** READY
-- **Owner:** Codex
+- **Status:** DONE (PR #52)
+- **Owner:** Claude
 - **Blocked by:** 24, 28
 - **Allowed new deps:** none
 
