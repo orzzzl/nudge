@@ -105,15 +105,18 @@ class TodoStatusDot extends StatelessWidget {
 }
 
 /// Priority flag (`.pflag`): coloured pill, shared by the list row and detail.
+/// When [onTap] is set it's editable — shows a `⌄` and opens the priority panel.
 class TodoPriorityChip extends StatelessWidget {
   const TodoPriorityChip({
     required this.priority,
     required this.label,
+    this.onTap,
     super.key,
   });
 
   final TodoPriority priority;
   final String label;
+  final VoidCallback? onTap;
 
   @override
   Widget build(BuildContext context) {
@@ -140,19 +143,29 @@ class TodoPriorityChip extends StatelessWidget {
       ),
     };
 
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 5),
-      decoration: BoxDecoration(
-        color: bg,
-        borderRadius: BorderRadius.circular(11),
-        border: Border.all(color: border, width: 2),
-      ),
-      child: Text(
-        label,
-        style: TextStyle(
-          fontSize: 12,
-          fontWeight: FontWeight.w900,
-          color: text,
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 5),
+        decoration: BoxDecoration(
+          color: bg,
+          borderRadius: BorderRadius.circular(11),
+          border: Border.all(color: border, width: 2),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              label,
+              style: TextStyle(
+                fontSize: 12,
+                fontWeight: FontWeight.w900,
+                color: text,
+              ),
+            ),
+            if (onTap != null)
+              Icon(Icons.keyboard_arrow_down_rounded, size: 15, color: text),
+          ],
         ),
       ),
     );
@@ -224,35 +237,56 @@ class TodoStatusChip extends StatelessWidget {
   }
 }
 
-/// Detail-page due chip: the [todoDuePreview] text, coral when overdue.
+/// Detail-page due chip: the [todoDuePreview] text (or "no date" when [dueDate]
+/// is null), coral when overdue. When [onTap] is set it's editable (shows `⌄`).
 class TodoDueChip extends StatelessWidget {
-  const TodoDueChip({required this.dueDate, super.key});
+  const TodoDueChip({required this.dueDate, this.onTap, super.key});
 
-  final DateTime dueDate;
+  final DateTime? dueDate;
+  final VoidCallback? onTap;
 
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
-    final due = todoDuePreview(context, l10n, dueDate);
+    final date = dueDate;
+    final due = date == null ? null : todoDuePreview(context, l10n, date);
+    final text = due?.text ?? l10n.todoDueNone;
+    final overdue = due?.overdue ?? false;
 
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 11, vertical: 5),
-      decoration: BoxDecoration(
-        color: CuteColors.white,
-        borderRadius: BorderRadius.circular(11),
-        border: Border.all(
-          color: due.overdue
-              ? CuteColors.todoP0Border
-              : CuteColors.borderNeutral,
-          width: 2,
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 11, vertical: 5),
+        decoration: BoxDecoration(
+          color: CuteColors.white,
+          borderRadius: BorderRadius.circular(11),
+          border: Border.all(
+            color: overdue ? CuteColors.todoP0Border : CuteColors.borderNeutral,
+            width: 2,
+          ),
         ),
-      ),
-      child: Text(
-        due.text,
-        style: TextStyle(
-          fontSize: 12,
-          fontWeight: FontWeight.w800,
-          color: due.overdue ? CuteColors.todoDueOver : CuteColors.textMuted,
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              text,
+              style: TextStyle(
+                fontSize: 12,
+                fontWeight: FontWeight.w800,
+                color: overdue
+                    ? CuteColors.todoDueOver
+                    : (date == null
+                          ? CuteColors.textFaint
+                          : CuteColors.textMuted),
+              ),
+            ),
+            if (onTap != null)
+              const Icon(
+                Icons.keyboard_arrow_down_rounded,
+                size: 15,
+                color: CuteColors.textMuted,
+              ),
+          ],
         ),
       ),
     );
