@@ -1,0 +1,250 @@
+import 'dart:async';
+
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_test/flutter_test.dart';
+import 'package:go_router/go_router.dart';
+import 'package:nudge/app/providers.dart';
+import 'package:nudge/domain/todo.dart';
+import 'package:nudge/domain/todo_repository.dart';
+import 'package:nudge/features/todos/todo_detail_screen.dart';
+import 'package:nudge/features/todos/todo_edit_screen.dart';
+import 'package:nudge/l10n/generated/app_localizations.dart';
+import 'package:nudge/l10n/generated/app_localizations_en.dart';
+
+void main() {
+  final l10n = AppLocalizationsEn();
+  late _DetailFakeRepository repository;
+
+  setUp(() => repository = _DetailFakeRepository());
+  tearDown(() => repository.dispose());
+
+  Future<void> pumpDetail(WidgetTester tester, Todo todo) async {
+    repository.todo = todo;
+    late final GoRouter router;
+    router = GoRouter(
+      initialLocation: '/home',
+      routes: [
+        GoRoute(
+          path: '/home',
+          builder: (_, _) => Scaffold(
+            body: Center(
+              child: ElevatedButton(
+                onPressed: () => router.push('/todos/${todo.id}'),
+                child: const Text('go'),
+              ),
+            ),
+          ),
+        ),
+        GoRoute(
+          path: '/todos/:id/edit',
+          builder: (_, state) => TodoEditScreen(initial: state.extra as Todo?),
+        ),
+        GoRoute(
+          path: '/todos/:id',
+          builder: (_, state) =>
+              TodoDetailScreen(todoId: int.parse(state.pathParameters['id']!)),
+        ),
+      ],
+    );
+
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [todoRepositoryProvider.overrideWithValue(repository)],
+        child: MaterialApp.router(
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          routerConfig: router,
+        ),
+      ),
+    );
+    await tester.tap(find.text('go'));
+    await tester.pumpAndSettle();
+  }
+
+  Future<void> openMenu(WidgetTester tester) async {
+    await tester.tap(find.byTooltip(l10n.todoMoreActions));
+    await tester.pumpAndSettle();
+  }
+
+  testWidgets('shows read-only title, meta and note', (tester) async {
+    await pumpDetail(
+      tester,
+      _todo(
+        seq: 3,
+        title: 'Write report',
+        priority: TodoPriority.p0,
+        status: TodoStatus.inProgress,
+        dueDate: DateTime.now().subtract(const Duration(days: 1)),
+        note: 'the draft outline',
+      ),
+    );
+
+    expect(find.text('#3  Write report'), findsOneWidget);
+    expect(find.text('P0'), findsOneWidget);
+    expect(find.text(l10n.todoStatusInProgress), findsOneWidget);
+    expect(find.textContaining(l10n.todoDueOverdue(1)), findsOneWidget);
+    expect(find.text('the draft outline'), findsOneWidget);
+  });
+
+  testWidgets('permanent items hide status and due', (tester) async {
+    await pumpDetail(
+      tester,
+      _todo(
+        seq: 5,
+        title: 'Game time',
+        priority: TodoPriority.permanent,
+        dueDate: DateTime.now(),
+      ),
+    );
+
+    expect(find.text('♾️ ${l10n.todoPriorityPermanent}'), findsOneWidget);
+    expect(find.text(l10n.todoStatusNotStarted), findsNothing);
+    expect(find.textContaining('📅'), findsNothing);
+  });
+
+  testWidgets('edit menu pushes the editor prefilled', (tester) async {
+    await pumpDetail(
+      tester,
+      _todo(seq: 3, title: 'Write report', note: 'outline'),
+    );
+    await openMenu(tester);
+
+    await tester.tap(find.text(l10n.todoMenuEdit));
+    await tester.pumpAndSettle();
+
+    expect(find.byKey(const Key('todoEditScreen')), findsOneWidget);
+    final titleField = tester.widget<TextField>(
+      find.byKey(const Key('todoTitleField')),
+    );
+    expect(titleField.controller!.text, 'Write report');
+  });
+
+  testWidgets('duplicate calls createTodo with title/priority/note', (
+    tester,
+  ) async {
+    await pumpDetail(
+      tester,
+      _todo(
+        seq: 3,
+        title: 'Write report',
+        priority: TodoPriority.p1,
+        note: 'outline',
+      ),
+    );
+    await openMenu(tester);
+
+    await tester.tap(find.text(l10n.todoMenuDuplicate));
+    await tester.pumpAndSettle();
+
+    expect(repository.created, isNotNull);
+    expect(repository.created!.title, 'Write report');
+    expect(repository.created!.priority, TodoPriority.p1);
+    expect(repository.created!.note, 'outline');
+  });
+
+  testWidgets('delete asks for confirmation then deletes and pops', (
+    tester,
+  ) async {
+    await pumpDetail(tester, _todo(seq: 3, title: 'Write report'));
+    await openMenu(tester);
+
+    await tester.tap(find.text(l10n.todoMenuDelete));
+    await tester.pumpAndSettle();
+    expect(find.text(l10n.todoDeleteConfirmTitle), findsOneWidget);
+
+    // Confirm (the dialog's Delete button).
+    await tester.tap(find.text(l10n.todoMenuDelete));
+    await tester.pumpAndSettle();
+
+    expect(repository.deletedId, 3);
+    expect(find.byKey(const Key('todoDetailScreen')), findsNothing);
+  });
+
+  testWidgets('seeded permanent (#1) has no delete action', (tester) async {
+    await pumpDetail(
+      tester,
+      _todo(seq: 1, title: 'Eat', priority: TodoPriority.permanent),
+    );
+    await openMenu(tester);
+
+    expect(find.text(l10n.todoMenuEdit), findsOneWidget);
+    expect(find.text(l10n.todoMenuDuplicate), findsOneWidget);
+    expect(find.text(l10n.todoMenuDelete), findsNothing);
+  });
+}
+
+Todo _todo({
+  required int seq,
+  required String title,
+  TodoStatus status = TodoStatus.notStarted,
+  TodoPriority priority = TodoPriority.p2,
+  DateTime? dueDate,
+  String? note,
+}) {
+  final now = DateTime(2026, 6, 1);
+  return Todo(
+    id: seq,
+    seq: seq,
+    title: title,
+    status: status,
+    priority: priority,
+    dueDate: dueDate,
+    note: note,
+    createdAt: now,
+    updatedAt: now,
+  );
+}
+
+class _DetailFakeRepository implements TodoRepository {
+  Todo? todo;
+  ({String title, TodoPriority priority, DateTime? dueDate, String? note})?
+  created;
+  int? deletedId;
+
+  void dispose() {}
+
+  @override
+  Future<Todo?> getTodoById(int id) async => todo;
+
+  @override
+  Future<Todo> createTodo({
+    required String title,
+    TodoPriority priority = TodoPriority.p2,
+    DateTime? dueDate,
+    String? note,
+  }) async {
+    created = (title: title, priority: priority, dueDate: dueDate, note: note);
+    return _todo(seq: 99, title: title, priority: priority, note: note);
+  }
+
+  @override
+  Future<void> deleteTodo(int id) async {
+    deletedId = id;
+  }
+
+  @override
+  Stream<List<Todo>> watchTodos() => Stream.value(const []);
+
+  @override
+  Future<void> updateTodo({
+    required int id,
+    String? title,
+    TodoStatus? status,
+    TodoPriority? priority,
+    DateTime? dueDate,
+    bool clearDueDate = false,
+    String? note,
+    bool clearNote = false,
+  }) async {}
+
+  @override
+  Stream<List<TodoLog>> watchLogs(int todoId) => const Stream.empty();
+
+  @override
+  Future<void> addLog({
+    required int todoId,
+    required String text,
+    required TodoLogKind kind,
+  }) async {}
+}

@@ -123,6 +123,42 @@
   "@todoNeedTitle": {
     "description": "Reminder shown when Create is tapped with an empty title."
   },
+  "todoDetailNoteLabel": "Notes",
+  "@todoDetailNoteLabel": {
+    "description": "Section label above the note on the todo detail page."
+  },
+  "todoStartBlock": "▶ Start this block",
+  "@todoStartBlock": {
+    "description": "Detail-page button that starts a focus block from this todo."
+  },
+  "todoMoreActions": "More",
+  "@todoMoreActions": {
+    "description": "Tooltip for the detail-page overflow (⋯) menu button."
+  },
+  "todoMenuEdit": "Edit",
+  "@todoMenuEdit": {
+    "description": "Overflow menu item: edit this todo."
+  },
+  "todoMenuDuplicate": "Duplicate as a new item",
+  "@todoMenuDuplicate": {
+    "description": "Overflow menu item: copy this todo into a new one."
+  },
+  "todoMenuDelete": "Delete",
+  "@todoMenuDelete": {
+    "description": "Overflow menu item: delete this todo."
+  },
+  "todoDeleteConfirmTitle": "Delete this item?",
+  "@todoDeleteConfirmTitle": {
+    "description": "Title of the delete-confirmation dialog."
+  },
+  "todoDeleteConfirmBody": "This can't be undone.",
+  "@todoDeleteConfirmBody": {
+    "description": "Body of the delete-confirmation dialog."
+  },
+  "todoCancel": "Cancel",
+  "@todoCancel": {
+    "description": "Cancel button in todo dialogs."
+  },
   "statsScreenTitle": "This week",
   "@statsScreenTitle": {
     "description": "Title for the stats screen."

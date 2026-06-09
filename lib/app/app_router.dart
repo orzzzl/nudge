@@ -6,6 +6,7 @@ import '../features/stats/stats_screen.dart';
 import '../features/todos/todo_detail_screen.dart';
 import '../features/todos/todo_edit_screen.dart';
 import '../features/todos/todos_screen.dart';
+import '../domain/todo.dart';
 import 'navigation_shell.dart';
 
 final appRouter = GoRouter(
@@ -18,6 +19,17 @@ final appRouter = GoRouter(
     GoRoute(
       path: '/todos/new',
       builder: (context, state) => const TodoEditScreen(),
+    ),
+    GoRoute(
+      path: '/todos/:id/edit',
+      builder: (context, state) {
+        final todo = state.extra;
+        if (todo is Todo) {
+          return TodoEditScreen(initial: todo);
+        }
+        final id = int.tryParse(state.pathParameters['id'] ?? '') ?? 0;
+        return TodoEditLoader(todoId: id);
+      },
     ),
     GoRoute(
       path: '/todos/:id',

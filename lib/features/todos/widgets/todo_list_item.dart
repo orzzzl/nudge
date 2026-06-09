@@ -4,6 +4,7 @@ import '../../../app/cute_palette.dart';
 import '../../../app/widgets/candy.dart';
 import '../../../domain/todo.dart';
 import '../../../l10n/generated/app_localizations.dart';
+import 'todo_meta.dart';
 
 /// One row in the todo list (mockup `.titem`): status dot, `#seq`, title +
 /// preview, priority flag, chevron. Permanent rows hide the status dot and use a
@@ -75,7 +76,7 @@ class TodoListItem extends StatelessWidget {
               const SizedBox(width: 8),
               Expanded(child: _body(context, l10n, theme)),
               const SizedBox(width: 8),
-              _PriorityFlag(
+              TodoPriorityChip(
                 priority: todo.priority,
                 label: _priorityLabel(l10n),
               ),
@@ -123,7 +124,8 @@ class TodoListItem extends StatelessWidget {
   }
 
   Widget _preview(BuildContext context, AppLocalizations l10n) {
-    final due = _dueText(context, l10n);
+    final dueDate = todo.dueDate;
+    final due = dueDate == null ? null : todoDuePreview(context, l10n, dueDate);
     final statusName = _statusLabel(l10n);
 
     return Row(
@@ -158,36 +160,6 @@ class TodoListItem extends StatelessWidget {
         ),
       ],
     );
-  }
-
-  ({String text, bool overdue})? _dueText(
-    BuildContext context,
-    AppLocalizations l10n,
-  ) {
-    final dueDate = todo.dueDate;
-    if (dueDate == null) {
-      return null;
-    }
-    final now = DateTime.now();
-    final today = DateTime(now.year, now.month, now.day);
-    final due = DateTime(dueDate.year, dueDate.month, dueDate.day);
-    final days = due.difference(today).inDays;
-
-    if (days < 0) {
-      return (text: '📅 ${l10n.todoDueOverdue(-days)}', overdue: true);
-    }
-    if (days == 0) {
-      return (text: '📅 ${l10n.todoDueToday}', overdue: false);
-    }
-    if (days == 1) {
-      return (text: '📅 ${l10n.todoDueTomorrow}', overdue: false);
-    }
-    return (text: '📅 ${_shortDate(context, due)}', overdue: false);
-  }
-
-  String _shortDate(BuildContext context, DateTime date) {
-    // Locale-aware short date without pulling in extra format strings.
-    return MaterialLocalizations.of(context).formatShortDate(date);
   }
 
   String _statusLabel(AppLocalizations l10n) => switch (todo.status) {
@@ -262,56 +234,6 @@ class _StatusDot extends StatelessWidget {
         border: Border.all(color: border, width: 2.5),
       ),
       child: glyph == null ? null : Icon(glyph, size: 14, color: glyphColor),
-    );
-  }
-}
-
-class _PriorityFlag extends StatelessWidget {
-  const _PriorityFlag({required this.priority, required this.label});
-
-  final TodoPriority priority;
-  final String label;
-
-  @override
-  Widget build(BuildContext context) {
-    final (text, bg, border) = switch (priority) {
-      TodoPriority.p0 => (
-        CuteColors.todoP0Text,
-        CuteColors.todoP0Bg,
-        CuteColors.todoP0Border,
-      ),
-      TodoPriority.p1 => (
-        CuteColors.todoP1Text,
-        CuteColors.todoP1Bg,
-        CuteColors.todoP1Border,
-      ),
-      TodoPriority.p2 => (
-        CuteColors.todoP2Text,
-        CuteColors.todoP2Bg,
-        CuteColors.todoP2Border,
-      ),
-      TodoPriority.permanent => (
-        CuteColors.todoPermText,
-        CuteColors.todoPermFlagBg,
-        CuteColors.todoPermFlagBorder,
-      ),
-    };
-
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
-      decoration: BoxDecoration(
-        color: bg,
-        borderRadius: BorderRadius.circular(10),
-        border: Border.all(color: border, width: 2),
-      ),
-      child: Text(
-        label,
-        style: TextStyle(
-          fontSize: 11,
-          fontWeight: FontWeight.w900,
-          color: text,
-        ),
-      ),
     );
   }
 }
