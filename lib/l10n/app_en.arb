@@ -171,6 +171,26 @@
   "@todoStartBusyHint": {
     "description": "Shown when Start this block is tapped while a plan is already running."
   },
+  "todoAutoLog": "Did {duration} · {result}",
+  "@todoAutoLog": {
+    "description": "Auto update-log entry written after a check-in on a linked todo.",
+    "placeholders": {
+      "duration": { "type": "String", "example": "1 hr" },
+      "result": { "type": "String", "example": "✅ Done" }
+    }
+  },
+  "todoAutoResultDone": "✅ Done",
+  "@todoAutoResultDone": {
+    "description": "Check-in result shown in an auto log entry (completed)."
+  },
+  "todoAutoResultPartial": "🍃 Some",
+  "@todoAutoResultPartial": {
+    "description": "Check-in result shown in an auto log entry (partial)."
+  },
+  "todoAutoResultMissed": "😴 Nope",
+  "@todoAutoResultMissed": {
+    "description": "Check-in result shown in an auto log entry (missed)."
+  },
   "todoMoreActions": "More",
   "@todoMoreActions": {
     "description": "Tooltip for the detail-page overflow (⋯) menu button."

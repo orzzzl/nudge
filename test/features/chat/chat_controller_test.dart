@@ -9,6 +9,8 @@ import 'package:nudge/domain/app_settings.dart';
 import 'package:nudge/domain/plan.dart';
 import 'package:nudge/domain/plan_repository.dart';
 import 'package:nudge/domain/reminder_scheduler.dart';
+import 'package:nudge/domain/todo.dart';
+import 'package:nudge/domain/todo_repository.dart';
 import 'package:nudge/features/chat/chat_controller.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -110,6 +112,82 @@ void main() {
 
     expect(repository.createdTodoId, 7);
     expect(repository.createdPlan?.todoId, 7);
+  });
+
+  group('check-in writeback (task 34)', () {
+    Future<_CheckInTodoRepo> runCheckIn({
+      required PlanStatus status,
+      int? todoId,
+      bool todoExists = true,
+    }) async {
+      final repository = _ControllerRepository();
+      final scheduler = _RecordingReminderScheduler();
+      final todoRepo = _CheckInTodoRepo(todoExists: todoExists);
+      final container = ProviderContainer(
+        overrides: [
+          planRepositoryProvider.overrideWithValue(repository),
+          reminderSchedulerProvider.overrideWithValue(scheduler),
+          todoRepositoryProvider.overrideWithValue(todoRepo),
+        ],
+      );
+      addTearDown(container.dispose);
+      addTearDown(scheduler.dispose);
+
+      final controller = container.read(chatControllerProvider.notifier);
+      await controller.createPlan(
+        title: 'Write report',
+        durationSec: 60 * 60,
+        locale: 'en',
+        todoId: todoId,
+      );
+      await controller.checkIn(status);
+      return todoRepo;
+    }
+
+    test(
+      'writes an auto log (duration + result) without touching status',
+      () async {
+        final todoRepo = await runCheckIn(status: PlanStatus.done, todoId: 5);
+
+        expect(todoRepo.addedLog, isNotNull);
+        expect(todoRepo.addedLog!.todoId, 5);
+        expect(todoRepo.addedLog!.kind, TodoLogKind.auto);
+        expect(todoRepo.addedLog!.text, contains('1 hr'));
+        expect(todoRepo.addedLog!.text, contains('Done'));
+        // Doing one block must never change the todo's status.
+        expect(todoRepo.updateCalled, isFalse);
+      },
+    );
+
+    test('maps each check-in result into the log text', () async {
+      expect(
+        (await runCheckIn(
+          status: PlanStatus.partial,
+          todoId: 5,
+        )).addedLog!.text,
+        contains('Some'),
+      );
+      expect(
+        (await runCheckIn(status: PlanStatus.missed, todoId: 5)).addedLog!.text,
+        contains('Nope'),
+      );
+    });
+
+    test('does not write a log when the plan has no todoId', () async {
+      final todoRepo = await runCheckIn(status: PlanStatus.done);
+
+      expect(todoRepo.addedLog, isNull);
+    });
+
+    test('no-ops when the linked todo was deleted', () async {
+      final todoRepo = await runCheckIn(
+        status: PlanStatus.done,
+        todoId: 5,
+        todoExists: false,
+      );
+
+      expect(todoRepo.addedLog, isNull);
+    });
   });
 
   test('schedules a SILENT reminder when DND is on', () async {
@@ -788,4 +866,71 @@ Plan _plan({
     locale: locale,
     createdAt: startAt,
   );
+}
+
+class _CheckInTodoRepo implements TodoRepository {
+  _CheckInTodoRepo({this.todoExists = true});
+
+  final bool todoExists;
+  ({int todoId, String text, TodoLogKind kind})? addedLog;
+  bool updateCalled = false;
+
+  @override
+  Future<Todo?> getTodoById(int id) async {
+    if (!todoExists) {
+      return null;
+    }
+    final now = DateTime(2026, 6, 1);
+    return Todo(
+      id: id,
+      seq: id,
+      title: 'Linked',
+      status: TodoStatus.notStarted,
+      priority: TodoPriority.p2,
+      dueDate: null,
+      note: null,
+      createdAt: now,
+      updatedAt: now,
+    );
+  }
+
+  @override
+  Future<void> addLog({
+    required int todoId,
+    required String text,
+    required TodoLogKind kind,
+  }) async {
+    addedLog = (todoId: todoId, text: text, kind: kind);
+  }
+
+  @override
+  Future<void> updateTodo({
+    required int id,
+    String? title,
+    TodoStatus? status,
+    TodoPriority? priority,
+    DateTime? dueDate,
+    bool clearDueDate = false,
+    String? note,
+    bool clearNote = false,
+  }) async {
+    updateCalled = true;
+  }
+
+  @override
+  Stream<List<Todo>> watchTodos() => const Stream.empty();
+
+  @override
+  Future<Todo> createTodo({
+    required String title,
+    TodoPriority priority = TodoPriority.p2,
+    DateTime? dueDate,
+    String? note,
+  }) => throw UnimplementedError();
+
+  @override
+  Future<void> deleteTodo(int id) => throw UnimplementedError();
+
+  @override
+  Stream<List<TodoLog>> watchLogs(int todoId) => const Stream.empty();
 }
