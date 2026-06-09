@@ -1,11 +1,15 @@
 import 'dart:async';
 
+import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../app/duration_format.dart';
 import '../../app/providers.dart';
 import '../../domain/plan.dart';
 import '../../domain/plan_repository.dart';
 import '../../domain/reminder_scheduler.dart';
+import '../../domain/todo.dart';
+import '../../l10n/generated/app_localizations.dart';
 
 /// A single bubble in the chat transcript. Variants carry only data — the widget
 /// layer resolves them to localized text, so no user-facing strings live here.
@@ -274,6 +278,7 @@ class ChatController extends Notifier<ChatState> {
     }
 
     await _repository.checkIn(id: id, status: status);
+    await _writeTodoProgress(plan!, status);
     await _reminderScheduler.cancel(id);
     if (state.activePlan?.id == id) {
       _checkInTimer?.cancel();
@@ -287,6 +292,45 @@ class ChatController extends Notifier<ChatState> {
       ],
       clearActivePlan: state.activePlan?.id == id,
       clearPendingCheckIn: true,
+    );
+  }
+
+  /// If the checked-in plan came from a todo, append an `auto` progress entry to
+  /// that todo's update log (duration + result). Never changes the todo's
+  /// status — doing one block on a big task is not "done". No-op (never throws)
+  /// when the plan has no todo or the linked todo was deleted.
+  Future<void> _writeTodoProgress(Plan plan, PlanStatus status) async {
+    final todoId = plan.todoId;
+    if (todoId == null) {
+      return;
+    }
+    final result = switch (status) {
+      PlanStatus.done => (AppLocalizations l10n) => l10n.todoAutoResultDone,
+      PlanStatus.partial =>
+        (AppLocalizations l10n) => l10n.todoAutoResultPartial,
+      PlanStatus.missed => (AppLocalizations l10n) => l10n.todoAutoResultMissed,
+      // Running/abandoned aren't check-in outcomes — nothing to log.
+      PlanStatus.running || PlanStatus.abandoned => null,
+    };
+    if (result == null) {
+      return;
+    }
+
+    final todoRepository = ref.read(todoRepositoryProvider);
+    // The linked todo may have been deleted since the plan started.
+    if (await todoRepository.getTodoById(todoId) == null) {
+      return;
+    }
+
+    final l10n = lookupAppLocalizations(Locale(plan.locale));
+    final text = l10n.todoAutoLog(
+      formatPlanDuration(l10n, plan.durationSec),
+      result(l10n),
+    );
+    await todoRepository.addLog(
+      todoId: todoId,
+      text: text,
+      kind: TodoLogKind.auto,
     );
   }
 }
