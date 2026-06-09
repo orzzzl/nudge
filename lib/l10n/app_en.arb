@@ -127,6 +127,10 @@
   "@todoDetailNoteLabel": {
     "description": "Section label above the note on the todo detail page."
   },
+  "todoStatusSheetTitle": "Set status",
+  "@todoStatusSheetTitle": {
+    "description": "Title of the status-picker bottom sheet."
+  },
   "todoStartBlock": "▶ Start this block",
   "@todoStartBlock": {
     "description": "Detail-page button that starts a focus block from this todo."

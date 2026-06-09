@@ -161,6 +161,39 @@ void main() {
     expect(find.byKey(const Key('todoDetailScreen')), findsNothing);
   });
 
+  testWidgets('status chip opens the panel and updates the status', (
+    tester,
+  ) async {
+    await pumpDetail(
+      tester,
+      _todo(seq: 3, title: 'Write report', status: TodoStatus.notStarted),
+    );
+
+    // Tap the status chip (shows the current status name).
+    await tester.tap(find.text(l10n.todoStatusNotStarted));
+    await tester.pumpAndSettle();
+    expect(find.text(l10n.todoStatusSheetTitle), findsOneWidget);
+    // The current status row carries the check mark.
+    expect(find.byKey(const Key('todoStatusCurrent')), findsOneWidget);
+
+    await tester.tap(find.text(l10n.todoStatusInProgress));
+    await tester.pumpAndSettle();
+
+    expect(repository.updatedId, 3);
+    expect(repository.updatedStatus, TodoStatus.inProgress);
+    expect(find.text(l10n.todoStatusSheetTitle), findsNothing);
+  });
+
+  testWidgets('permanent items have no status chip to tap', (tester) async {
+    await pumpDetail(
+      tester,
+      _todo(seq: 5, title: 'Game time', priority: TodoPriority.permanent),
+    );
+
+    // No status name shown at all (permanent has no status).
+    expect(find.text(l10n.todoStatusNotStarted), findsNothing);
+  });
+
   testWidgets('seeded permanent (#1) has no delete action', (tester) async {
     await pumpDetail(
       tester,
@@ -201,6 +234,8 @@ class _DetailFakeRepository implements TodoRepository {
   ({String title, TodoPriority priority, DateTime? dueDate, String? note})?
   created;
   int? deletedId;
+  int? updatedId;
+  TodoStatus? updatedStatus;
 
   void dispose() {}
 
@@ -236,7 +271,10 @@ class _DetailFakeRepository implements TodoRepository {
     bool clearDueDate = false,
     String? note,
     bool clearNote = false,
-  }) async {}
+  }) async {
+    updatedId = id;
+    updatedStatus = status;
+  }
 
   @override
   Stream<List<TodoLog>> watchLogs(int todoId) => const Stream.empty();
