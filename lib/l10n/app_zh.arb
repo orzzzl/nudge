@@ -31,6 +31,7 @@
   "todoCreateButton": "创建",
   "todoNeedTitle": "先给它起个名字 ~",
   "todoDetailNoteLabel": "具体内容",
+  "todoStatusSheetTitle": "改状态",
   "todoStartBlock": "▶ 开始这一格",
   "todoMoreActions": "更多",
   "todoMenuEdit": "编辑",

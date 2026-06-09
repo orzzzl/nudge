@@ -61,7 +61,7 @@ class TodoListItem extends StatelessWidget {
           child: Row(
             children: [
               if (!_isPermanent) ...[
-                _StatusDot(status: todo.status),
+                TodoStatusDot(status: todo.status),
                 const SizedBox(width: 11),
               ],
               Text(
@@ -126,7 +126,7 @@ class TodoListItem extends StatelessWidget {
   Widget _preview(BuildContext context, AppLocalizations l10n) {
     final dueDate = todo.dueDate;
     final due = dueDate == null ? null : todoDuePreview(context, l10n, dueDate);
-    final statusName = _statusLabel(l10n);
+    final statusName = todoStatusName(l10n, todo.status);
 
     return Row(
       children: [
@@ -162,78 +162,10 @@ class TodoListItem extends StatelessWidget {
     );
   }
 
-  String _statusLabel(AppLocalizations l10n) => switch (todo.status) {
-    TodoStatus.notStarted => l10n.todoStatusNotStarted,
-    TodoStatus.inProgress => l10n.todoStatusInProgress,
-    TodoStatus.paused => l10n.todoStatusPaused,
-    TodoStatus.done => l10n.todoStatusDone,
-    TodoStatus.dropped => l10n.todoStatusDropped,
-  };
-
   String _priorityLabel(AppLocalizations l10n) => switch (todo.priority) {
     TodoPriority.p0 => 'P0',
     TodoPriority.p1 => 'P1',
     TodoPriority.p2 => 'P2',
     TodoPriority.permanent => l10n.todoPriorityPermanent,
   };
-}
-
-class _StatusDot extends StatelessWidget {
-  const _StatusDot({required this.status});
-
-  final TodoStatus status;
-
-  @override
-  Widget build(BuildContext context) {
-    final (border, fill, gradient, glyph, glyphColor) = switch (status) {
-      TodoStatus.notStarted => (
-        CuteColors.todoStatusTodoBorder,
-        CuteColors.todoStatusTodoBg,
-        null,
-        null,
-        null,
-      ),
-      TodoStatus.inProgress => (
-        CuteColors.matchaGradientBottom,
-        null,
-        CuteColors.matchaGradient,
-        Icons.play_arrow_rounded,
-        CuteColors.white,
-      ),
-      TodoStatus.paused => (
-        CuteColors.todoStatusPauseBorder,
-        CuteColors.todoStatusPauseBg,
-        null,
-        Icons.pause_rounded,
-        CuteColors.todoStatusPauseGlyph,
-      ),
-      TodoStatus.done => (
-        CuteColors.matchaGradientBottom,
-        null,
-        CuteColors.matchaGradient,
-        Icons.check_rounded,
-        CuteColors.white,
-      ),
-      TodoStatus.dropped => (
-        CuteColors.todoStatusDropBorder,
-        CuteColors.todoStatusDropBg,
-        null,
-        Icons.close_rounded,
-        CuteColors.todoStatusDropGlyph,
-      ),
-    };
-
-    return Container(
-      width: 25,
-      height: 25,
-      alignment: Alignment.center,
-      decoration: BoxDecoration(
-        color: fill,
-        gradient: gradient,
-        shape: BoxShape.circle,
-        border: Border.all(color: border, width: 2.5),
-      ),
-      child: glyph == null ? null : Icon(glyph, size: 14, color: glyphColor),
-    );
-  }
 }

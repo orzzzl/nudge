@@ -88,7 +88,8 @@ class _DetailContent extends ConsumerWidget {
                   if (!_isPermanent)
                     TodoStatusChip(
                       status: todo.status,
-                      label: _statusLabel(l10n),
+                      label: todoStatusName(l10n, todo.status),
+                      onTap: () => _showStatusPanel(context, ref),
                     ),
                   TodoPriorityChip(
                     priority: todo.priority,
@@ -141,6 +142,60 @@ class _DetailContent extends ConsumerWidget {
           ),
         ),
       ],
+    );
+  }
+
+  void _showStatusPanel(BuildContext context, WidgetRef ref) {
+    showModalBottomSheet<void>(
+      context: context,
+      backgroundColor: CuteColors.surface,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      builder: (sheetContext) {
+        final l10n = AppLocalizations.of(sheetContext);
+        return SafeArea(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Padding(
+                padding: const EdgeInsets.fromLTRB(20, 16, 20, 4),
+                child: Align(
+                  alignment: Alignment.centerLeft,
+                  child: Text(
+                    l10n.todoStatusSheetTitle,
+                    style: const TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w900,
+                      color: CuteColors.textMuted2,
+                    ),
+                  ),
+                ),
+              ),
+              for (final status in TodoStatus.values)
+                ListTile(
+                  leading: TodoStatusDot(status: status, size: 28),
+                  title: Text(todoStatusName(l10n, status)),
+                  trailing: status == todo.status
+                      ? const Icon(
+                          Icons.check_rounded,
+                          key: Key('todoStatusCurrent'),
+                          color: CuteColors.matcha,
+                        )
+                      : null,
+                  onTap: () {
+                    Navigator.of(sheetContext).pop();
+                    if (status != todo.status) {
+                      ref
+                          .read(todoRepositoryProvider)
+                          .updateTodo(id: todo.id!, status: status);
+                    }
+                  },
+                ),
+            ],
+          ),
+        );
+      },
     );
   }
 
@@ -246,14 +301,6 @@ class _DetailContent extends ConsumerWidget {
       context.pop();
     }
   }
-
-  String _statusLabel(AppLocalizations l10n) => switch (todo.status) {
-    TodoStatus.notStarted => l10n.todoStatusNotStarted,
-    TodoStatus.inProgress => l10n.todoStatusInProgress,
-    TodoStatus.paused => l10n.todoStatusPaused,
-    TodoStatus.done => l10n.todoStatusDone,
-    TodoStatus.dropped => l10n.todoStatusDropped,
-  };
 
   String _priorityLabel(AppLocalizations l10n) => switch (todo.priority) {
     TodoPriority.p0 => 'P0',
