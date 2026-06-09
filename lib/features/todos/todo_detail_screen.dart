@@ -128,6 +128,8 @@ class _DetailContent extends ConsumerWidget {
                   ),
                 ),
               ],
+              const SizedBox(height: 24),
+              _UpdateLog(todoId: todo.id!),
             ],
           ),
         ),
@@ -483,6 +485,240 @@ class _DetailContent extends ConsumerWidget {
     TodoPriority.p2 => 'P2',
     TodoPriority.permanent => '♾️ ${l10n.todoPriorityPermanent}',
   };
+}
+
+/// The detail "Updates" timeline (chronological) + a manual "log a note" input.
+/// Auto entries (check-in writeback, task 34) are marked with a peach dot + tag.
+class _UpdateLog extends ConsumerStatefulWidget {
+  const _UpdateLog({required this.todoId});
+
+  final int todoId;
+
+  @override
+  ConsumerState<_UpdateLog> createState() => _UpdateLogState();
+}
+
+class _UpdateLogState extends ConsumerState<_UpdateLog> {
+  final _controller = TextEditingController();
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  Future<void> _add() async {
+    final text = _controller.text.trim();
+    if (text.isEmpty) {
+      return;
+    }
+    _controller.clear();
+    await ref
+        .read(todoRepositoryProvider)
+        .addLog(todoId: widget.todoId, text: text, kind: TodoLogKind.manual);
+  }
+
+  String _time(BuildContext context, DateTime dt) {
+    final now = DateTime.now();
+    final ml = MaterialLocalizations.of(context);
+    if (dt.year == now.year && dt.month == now.month && dt.day == now.day) {
+      return ml.formatTimeOfDay(TimeOfDay.fromDateTime(dt));
+    }
+    return ml.formatShortDate(dt);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+    final logs =
+        ref.watch(todoLogsProvider(widget.todoId)).asData?.value ??
+        const <TodoLog>[];
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        Text(
+          l10n.todoLogTitle,
+          style: const TextStyle(
+            fontSize: 13,
+            fontWeight: FontWeight.w800,
+            color: CuteColors.textMuted2,
+          ),
+        ),
+        const SizedBox(height: 10),
+        if (logs.isEmpty)
+          Padding(
+            padding: const EdgeInsets.only(bottom: 4),
+            child: Text(
+              l10n.todoLogEmpty,
+              style: const TextStyle(fontSize: 13, color: CuteColors.textFaint),
+            ),
+          )
+        else
+          for (int i = 0; i < logs.length; i++)
+            _LogRow(
+              log: logs[i],
+              isLast: i == logs.length - 1,
+              time: _time(context, logs[i].createdAt),
+              autoTag: l10n.todoLogAutoTag,
+            ),
+        const SizedBox(height: 10),
+        Row(
+          children: [
+            Expanded(
+              child: TextField(
+                key: const Key('todoLogInput'),
+                controller: _controller,
+                textInputAction: TextInputAction.done,
+                onSubmitted: (_) => _add(),
+                style: const TextStyle(
+                  fontSize: 14,
+                  color: CuteColors.textBrown,
+                ),
+                decoration: InputDecoration(
+                  isDense: true,
+                  hintText: l10n.todoLogAddHint,
+                  hintStyle: const TextStyle(color: CuteColors.textFaint2),
+                  filled: true,
+                  fillColor: CuteColors.fieldBg,
+                  contentPadding: const EdgeInsets.symmetric(
+                    horizontal: 14,
+                    vertical: 10,
+                  ),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(14),
+                    borderSide: const BorderSide(
+                      color: CuteColors.borderPeach2,
+                      width: 2,
+                    ),
+                  ),
+                  enabledBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(14),
+                    borderSide: const BorderSide(
+                      color: CuteColors.borderPeach2,
+                      width: 2,
+                    ),
+                  ),
+                ),
+              ),
+            ),
+            const SizedBox(width: 8),
+            IconButton(
+              key: const Key('todoLogAddButton'),
+              tooltip: l10n.todoLogAddTooltip,
+              onPressed: _add,
+              icon: const Icon(Icons.add_rounded, color: CuteColors.matcha),
+            ),
+          ],
+        ),
+      ],
+    );
+  }
+}
+
+class _LogRow extends StatelessWidget {
+  const _LogRow({
+    required this.log,
+    required this.isLast,
+    required this.time,
+    required this.autoTag,
+  });
+
+  final TodoLog log;
+  final bool isLast;
+  final String time;
+  final String autoTag;
+
+  @override
+  Widget build(BuildContext context) {
+    final isAuto = log.kind == TodoLogKind.auto;
+    final dotColor = isAuto
+        ? CuteColors.peachGradientBottom
+        : CuteColors.matchaGradientBottom;
+
+    return IntrinsicHeight(
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Column(
+            children: [
+              Container(
+                width: 10,
+                height: 10,
+                margin: const EdgeInsets.only(top: 3),
+                decoration: BoxDecoration(
+                  color: dotColor,
+                  shape: BoxShape.circle,
+                ),
+              ),
+              if (!isLast)
+                Expanded(
+                  child: Container(width: 2, color: CuteColors.borderNeutral),
+                ),
+            ],
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Padding(
+              padding: const EdgeInsets.only(bottom: 14),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Flexible(
+                        child: Text(
+                          log.text,
+                          style: const TextStyle(
+                            fontSize: 14,
+                            height: 1.35,
+                            color: CuteColors.textBrown,
+                          ),
+                        ),
+                      ),
+                      if (isAuto) ...[
+                        const SizedBox(width: 6),
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 6,
+                            vertical: 1,
+                          ),
+                          decoration: BoxDecoration(
+                            color: CuteColors.fieldBg,
+                            borderRadius: BorderRadius.circular(7),
+                            border: Border.all(
+                              color: CuteColors.borderPeach,
+                              width: 1.5,
+                            ),
+                          ),
+                          child: Text(
+                            autoTag,
+                            style: const TextStyle(
+                              fontSize: 10,
+                              fontWeight: FontWeight.w800,
+                              color: CuteColors.peachCandyShadow,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ],
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    time,
+                    style: const TextStyle(
+                      fontSize: 11,
+                      color: CuteColors.textFaint,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
 }
 
 class _SheetTitle extends StatelessWidget {

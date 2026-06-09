@@ -131,6 +131,26 @@
   "@todoStatusSheetTitle": {
     "description": "Title of the status-picker bottom sheet."
   },
+  "todoLogTitle": "Updates",
+  "@todoLogTitle": {
+    "description": "Section title for the todo update log on the detail page."
+  },
+  "todoLogEmpty": "No progress logged yet.",
+  "@todoLogEmpty": {
+    "description": "Placeholder when a todo has no update-log entries."
+  },
+  "todoLogAddHint": "Log a bit of progress…",
+  "@todoLogAddHint": {
+    "description": "Placeholder in the manual update-log input."
+  },
+  "todoLogAddTooltip": "Add",
+  "@todoLogAddTooltip": {
+    "description": "Tooltip for the button that adds a manual update-log entry."
+  },
+  "todoLogAutoTag": "auto",
+  "@todoLogAutoTag": {
+    "description": "Small tag marking an auto-generated (check-in) log entry."
+  },
   "todoDueNone": "No date",
   "@todoDueNone": {
     "description": "Due chip label when a todo has no due date."

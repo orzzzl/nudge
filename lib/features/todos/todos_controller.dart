@@ -49,6 +49,14 @@ final todoGroupsProvider = StreamProvider.autoDispose<TodoGroups>((ref) {
   return ref.watch(todoRepositoryProvider).watchTodos().map(groupTodos);
 });
 
+/// Live update-log timeline for one todo (chronological, early -> late).
+final todoLogsProvider = StreamProvider.autoDispose.family<List<TodoLog>, int>((
+  ref,
+  todoId,
+) {
+  return ref.watch(todoRepositoryProvider).watchLogs(todoId);
+});
+
 /// A single live todo by id, for the detail route. Derived from [watchTodos] so
 /// the detail page refreshes immediately after an edit / status change (task 28
 /// requires the detail to be live, not a one-shot fetch). If the list ever grows

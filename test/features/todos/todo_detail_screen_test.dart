@@ -322,6 +322,58 @@ void main() {
     expect(repository.updatedClearDueDate, isTrue);
   });
 
+  testWidgets('update log renders entries in order with an auto tag', (
+    tester,
+  ) async {
+    final base = DateTime(2026, 6, 1, 9);
+    repository.logs = [
+      TodoLog(
+        id: 1,
+        todoId: 3,
+        text: 'started the outline',
+        kind: TodoLogKind.manual,
+        createdAt: base,
+      ),
+      TodoLog(
+        id: 2,
+        todoId: 3,
+        text: 'did 1h',
+        kind: TodoLogKind.auto,
+        createdAt: base.add(const Duration(hours: 2)),
+      ),
+    ];
+    await pumpDetail(tester, _todo(seq: 3, title: 'Write report'));
+
+    expect(find.text('started the outline'), findsOneWidget);
+    expect(find.text('did 1h'), findsOneWidget);
+    // Only the auto entry carries the tag.
+    expect(find.text(l10n.todoLogAutoTag), findsOneWidget);
+  });
+
+  testWidgets('empty update log shows the placeholder', (tester) async {
+    await pumpDetail(tester, _todo(seq: 3, title: 'Write report'));
+
+    expect(find.text(l10n.todoLogEmpty), findsOneWidget);
+  });
+
+  testWidgets('logging a note calls addLog(manual) and shows the entry', (
+    tester,
+  ) async {
+    await pumpDetail(tester, _todo(seq: 3, title: 'Write report'));
+
+    await tester.enterText(
+      find.byKey(const Key('todoLogInput')),
+      'made some progress',
+    );
+    await tester.tap(find.byKey(const Key('todoLogAddButton')));
+    await tester.pumpAndSettle();
+
+    expect(repository.addedLog?.text, 'made some progress');
+    expect(repository.addedLog?.kind, TodoLogKind.manual);
+    expect(find.text('made some progress'), findsOneWidget);
+    expect(find.text(l10n.todoLogEmpty), findsNothing);
+  });
+
   testWidgets('permanent items have no status chip to tap', (tester) async {
     await pumpDetail(
       tester,
@@ -487,7 +539,10 @@ class _DetailFakeRepository implements TodoRepository {
   // todoByIdProvider from watchTodos) refreshes — this is what guards the bug
   // PR #47/#48 had.
   final _controller = StreamController<List<Todo>>.broadcast();
+  final _logController = StreamController<List<TodoLog>>.broadcast();
   Todo? todo;
+  List<TodoLog> logs = const [];
+  ({String text, TodoLogKind kind})? addedLog;
   ({String title, TodoPriority priority, DateTime? dueDate, String? note})?
   created;
   int? deletedId;
@@ -497,7 +552,10 @@ class _DetailFakeRepository implements TodoRepository {
   DateTime? updatedDueDate;
   bool? updatedClearDueDate;
 
-  void dispose() => _controller.close();
+  void dispose() {
+    _controller.close();
+    _logController.close();
+  }
 
   void _emit() => _controller.add(todo == null ? const [] : [todo!]);
 
@@ -556,12 +614,28 @@ class _DetailFakeRepository implements TodoRepository {
   }
 
   @override
-  Stream<List<TodoLog>> watchLogs(int todoId) => const Stream.empty();
+  Stream<List<TodoLog>> watchLogs(int todoId) async* {
+    yield logs;
+    yield* _logController.stream;
+  }
 
   @override
   Future<void> addLog({
     required int todoId,
     required String text,
     required TodoLogKind kind,
-  }) async {}
+  }) async {
+    addedLog = (text: text, kind: kind);
+    logs = [
+      ...logs,
+      TodoLog(
+        id: logs.length + 1,
+        todoId: todoId,
+        text: text,
+        kind: kind,
+        createdAt: DateTime.now(),
+      ),
+    ];
+    _logController.add(logs);
+  }
 }
