@@ -14,12 +14,12 @@
 | 25 | [接入第三个「清单」tab（路由+导航+占位页）](25-todos-tab-shell.md) | DONE (Claude, PR #41) | — |
 | 26 | [清单列表页（controller + 分组列表 UI）](26-todos-list.md) | DONE (Claude, PR #45) | 24 ✅, 25 ✅ |
 | 27 | [添加 todo（「＋」入口）](27-todos-add.md) | DONE (Claude, PR #46) | 26 ✅ |
-| 28 | [详情页骨架（标题 + 备注 + meta 展示）](28-todos-detail.md) | READY | 24 ✅, 26 ✅, 27 ✅ |
-| 29 | [详情：状态编辑（5 态面板）](29-todos-status-edit.md) | BLOCKED | 28 |
-| 30 | [详情：优先级 + 截止日期编辑](30-todos-priority-due-edit.md) | BLOCKED | 28 |
-| 31 | [更新日志（时间线 + 手动记一笔）](31-todos-update-log.md) | BLOCKED | 24 ✅, 28 |
+| 28 | [详情页骨架（标题 + 备注 + meta 展示）](28-todos-detail.md) | DONE (Claude, PR #47) | 24 ✅, 26 ✅, 27 ✅ |
+| 29 | [详情：状态编辑（5 态面板）](29-todos-status-edit.md) | READY | 28 ✅ |
+| 30 | [详情：优先级 + 截止日期编辑](30-todos-priority-due-edit.md) | READY | 28 ✅ |
+| 31 | [更新日志（时间线 + 手动记一笔）](31-todos-update-log.md) | READY | 24 ✅, 28 ✅ |
 | 32 | [composer「来自清单」chip + plan 关联 todoId](32-composer-todo-chip.md) | DONE (Claude, PR #43) | 23 ✅ |
-| 33 | [「开始这一格」从清单跳聊天预填](33-start-from-todo.md) | BLOCKED | 28, 32 ✅, 25 ✅ |
+| 33 | [「开始这一格」从清单跳聊天预填](33-start-from-todo.md) | READY | 28 ✅, 32 ✅, 25 ✅ |
 | 34 | [check-in 回写更新日志（auto，不改状态）](34-checkin-writeback.md) | READY | 24 ✅, 32 ✅ |
 
 **起步可并行**：`23`（数据模型）和 `25`（tab 壳）无依赖，可同时开；`32` 只等 `23`。其余按 `Blocked by` 解锁。

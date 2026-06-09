@@ -1,6 +1,6 @@
 # 31 — 更新日志（时间线 + 手动记一笔）
 
-- **Status:** BLOCKED
+- **Status:** READY
 - **Owner:** Codex
 - **Blocked by:** 24, 28
 - **Allowed new deps:** none

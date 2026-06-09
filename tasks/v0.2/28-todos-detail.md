@@ -1,6 +1,6 @@
 # 28 — 清单详情页（默认只读 + 「⋯」菜单）
 
-- **Status:** READY
+- **Status:** DONE (PR #47)
 - **Owner:** Claude
 - **Blocked by:** 24 ✅, 26 ✅ (PR #45), 27 ✅ (PR #46)
 

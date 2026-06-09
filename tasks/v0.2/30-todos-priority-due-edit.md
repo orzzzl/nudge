@@ -1,6 +1,6 @@
 # 30 — 详情：优先级 + 截止日期编辑
 
-- **Status:** BLOCKED
+- **Status:** READY
 - **Owner:** Codex
 - **Blocked by:** 28
 - **Allowed new deps:** none
