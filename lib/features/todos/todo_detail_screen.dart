@@ -292,9 +292,15 @@ class _DetailContent extends ConsumerWidget {
                 ),
                 title: Text(l10n.todoDuePick),
                 onTap: () async {
+                  // Clamp to today: an overdue dueDate is before firstDate,
+                  // which would trip showDatePicker's initialDate assert.
+                  final due = todo.dueDate;
+                  final initialDate = (due == null || due.isBefore(today))
+                      ? today
+                      : due;
                   final picked = await showDatePicker(
                     context: sheetContext,
-                    initialDate: todo.dueDate ?? today,
+                    initialDate: initialDate,
                     firstDate: today,
                     lastDate: DateTime(today.year + 5),
                   );

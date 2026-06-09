@@ -267,6 +267,28 @@ void main() {
     expect(repository.updatedClearDueDate, isFalse);
   });
 
+  testWidgets('pick a date on an overdue todo opens the picker (no crash)', (
+    tester,
+  ) async {
+    await pumpDetail(
+      tester,
+      _todo(
+        seq: 3,
+        title: 'Task',
+        // Overdue: earlier than today, so initialDate must be clamped.
+        dueDate: _today().subtract(const Duration(days: 5)),
+      ),
+    );
+
+    await tester.tap(find.byIcon(Icons.keyboard_arrow_down_rounded).last);
+    await tester.pumpAndSettle();
+    await tester.tap(find.text(l10n.todoDuePick));
+    await tester.pumpAndSettle();
+
+    // The date picker opened instead of throwing an initialDate assert.
+    expect(find.byType(DatePickerDialog), findsOneWidget);
+  });
+
   testWidgets('due panel can clear the due date', (tester) async {
     await pumpDetail(
       tester,
