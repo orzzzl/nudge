@@ -184,6 +184,50 @@ void main() {
     expect(find.text(l10n.todoStatusSheetTitle), findsNothing);
   });
 
+  testWidgets('detail shows the new title after an edit saves (live)', (
+    tester,
+  ) async {
+    await pumpDetail(
+      tester,
+      _todo(seq: 3, title: 'Old title', note: 'old note'),
+    );
+    expect(find.text('#3  Old title'), findsOneWidget);
+
+    await openMenu(tester);
+    await tester.tap(find.text(l10n.todoMenuEdit));
+    await tester.pumpAndSettle();
+
+    await tester.enterText(
+      find.byKey(const Key('todoTitleField')),
+      'New title',
+    );
+    await tester.tap(find.text('＋ ${l10n.todoCreateButton}'));
+    await tester.pumpAndSettle();
+
+    // Back on the detail — it must reflect the edit, not the stale future.
+    expect(find.text('#3  New title'), findsOneWidget);
+    expect(find.text('#3  Old title'), findsNothing);
+  });
+
+  testWidgets('detail status chip reflects the new status after the panel', (
+    tester,
+  ) async {
+    await pumpDetail(
+      tester,
+      _todo(seq: 3, title: 'Task', status: TodoStatus.notStarted),
+    );
+    expect(find.text(l10n.todoStatusNotStarted), findsOneWidget);
+
+    await tester.tap(find.text(l10n.todoStatusNotStarted));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text(l10n.todoStatusInProgress));
+    await tester.pumpAndSettle();
+
+    // The chip is live: it now shows the new status, the old one is gone.
+    expect(find.text(l10n.todoStatusInProgress), findsOneWidget);
+    expect(find.text(l10n.todoStatusNotStarted), findsNothing);
+  });
+
   testWidgets('permanent items have no status chip to tap', (tester) async {
     await pumpDetail(
       tester,
@@ -230,6 +274,10 @@ Todo _todo({
 }
 
 class _DetailFakeRepository implements TodoRepository {
+  // A live single-todo store: mutations re-emit so the detail (which derives
+  // todoByIdProvider from watchTodos) refreshes — this is what guards the bug
+  // PR #47/#48 had.
+  final _controller = StreamController<List<Todo>>.broadcast();
   Todo? todo;
   ({String title, TodoPriority priority, DateTime? dueDate, String? note})?
   created;
@@ -237,7 +285,15 @@ class _DetailFakeRepository implements TodoRepository {
   int? updatedId;
   TodoStatus? updatedStatus;
 
-  void dispose() {}
+  void dispose() => _controller.close();
+
+  void _emit() => _controller.add(todo == null ? const [] : [todo!]);
+
+  @override
+  Stream<List<Todo>> watchTodos() async* {
+    yield todo == null ? const [] : [todo!];
+    yield* _controller.stream;
+  }
 
   @override
   Future<Todo?> getTodoById(int id) async => todo;
@@ -259,9 +315,6 @@ class _DetailFakeRepository implements TodoRepository {
   }
 
   @override
-  Stream<List<Todo>> watchTodos() => Stream.value(const []);
-
-  @override
   Future<void> updateTodo({
     required int id,
     String? title,
@@ -274,6 +327,17 @@ class _DetailFakeRepository implements TodoRepository {
   }) async {
     updatedId = id;
     updatedStatus = status;
+    final current = todo;
+    if (current != null && current.id == id) {
+      todo = current.copyWith(
+        title: title ?? current.title,
+        status: status ?? current.status,
+        priority: priority ?? current.priority,
+        dueDate: clearDueDate ? null : (dueDate ?? current.dueDate),
+        note: clearNote ? null : (note ?? current.note),
+      );
+      _emit();
+    }
   }
 
   @override

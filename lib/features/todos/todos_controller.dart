@@ -49,10 +49,20 @@ final todoGroupsProvider = StreamProvider.autoDispose<TodoGroups>((ref) {
   return ref.watch(todoRepositoryProvider).watchTodos().map(groupTodos);
 });
 
-/// A single todo by id, for the detail route (fleshed out in task 28).
-final todoByIdProvider = FutureProvider.autoDispose.family<Todo?, int>((
+/// A single live todo by id, for the detail route. Derived from [watchTodos] so
+/// the detail page refreshes immediately after an edit / status change (task 28
+/// requires the detail to be live, not a one-shot fetch). If the list ever grows
+/// large, a dedicated `watchTodoById(id)` on the repo would be tidier.
+final todoByIdProvider = StreamProvider.autoDispose.family<Todo?, int>((
   ref,
   id,
 ) {
-  return ref.watch(todoRepositoryProvider).getTodoById(id);
+  return ref.watch(todoRepositoryProvider).watchTodos().map((todos) {
+    for (final todo in todos) {
+      if (todo.id == id) {
+        return todo;
+      }
+    }
+    return null;
+  });
 });
