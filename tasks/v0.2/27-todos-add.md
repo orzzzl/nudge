@@ -1,8 +1,13 @@
 # 27 — 新建清单项（「＋」→ 全屏新建编辑页）
 
-- **Status:** READY
-- **Owner:** Codex
+- **Status:** DONE (PR #46)
+- **Owner:** Claude
 - **Blocked by:** 26 ✅ (PR #45)
+
+> **Landed for task 28:** reusable `lib/features/todos/todo_edit_screen.dart` —
+> `TodoEditScreen({Todo? initial})`. `initial == null` = create; pass a todo for edit
+> (prefills, saves via `updateTodo`). 28's "⋯ → 编辑" just does
+> `context.push` to it / shows it with `initial`. `createTodo` gained a `String? note` param.
 - **Allowed new deps:** none
 
 ## Goal

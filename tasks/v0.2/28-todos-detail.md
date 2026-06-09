@@ -1,12 +1,13 @@
 # 28 — 清单详情页（默认只读 + 「⋯」菜单）
 
-- **Status:** BLOCKED
-- **Owner:** Codex
-- **Blocked by:** 24 ✅, 26 ✅, 27
+- **Status:** READY
+- **Owner:** Claude
+- **Blocked by:** 24 ✅, 26 ✅ (PR #45), 27 ✅ (PR #46)
 
-> **Note (post-#45):** task 26 already added the `/todos/:id` route + a `TodoDetailScreen` placeholder
-> + `todoByIdProvider`. This task fleshes out that screen (don't re-add the route). Still blocked on
-> 27 because the "⋯ → 编辑" action pushes task 27's edit page.
+> **Note (post-#45/#46):** task 26 already added the `/todos/:id` route + a `TodoDetailScreen`
+> placeholder + `todoByIdProvider`; flesh out that screen (don't re-add the route). Task 27 shipped
+> the reusable `TodoEditScreen({Todo? initial})` — the "⋯ → 编辑" action pushes it with the current
+> todo as `initial`. `createTodo` now also takes `note`.
 - **Allowed new deps:** none
 
 ## Goal

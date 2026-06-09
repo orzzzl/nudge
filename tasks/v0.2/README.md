@@ -13,8 +13,8 @@
 | 24 | [TodoRepository seam + Drift 实现 + DI](24-todo-repository.md) | DONE (Codex, PR #44) | 23 ✅ |
 | 25 | [接入第三个「清单」tab（路由+导航+占位页）](25-todos-tab-shell.md) | DONE (Claude, PR #41) | — |
 | 26 | [清单列表页（controller + 分组列表 UI）](26-todos-list.md) | DONE (Claude, PR #45) | 24 ✅, 25 ✅ |
-| 27 | [添加 todo（「＋」入口）](27-todos-add.md) | READY | 26 ✅ |
-| 28 | [详情页骨架（标题 + 备注 + meta 展示）](28-todos-detail.md) | BLOCKED | 24 ✅, 26 ✅, 27 |
+| 27 | [添加 todo（「＋」入口）](27-todos-add.md) | DONE (Claude, PR #46) | 26 ✅ |
+| 28 | [详情页骨架（标题 + 备注 + meta 展示）](28-todos-detail.md) | READY | 24 ✅, 26 ✅, 27 ✅ |
 | 29 | [详情：状态编辑（5 态面板）](29-todos-status-edit.md) | BLOCKED | 28 |
 | 30 | [详情：优先级 + 截止日期编辑](30-todos-priority-due-edit.md) | BLOCKED | 28 |
 | 31 | [更新日志（时间线 + 手动记一笔）](31-todos-update-log.md) | BLOCKED | 24 ✅, 28 |
