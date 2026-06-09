@@ -1,7 +1,7 @@
 # 29 — 详情：状态编辑（5 态面板）
 
-- **Status:** READY
-- **Owner:** Codex
+- **Status:** DONE (PR #48)
+- **Owner:** Claude
 - **Blocked by:** 28
 - **Allowed new deps:** none
 
