@@ -147,6 +147,10 @@
   "@todoStartBlock": {
     "description": "Detail-page button that starts a focus block from this todo."
   },
+  "todoStartBusyHint": "Finish the current block first ~",
+  "@todoStartBusyHint": {
+    "description": "Shown when Start this block is tapped while a plan is already running."
+  },
   "todoMoreActions": "More",
   "@todoMoreActions": {
     "description": "Tooltip for the detail-page overflow (⋯) menu button."

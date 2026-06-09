@@ -7,6 +7,8 @@ import '../../app/providers.dart';
 import '../../app/widgets/candy.dart';
 import '../../domain/todo.dart';
 import '../../l10n/generated/app_localizations.dart';
+import '../chat/chat_controller.dart';
+import '../chat/pending_composer_todo.dart';
 import 'todos_controller.dart';
 import 'widgets/todo_meta.dart';
 
@@ -136,8 +138,7 @@ class _DetailContent extends ConsumerWidget {
               Expanded(
                 child: CandyButton(
                   label: l10n.todoStartBlock,
-                  // Wired in task 33 (jump to chat with this todo prefilled).
-                  onPressed: () {},
+                  onPressed: () => _start(context, ref),
                 ),
               ),
               const SizedBox(width: 12),
@@ -150,6 +151,31 @@ class _DetailContent extends ConsumerWidget {
         ),
       ],
     );
+  }
+
+  // Start a focus block from this todo: queue the composer chip and switch to
+  // the chat tab. Never changes the todo's status. If a block is already
+  // running the composer is hidden, so nudge instead of silently queuing.
+  void _start(BuildContext context, WidgetRef ref) {
+    final l10n = AppLocalizations.of(context);
+    if (ref.read(chatControllerProvider).activePlan != null) {
+      ScaffoldMessenger.of(context)
+        ..hideCurrentSnackBar()
+        ..showSnackBar(
+          SnackBar(
+            content: Text(l10n.todoStartBusyHint),
+            behavior: SnackBarBehavior.floating,
+            duration: const Duration(seconds: 2),
+          ),
+        );
+      return;
+    }
+    ref.read(pendingComposerTodoProvider.notifier).set((
+      todoId: todo.id!,
+      seq: todo.seq,
+      title: todo.title,
+    ));
+    context.go('/chat');
   }
 
   void _showStatusPanel(BuildContext context, WidgetRef ref) {

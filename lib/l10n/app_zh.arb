@@ -36,6 +36,7 @@
   "todoDueWeekend": "本周末",
   "todoDueClear": "清除",
   "todoStartBlock": "▶ 开始这一格",
+  "todoStartBusyHint": "先把进行中的一格收个尾吧 ~",
   "todoMoreActions": "更多",
   "todoMenuEdit": "编辑",
   "todoMenuDuplicate": "复制为新清单项",

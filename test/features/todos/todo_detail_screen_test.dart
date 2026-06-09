@@ -5,8 +5,11 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 import 'package:nudge/app/providers.dart';
+import 'package:nudge/domain/plan.dart';
 import 'package:nudge/domain/todo.dart';
 import 'package:nudge/domain/todo_repository.dart';
+import 'package:nudge/features/chat/chat_controller.dart';
+import 'package:nudge/features/chat/pending_composer_todo.dart';
 import 'package:nudge/features/todos/todo_detail_screen.dart';
 import 'package:nudge/features/todos/todo_edit_screen.dart';
 import 'package:nudge/features/todos/widgets/todo_meta.dart';
@@ -20,7 +23,11 @@ void main() {
   setUp(() => repository = _DetailFakeRepository());
   tearDown(() => repository.dispose());
 
-  Future<void> pumpDetail(WidgetTester tester, Todo todo) async {
+  Future<void> pumpDetail(
+    WidgetTester tester,
+    Todo todo, {
+    Plan? activePlan,
+  }) async {
     repository.todo = todo;
     late final GoRouter router;
     router = GoRouter(
@@ -37,6 +44,7 @@ void main() {
             ),
           ),
         ),
+        GoRoute(path: '/chat', builder: (_, _) => const _ChatProbe()),
         GoRoute(
           path: '/todos/:id/edit',
           builder: (_, state) => TodoEditScreen(initial: state.extra as Todo?),
@@ -51,7 +59,12 @@ void main() {
 
     await tester.pumpWidget(
       ProviderScope(
-        overrides: [todoRepositoryProvider.overrideWithValue(repository)],
+        overrides: [
+          todoRepositoryProvider.overrideWithValue(repository),
+          chatControllerProvider.overrideWith(
+            () => _FakeChatController(activePlan),
+          ),
+        ],
         child: MaterialApp.router(
           localizationsDelegates: AppLocalizations.localizationsDelegates,
           supportedLocales: AppLocalizations.supportedLocales,
@@ -319,6 +332,42 @@ void main() {
     expect(find.text(l10n.todoStatusNotStarted), findsNothing);
   });
 
+  testWidgets('start jumps to chat and queues the composer todo', (
+    tester,
+  ) async {
+    await pumpDetail(
+      tester,
+      _todo(seq: 3, title: 'Write report', status: TodoStatus.notStarted),
+    );
+
+    await tester.tap(find.text(l10n.todoStartBlock));
+    await tester.pumpAndSettle();
+
+    // Navigated to chat, and the chat probe sees the queued todo.
+    expect(find.text('CHAT: #3 Write report'), findsOneWidget);
+    // The todo's status was NOT changed by starting.
+    expect(repository.updatedStatus, isNull);
+    expect(repository.updatedId, isNull);
+  });
+
+  testWidgets('start nudges instead of navigating when a block is running', (
+    tester,
+  ) async {
+    await pumpDetail(
+      tester,
+      _todo(seq: 3, title: 'Write report'),
+      activePlan: _plan(),
+    );
+
+    await tester.tap(find.text(l10n.todoStartBlock));
+    await tester.pumpAndSettle();
+
+    expect(find.text(l10n.todoStartBusyHint), findsOneWidget);
+    // Stayed on the detail (did not jump to chat).
+    expect(find.byKey(const Key('todoDetailScreen')), findsOneWidget);
+    expect(find.text('CHAT: #3 Write report'), findsNothing);
+  });
+
   testWidgets('due chip text covers today / tomorrow / overdue / none', (
     tester,
   ) async {
@@ -365,6 +414,50 @@ void main() {
 DateTime _today() {
   final now = DateTime.now();
   return DateTime(now.year, now.month, now.day);
+}
+
+Plan _plan() {
+  final now = DateTime(2026, 6, 1, 9);
+  return Plan(
+    id: 1,
+    todoId: null,
+    title: 'Running',
+    durationSec: 60 * 60,
+    startAt: now,
+    endAt: now.add(const Duration(hours: 1)),
+    status: PlanStatus.running,
+    note: null,
+    locale: 'en',
+    createdAt: now,
+  );
+}
+
+/// Stands in for the chat tab; shows the queued composer todo so the start test
+/// can prove both the navigation and the provider write.
+class _ChatProbe extends ConsumerWidget {
+  const _ChatProbe();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final pending = ref.watch(pendingComposerTodoProvider);
+    final text = pending == null
+        ? 'CHAT: none'
+        : 'CHAT: #${pending.seq} ${pending.title}';
+    return Scaffold(body: Center(child: Text(text)));
+  }
+}
+
+class _FakeChatController extends ChatController {
+  _FakeChatController(this._activePlan);
+
+  final Plan? _activePlan;
+
+  @override
+  ChatState build() => ChatState(
+    messages: const [],
+    activePlan: _activePlan,
+    pendingCheckIn: null,
+  );
 }
 
 Todo _todo({
