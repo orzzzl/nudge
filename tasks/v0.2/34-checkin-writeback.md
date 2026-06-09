@@ -1,7 +1,7 @@
 # 34 — check-in 回写更新日志（auto，不改状态）
 
-- **Status:** READY
-- **Owner:** Codex
+- **Status:** DONE (PR #53)
+- **Owner:** Claude
 - **Blocked by:** 24 ✅ (PR #44), 32 ✅ (PR #43)
 - **Allowed new deps:** none
 

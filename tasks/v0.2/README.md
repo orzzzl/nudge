@@ -20,7 +20,7 @@
 | 31 | [更新日志（时间线 + 手动记一笔）](31-todos-update-log.md) | DONE (Claude, PR #52) | 24 ✅, 28 ✅ |
 | 32 | [composer「来自清单」chip + plan 关联 todoId](32-composer-todo-chip.md) | DONE (Claude, PR #43) | 23 ✅ |
 | 33 | [「开始这一格」从清单跳聊天预填](33-start-from-todo.md) | DONE (Claude, PR #51) | 28 ✅, 32 ✅, 25 ✅ |
-| 34 | [check-in 回写更新日志（auto，不改状态）](34-checkin-writeback.md) | READY | 24 ✅, 32 ✅ |
+| 34 | [check-in 回写更新日志（auto，不改状态）](34-checkin-writeback.md) | DONE (Claude, PR #53) | 24 ✅, 32 ✅ |
 
 **起步可并行**：`23`（数据模型）和 `25`（tab 壳）无依赖，可同时开；`32` 只等 `23`。其余按 `Blocked by` 解锁。
 每个 task 自带测试，UI task 自带 i18n（**lib/test 内不得有中文**，CI `rg \p{Han}` 守卫）。
