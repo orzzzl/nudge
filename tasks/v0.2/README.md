@@ -19,7 +19,7 @@
 | 30 | [详情：优先级 + 截止日期编辑](30-todos-priority-due-edit.md) | DONE (Claude, PR #50) | 28 ✅ |
 | 31 | [更新日志（时间线 + 手动记一笔）](31-todos-update-log.md) | READY | 24 ✅, 28 ✅ |
 | 32 | [composer「来自清单」chip + plan 关联 todoId](32-composer-todo-chip.md) | DONE (Claude, PR #43) | 23 ✅ |
-| 33 | [「开始这一格」从清单跳聊天预填](33-start-from-todo.md) | READY | 28 ✅, 32 ✅, 25 ✅ |
+| 33 | [「开始这一格」从清单跳聊天预填](33-start-from-todo.md) | DONE (Claude, PR #51) | 28 ✅, 32 ✅, 25 ✅ |
 | 34 | [check-in 回写更新日志（auto，不改状态）](34-checkin-writeback.md) | READY | 24 ✅, 32 ✅ |
 
 **起步可并行**：`23`（数据模型）和 `25`（tab 壳）无依赖，可同时开；`32` 只等 `23`。其余按 `Blocked by` 解锁。

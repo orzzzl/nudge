@@ -1,7 +1,7 @@
 # 33 —「开始这一格」从清单跳聊天并预填 chip
 
-- **Status:** READY
-- **Owner:** Codex
+- **Status:** DONE (PR #51)
+- **Owner:** Claude
 - **Blocked by:** 28, 32, 25
 - **Allowed new deps:** none
 
