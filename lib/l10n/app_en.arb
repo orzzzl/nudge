@@ -131,6 +131,18 @@
   "@todoStatusSheetTitle": {
     "description": "Title of the status-picker bottom sheet."
   },
+  "todoDueNone": "No date",
+  "@todoDueNone": {
+    "description": "Due chip label when a todo has no due date."
+  },
+  "todoDueWeekend": "This weekend",
+  "@todoDueWeekend": {
+    "description": "Due-date quick option for the coming Saturday."
+  },
+  "todoDueClear": "Clear",
+  "@todoDueClear": {
+    "description": "Due-date option that removes the due date."
+  },
   "todoStartBlock": "▶ Start this block",
   "@todoStartBlock": {
     "description": "Detail-page button that starts a focus block from this todo."

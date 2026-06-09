@@ -9,6 +9,7 @@ import 'package:nudge/domain/todo.dart';
 import 'package:nudge/domain/todo_repository.dart';
 import 'package:nudge/features/todos/todo_detail_screen.dart';
 import 'package:nudge/features/todos/todo_edit_screen.dart';
+import 'package:nudge/features/todos/widgets/todo_meta.dart';
 import 'package:nudge/l10n/generated/app_localizations.dart';
 import 'package:nudge/l10n/generated/app_localizations_en.dart';
 
@@ -228,6 +229,86 @@ void main() {
     expect(find.text(l10n.todoStatusNotStarted), findsNothing);
   });
 
+  testWidgets('priority chip opens the panel and updates priority', (
+    tester,
+  ) async {
+    await pumpDetail(
+      tester,
+      _todo(seq: 3, title: 'Task', priority: TodoPriority.p2),
+    );
+
+    await tester.tap(find.text('P2'));
+    await tester.pumpAndSettle();
+    expect(find.text(l10n.todoFormPriorityLabel), findsOneWidget);
+    expect(find.byKey(const Key('todoPriorityCurrent')), findsOneWidget);
+
+    await tester.tap(find.text('P0'));
+    await tester.pumpAndSettle();
+
+    expect(repository.updatedId, 3);
+    expect(repository.updatedPriority, TodoPriority.p0);
+    // The chip is live.
+    expect(find.text('P0'), findsOneWidget);
+  });
+
+  testWidgets('due panel sets a relative date', (tester) async {
+    await pumpDetail(tester, _todo(seq: 3, title: 'Task'));
+
+    // No due yet -> chip shows "No date".
+    await tester.tap(find.text(l10n.todoDueNone));
+    await tester.pumpAndSettle();
+    expect(find.text(l10n.todoFormDueLabel), findsOneWidget);
+
+    await tester.tap(find.text(l10n.todoDueTomorrow));
+    await tester.pumpAndSettle();
+
+    final tomorrow = _today().add(const Duration(days: 1));
+    expect(repository.updatedDueDate, tomorrow);
+    expect(repository.updatedClearDueDate, isFalse);
+  });
+
+  testWidgets('pick a date on an overdue todo opens the picker (no crash)', (
+    tester,
+  ) async {
+    await pumpDetail(
+      tester,
+      _todo(
+        seq: 3,
+        title: 'Task',
+        // Overdue: earlier than today, so initialDate must be clamped.
+        dueDate: _today().subtract(const Duration(days: 5)),
+      ),
+    );
+
+    await tester.tap(find.byIcon(Icons.keyboard_arrow_down_rounded).last);
+    await tester.pumpAndSettle();
+    await tester.tap(find.text(l10n.todoDuePick));
+    await tester.pumpAndSettle();
+
+    // The date picker opened instead of throwing an initialDate assert.
+    expect(find.byType(DatePickerDialog), findsOneWidget);
+  });
+
+  testWidgets('due panel can clear the due date', (tester) async {
+    await pumpDetail(
+      tester,
+      _todo(
+        seq: 3,
+        title: 'Task',
+        dueDate: _today().add(const Duration(days: 3)),
+      ),
+    );
+
+    // Open via the dated chip (tomorrow/overdue/date text varies; use the ⌄).
+    await tester.tap(find.byIcon(Icons.keyboard_arrow_down_rounded).last);
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.text(l10n.todoDueClear));
+    await tester.pumpAndSettle();
+
+    expect(repository.updatedClearDueDate, isTrue);
+  });
+
   testWidgets('permanent items have no status chip to tap', (tester) async {
     await pumpDetail(
       tester,
@@ -236,6 +317,36 @@ void main() {
 
     // No status name shown at all (permanent has no status).
     expect(find.text(l10n.todoStatusNotStarted), findsNothing);
+  });
+
+  testWidgets('due chip text covers today / tomorrow / overdue / none', (
+    tester,
+  ) async {
+    Future<void> pumpChip(DateTime? due) async {
+      await tester.pumpWidget(
+        MaterialApp(
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          home: Scaffold(
+            body: Center(child: TodoDueChip(dueDate: due)),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+    }
+
+    final today = _today();
+    await pumpChip(today);
+    expect(find.textContaining(l10n.todoDueToday), findsOneWidget);
+
+    await pumpChip(today.add(const Duration(days: 1)));
+    expect(find.textContaining(l10n.todoDueTomorrow), findsOneWidget);
+
+    await pumpChip(today.subtract(const Duration(days: 3)));
+    expect(find.textContaining(l10n.todoDueOverdue(3)), findsOneWidget);
+
+    await pumpChip(null);
+    expect(find.text(l10n.todoDueNone), findsOneWidget);
   });
 
   testWidgets('seeded permanent (#1) has no delete action', (tester) async {
@@ -249,6 +360,11 @@ void main() {
     expect(find.text(l10n.todoMenuDuplicate), findsOneWidget);
     expect(find.text(l10n.todoMenuDelete), findsNothing);
   });
+}
+
+DateTime _today() {
+  final now = DateTime.now();
+  return DateTime(now.year, now.month, now.day);
 }
 
 Todo _todo({
@@ -284,6 +400,9 @@ class _DetailFakeRepository implements TodoRepository {
   int? deletedId;
   int? updatedId;
   TodoStatus? updatedStatus;
+  TodoPriority? updatedPriority;
+  DateTime? updatedDueDate;
+  bool? updatedClearDueDate;
 
   void dispose() => _controller.close();
 
@@ -327,6 +446,9 @@ class _DetailFakeRepository implements TodoRepository {
   }) async {
     updatedId = id;
     updatedStatus = status;
+    updatedPriority = priority;
+    updatedDueDate = dueDate;
+    updatedClearDueDate = clearDueDate;
     final current = todo;
     if (current != null && current.id == id) {
       todo = current.copyWith(

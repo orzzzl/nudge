@@ -94,9 +94,16 @@ class _DetailContent extends ConsumerWidget {
                   TodoPriorityChip(
                     priority: todo.priority,
                     label: _priorityLabel(l10n),
+                    // Permanent <-> task conversion is done on the edit page.
+                    onTap: _isPermanent
+                        ? null
+                        : () => _showPriorityPanel(context, ref),
                   ),
-                  if (!_isPermanent && todo.dueDate != null)
-                    TodoDueChip(dueDate: todo.dueDate!),
+                  if (!_isPermanent)
+                    TodoDueChip(
+                      dueDate: todo.dueDate,
+                      onTap: () => _showDuePanel(context, ref),
+                    ),
                 ],
               ),
               if (todo.note != null && todo.note!.trim().isNotEmpty) ...[
@@ -158,20 +165,7 @@ class _DetailContent extends ConsumerWidget {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Padding(
-                padding: const EdgeInsets.fromLTRB(20, 16, 20, 4),
-                child: Align(
-                  alignment: Alignment.centerLeft,
-                  child: Text(
-                    l10n.todoStatusSheetTitle,
-                    style: const TextStyle(
-                      fontSize: 14,
-                      fontWeight: FontWeight.w900,
-                      color: CuteColors.textMuted2,
-                    ),
-                  ),
-                ),
-              ),
+              _SheetTitle(l10n.todoStatusSheetTitle),
               for (final status in TodoStatus.values)
                 ListTile(
                   leading: TodoStatusDot(status: status, size: 28),
@@ -198,6 +192,161 @@ class _DetailContent extends ConsumerWidget {
       },
     );
   }
+
+  void _showPriorityPanel(BuildContext context, WidgetRef ref) {
+    const options = [TodoPriority.p0, TodoPriority.p1, TodoPriority.p2];
+    showModalBottomSheet<void>(
+      context: context,
+      backgroundColor: CuteColors.surface,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      builder: (sheetContext) {
+        final l10n = AppLocalizations.of(sheetContext);
+        return SafeArea(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              _SheetTitle(l10n.todoFormPriorityLabel),
+              for (final priority in options)
+                ListTile(
+                  leading: Container(
+                    width: 14,
+                    height: 14,
+                    decoration: BoxDecoration(
+                      color: _priorityColor(priority),
+                      shape: BoxShape.circle,
+                    ),
+                  ),
+                  title: Text(_priorityName(priority)),
+                  trailing: priority == todo.priority
+                      ? const Icon(
+                          Icons.check_rounded,
+                          key: Key('todoPriorityCurrent'),
+                          color: CuteColors.matcha,
+                        )
+                      : null,
+                  onTap: () {
+                    Navigator.of(sheetContext).pop();
+                    if (priority != todo.priority) {
+                      ref
+                          .read(todoRepositoryProvider)
+                          .updateTodo(id: todo.id!, priority: priority);
+                    }
+                  },
+                ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  void _showDuePanel(BuildContext context, WidgetRef ref) {
+    final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
+    final tomorrow = today.add(const Duration(days: 1));
+    // The coming Saturday (today if it is Saturday).
+    final weekend = today.add(
+      Duration(days: (DateTime.saturday - today.weekday + 7) % 7),
+    );
+
+    showModalBottomSheet<void>(
+      context: context,
+      backgroundColor: CuteColors.surface,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      builder: (sheetContext) {
+        final l10n = AppLocalizations.of(sheetContext);
+
+        void setDue(DateTime? date, {bool clear = false}) {
+          Navigator.of(sheetContext).pop();
+          ref
+              .read(todoRepositoryProvider)
+              .updateTodo(id: todo.id!, dueDate: date, clearDueDate: clear);
+        }
+
+        return SafeArea(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              _SheetTitle(l10n.todoFormDueLabel),
+              ListTile(
+                title: Text(l10n.todoDueToday),
+                onTap: () => setDue(today),
+              ),
+              ListTile(
+                title: Text(l10n.todoDueTomorrow),
+                onTap: () => setDue(tomorrow),
+              ),
+              ListTile(
+                title: Text(l10n.todoDueWeekend),
+                onTap: () => setDue(weekend),
+              ),
+              ListTile(
+                leading: const Icon(
+                  Icons.calendar_today_rounded,
+                  size: 18,
+                  color: CuteColors.matcha,
+                ),
+                title: Text(l10n.todoDuePick),
+                onTap: () async {
+                  // Clamp to today: an overdue dueDate is before firstDate,
+                  // which would trip showDatePicker's initialDate assert.
+                  final due = todo.dueDate;
+                  final initialDate = (due == null || due.isBefore(today))
+                      ? today
+                      : due;
+                  final picked = await showDatePicker(
+                    context: sheetContext,
+                    initialDate: initialDate,
+                    firstDate: today,
+                    lastDate: DateTime(today.year + 5),
+                  );
+                  if (!sheetContext.mounted) {
+                    return;
+                  }
+                  if (picked != null) {
+                    setDue(DateTime(picked.year, picked.month, picked.day));
+                  } else {
+                    Navigator.of(sheetContext).pop();
+                  }
+                },
+              ),
+              if (todo.dueDate != null)
+                ListTile(
+                  leading: const Icon(
+                    Icons.close_rounded,
+                    size: 18,
+                    color: CuteColors.todoP0Text,
+                  ),
+                  title: Text(
+                    l10n.todoDueClear,
+                    style: const TextStyle(color: CuteColors.todoP0Text),
+                  ),
+                  onTap: () => setDue(null, clear: true),
+                ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  Color _priorityColor(TodoPriority priority) => switch (priority) {
+    TodoPriority.p0 => CuteColors.todoP0Text,
+    TodoPriority.p1 => CuteColors.todoP1Text,
+    TodoPriority.p2 => CuteColors.todoP2Text,
+    TodoPriority.permanent => CuteColors.todoPermText,
+  };
+
+  String _priorityName(TodoPriority priority) => switch (priority) {
+    TodoPriority.p0 => 'P0',
+    TodoPriority.p1 => 'P1',
+    TodoPriority.p2 => 'P2',
+    TodoPriority.permanent => 'permanent',
+  };
 
   void _showActions(BuildContext context, WidgetRef ref) {
     showModalBottomSheet<void>(
@@ -308,6 +457,30 @@ class _DetailContent extends ConsumerWidget {
     TodoPriority.p2 => 'P2',
     TodoPriority.permanent => '♾️ ${l10n.todoPriorityPermanent}',
   };
+}
+
+class _SheetTitle extends StatelessWidget {
+  const _SheetTitle(this.text);
+
+  final String text;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(20, 16, 20, 4),
+      child: Align(
+        alignment: Alignment.centerLeft,
+        child: Text(
+          text,
+          style: const TextStyle(
+            fontSize: 14,
+            fontWeight: FontWeight.w900,
+            color: CuteColors.textMuted2,
+          ),
+        ),
+      ),
+    );
+  }
 }
 
 class _MoreButton extends StatelessWidget {
