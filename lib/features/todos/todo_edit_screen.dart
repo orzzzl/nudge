@@ -7,6 +7,7 @@ import '../../app/providers.dart';
 import '../../app/widgets/candy.dart';
 import '../../domain/todo.dart';
 import '../../l10n/generated/app_localizations.dart';
+import 'todos_controller.dart';
 
 /// New / edit form for a todo (mockup ①b), reused by both flows: [initial] null
 /// = create (task 27); non-null = edit a prefilled todo (task 28). Title +
@@ -235,6 +236,29 @@ class _TodoEditScreenState extends ConsumerState<TodoEditScreen> {
       border: border(),
       enabledBorder: border(),
       focusedBorder: border(),
+    );
+  }
+}
+
+/// Edit-route entry that resolves the todo by id when it wasn't passed as
+/// `extra` (e.g. a cold deep-link). The normal path — detail "⋯ -> edit" —
+/// passes the todo directly, so this loader rarely renders.
+class TodoEditLoader extends ConsumerWidget {
+  const TodoEditLoader({required this.todoId, super.key});
+
+  final int todoId;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final todoAsync = ref.watch(todoByIdProvider(todoId));
+
+    return todoAsync.maybeWhen(
+      data: (todo) =>
+          todo == null ? const TodoEditScreen() : TodoEditScreen(initial: todo),
+      orElse: () => const Scaffold(
+        backgroundColor: Colors.transparent,
+        body: Center(child: CircularProgressIndicator()),
+      ),
     );
   }
 }
