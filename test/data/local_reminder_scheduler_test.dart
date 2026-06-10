@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
@@ -14,9 +16,14 @@ void main() {
 
   // Channel contract — must match LocalReminderScheduler. Bumping the id is the
   // fix for Android's immutable channels: an updated install gets a fresh
-  // high-importance + sound channel instead of inheriting the old silent one.
-  const expectedChannelId = 'plan_check_in_reminders_v2';
-  const legacyChannelId = 'plan_check_in_reminders';
+  // channel with the new settings instead of inheriting the old ones. v3 moved
+  // the reminder sound to the ALARM audio stream so it rings on a silenced
+  // ringer.
+  const expectedChannelId = 'plan_check_in_reminders_v3';
+  const legacyChannelIds = [
+    'plan_check_in_reminders',
+    'plan_check_in_reminders_v2',
+  ];
 
   const localNotifChannel = MethodChannel(
     'dexterous.com/flutter/local_notifications',
@@ -89,9 +96,13 @@ void main() {
       expect(
         called('deleteNotificationChannel'),
         isTrue,
-        reason: 'the stale (possibly silent) channel must be deleted',
+        reason: 'the stale (possibly silent) channels must be deleted',
       );
-      expect(callTo('deleteNotificationChannel').arguments, legacyChannelId);
+      final deleted = calls
+          .where((c) => c.method == 'deleteNotificationChannel')
+          .map((c) => c.arguments)
+          .toList();
+      expect(deleted, containsAll(legacyChannelIds));
 
       final channel = callTo('createNotificationChannel').arguments as Map;
       expect(channel['id'], expectedChannelId);
@@ -104,6 +115,13 @@ void main() {
         channel['playSound'],
         isTrue,
         reason: 'sound must be explicit, not left to the default',
+      );
+      expect(
+        channel['audioAttributesUsage'],
+        AudioAttributesUsage.alarm.value,
+        reason:
+            'the alarm stream is what makes the reminder ring on a silenced '
+            'ringer, like a clock alarm',
       );
     },
   );
@@ -139,8 +157,91 @@ void main() {
       expect(android['importance'], Importance.high.value);
       expect(android['priority'], Priority.high.value);
       expect(android['playSound'], isTrue);
+      expect(
+        android['audioAttributesUsage'],
+        AudioAttributesUsage.alarm.value,
+        reason: 'pre-8 devices take audio attributes per notification',
+      );
+      expect(
+        android['scheduleMode'],
+        AndroidScheduleMode.alarmClock.name,
+        reason: 'setAlarmClock is what delivers exactly at time-up',
+      );
     },
   );
+
+  test(
+    'falls back to an inexact alarm when exact alarms are not permitted',
+    () async {
+      // Regression guard for the third silent-reminder incident: the plugin
+      // gates alarmClock behind canScheduleExactAlarms() on Android 12+ and
+      // throws exact_alarms_not_permitted when the app holds neither
+      // USE_EXACT_ALARM nor SCHEDULE_EXACT_ALARM. The pre-fix scheduler let
+      // that exception escape, so NO reminder existed at all. A late reminder
+      // must win over a missing one.
+      messenger.setMockMethodCallHandler(localNotifChannel, (call) async {
+        calls.add(call);
+        switch (call.method) {
+          case 'initialize':
+            return true;
+          case 'getNotificationAppLaunchDetails':
+            return null;
+          case 'requestNotificationsPermission':
+            return true;
+          case 'zonedSchedule':
+            final android = call.arguments['platformSpecifics'] as Map;
+            if (android['scheduleMode'] ==
+                AndroidScheduleMode.alarmClock.name) {
+              throw PlatformException(code: 'exact_alarms_not_permitted');
+            }
+            return null;
+          default:
+            return null;
+        }
+      });
+
+      final scheduler = LocalReminderScheduler();
+      await scheduler.scheduleCheckInReminder(
+        planId: 11,
+        title: 'smoke',
+        at: DateTime.now().add(const Duration(minutes: 5)),
+      );
+
+      final schedules = calls
+          .where((c) => c.method == 'zonedSchedule')
+          .map((c) => c.arguments as Map)
+          .toList();
+      expect(schedules, hasLength(2));
+
+      final fallback = schedules.last['platformSpecifics'] as Map;
+      expect(
+        fallback['scheduleMode'],
+        AndroidScheduleMode.inexactAllowWhileIdle.name,
+      );
+      expect(schedules.last['id'], 11);
+      expect(
+        fallback['channelId'],
+        expectedChannelId,
+        reason: 'the fallback must keep the loud alarm-stream channel',
+      );
+    },
+  );
+
+  test('declares exact-alarm permissions for Android 12+ devices', () {
+    final manifest = File(
+      'android/app/src/main/AndroidManifest.xml',
+    ).readAsStringSync();
+    final android12Permission = _findPermission(
+      manifest,
+      'android.permission.SCHEDULE_EXACT_ALARM',
+    );
+    expect(android12Permission, isNotNull);
+    expect(android12Permission, contains('android:maxSdkVersion="32"'));
+    expect(
+      _findPermission(manifest, 'android.permission.USE_EXACT_ALARM'),
+      isNotNull,
+    );
+  });
 
   test('creates both a loud and a silent channel on init', () async {
     final scheduler = LocalReminderScheduler();
@@ -184,6 +285,13 @@ void main() {
       expect(android['channelId'], 'plan_check_in_reminders_silent');
       expect(android['importance'], Importance.low.value);
       expect(android['playSound'], isFalse);
+      expect(
+        android['audioAttributesUsage'],
+        AudioAttributesUsage.notification.value,
+        reason:
+            'in-app DND must stay on the notification stream — the alarm '
+            'stream is only for the loud channel',
+      );
     },
   );
 
@@ -271,4 +379,15 @@ void main() {
     final ios = callTo('zonedSchedule').arguments['platformSpecifics'] as Map;
     expect(ios['presentSound'], isTrue);
   });
+}
+
+String? _findPermission(String manifest, String name) {
+  final permissionTag = RegExp(r'<uses-permission\b[^>]*/>');
+  for (final match in permissionTag.allMatches(manifest)) {
+    final tag = match.group(0)!;
+    if (tag.contains('android:name="$name"')) {
+      return tag;
+    }
+  }
+  return null;
 }
