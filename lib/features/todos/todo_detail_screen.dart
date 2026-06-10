@@ -435,15 +435,17 @@ class _DetailContent extends ConsumerWidget {
 
   Future<void> _duplicate(BuildContext context, WidgetRef ref) async {
     // Copy of the current title / priority / note — due, status and logs reset.
-    await ref
+    final created = await ref
         .read(todoRepositoryProvider)
         .createTodo(
           title: todo.title,
           priority: todo.priority,
           note: todo.note,
         );
+    // Open the copy in edit mode. pushReplacement so backing out of the editor
+    // returns to the list, not this (the original's) detail page.
     if (context.mounted) {
-      context.pop();
+      context.pushReplacement('/todos/${created.id}/edit', extra: created);
     }
   }
 

@@ -4,9 +4,11 @@ import 'package:drift/native.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:go_router/go_router.dart';
 import 'package:nudge/app/providers.dart';
 import 'package:nudge/data/db/app_database.dart' as db;
 import 'package:nudge/data/repositories/plan_repository_impl.dart';
+import 'package:nudge/data/repositories/todo_repository_impl.dart';
 import 'package:nudge/domain/plan_repository.dart';
 import 'package:nudge/domain/reminder_scheduler.dart';
 import 'package:nudge/features/chat/chat_screen.dart';
@@ -175,6 +177,63 @@ void main() {
     await tester.pump(const Duration(milliseconds: 300));
 
     expect(find.text(l10n.checkInTitle), findsOneWidget);
+  });
+
+  testWidgets('checking in a plan from a todo opens that todo detail', (
+    tester,
+  ) async {
+    final l10n = AppLocalizationsEn();
+    final todoRepository = TodoRepositoryImpl(database);
+    final todo = await todoRepository.createTodo(title: 'Write report');
+    // A running plan linked to that todo, started in the past so it restores.
+    await repository.createPlan(
+      title: 'Write report',
+      durationSec: 60 * 60,
+      startAt: DateTime.now().subtract(const Duration(minutes: 10)),
+      locale: 'en',
+      todoId: todo.id,
+    );
+
+    final router = GoRouter(
+      initialLocation: '/chat',
+      routes: [
+        GoRoute(path: '/chat', builder: (_, _) => const ChatScreen()),
+        GoRoute(
+          path: '/todos/:id',
+          builder: (_, state) => Scaffold(
+            body: Center(child: Text('TODO ${state.pathParameters['id']}')),
+          ),
+        ),
+      ],
+    );
+
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          planRepositoryProvider.overrideWithValue(repository),
+          todoRepositoryProvider.overrideWithValue(todoRepository),
+          reminderSchedulerProvider.overrideWithValue(
+            const _NoopReminderScheduler(),
+          ),
+          petMoodProvider.overrideWithValue(PetMood.neutral),
+        ],
+        child: MaterialApp.router(
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          routerConfig: router,
+        ),
+      ),
+    );
+    await tester.pump(const Duration(milliseconds: 50)); // restore active plan
+
+    await tester.tap(find.text(l10n.capsuleCheckIn));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 300));
+    await tester.tap(find.text(l10n.checkInDone));
+    await tester.pumpAndSettle();
+
+    // Landed on the linked todo's detail (read-only).
+    expect(find.text('TODO ${todo.id}'), findsOneWidget);
   });
 }
 

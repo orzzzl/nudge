@@ -43,7 +43,7 @@
   "todoStartBlock": "▶ 开始这一格",
   "todoStartBusyHint": "先把进行中的一格收个尾吧 ~",
   "todoAutoLog": "做了 {duration} · {result}",
-  "todoAutoResultDone": "✅ 搞定",
+  "todoAutoResultDone": "✅ 已乖",
   "todoAutoResultPartial": "🍃 做了点",
   "todoAutoResultMissed": "😴 没动",
   "todoMoreActions": "更多",

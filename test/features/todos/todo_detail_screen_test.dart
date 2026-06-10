@@ -155,6 +155,13 @@ void main() {
     expect(repository.created!.title, 'Write report');
     expect(repository.created!.priority, TodoPriority.p1);
     expect(repository.created!.note, 'outline');
+
+    // Lands on the new copy in edit mode, prefilled with the copied title.
+    expect(find.byKey(const Key('todoEditScreen')), findsOneWidget);
+    final titleField = tester.widget<TextField>(
+      find.byKey(const Key('todoTitleField')),
+    );
+    expect(titleField.controller!.text, 'Write report');
   });
 
   testWidgets('delete asks for confirmation then deletes and pops', (

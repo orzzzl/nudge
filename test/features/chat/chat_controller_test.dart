@@ -153,7 +153,7 @@ void main() {
         expect(todoRepo.addedLog!.todoId, 5);
         expect(todoRepo.addedLog!.kind, TodoLogKind.auto);
         expect(todoRepo.addedLog!.text, contains('1 hr'));
-        expect(todoRepo.addedLog!.text, contains('Done'));
+        expect(todoRepo.addedLog!.text, contains('Good'));
         // Doing one block must never change the todo's status.
         expect(todoRepo.updateCalled, isFalse);
       },
