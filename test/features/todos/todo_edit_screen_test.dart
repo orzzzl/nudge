@@ -18,7 +18,7 @@ void main() {
   setUp(() => repository = _RecordingTodoRepository());
   tearDown(() => repository.dispose());
 
-  Future<void> pumpEdit(WidgetTester tester) async {
+  Future<void> pumpEdit(WidgetTester tester, {Todo? initial}) async {
     late final GoRouter router;
     router = GoRouter(
       initialLocation: '/start',
@@ -34,7 +34,10 @@ void main() {
             ),
           ),
         ),
-        GoRoute(path: '/todos/new', builder: (_, _) => const TodoEditScreen()),
+        GoRoute(
+          path: '/todos/new',
+          builder: (_, _) => TodoEditScreen(initial: initial),
+        ),
       ],
     );
 
@@ -119,32 +122,35 @@ void main() {
   testWidgets('edit mode prefills the form from the initial todo', (
     tester,
   ) async {
-    await tester.pumpWidget(
-      ProviderScope(
-        overrides: [todoRepositoryProvider.overrideWithValue(repository)],
-        child: MaterialApp(
-          localizationsDelegates: AppLocalizations.localizationsDelegates,
-          supportedLocales: AppLocalizations.supportedLocales,
-          home: TodoEditScreen(
-            initial: Todo(
-              id: 3,
-              seq: 3,
-              title: 'Existing',
-              status: TodoStatus.notStarted,
-              priority: TodoPriority.p1,
-              dueDate: null,
-              note: 'old note',
-              createdAt: DateTime(2026, 6, 1),
-              updatedAt: DateTime(2026, 6, 1),
-            ),
-          ),
-        ),
+    await pumpEdit(
+      tester,
+      initial: Todo(
+        id: 3,
+        seq: 3,
+        title: 'Existing',
+        status: TodoStatus.notStarted,
+        priority: TodoPriority.p1,
+        dueDate: null,
+        note: 'old note',
+        createdAt: DateTime(2026, 6, 1),
+        updatedAt: DateTime(2026, 6, 1),
       ),
     );
-    await tester.pumpAndSettle();
 
     expect(find.text('Existing'), findsOneWidget);
     expect(find.text('old note'), findsOneWidget);
+
+    // Edit mode must read as editing, not creating (title + action button).
+    expect(find.text(l10n.todoEditItemTitle), findsOneWidget);
+    expect(find.text(l10n.todoSaveButton), findsOneWidget);
+    expect(find.text(l10n.todoNewItemTitle), findsNothing);
+    expect(find.text('＋ ${l10n.todoCreateButton}'), findsNothing);
+
+    // Saving updates the existing todo instead of creating a new one.
+    await tester.tap(find.text(l10n.todoSaveButton));
+    await tester.pump();
+    expect(repository.created, isNull);
+    expect(repository.updatedId, 3);
   });
 }
 
@@ -159,6 +165,7 @@ class _RecordingTodoRepository implements TodoRepository {
 
   ({String title, TodoPriority priority, DateTime? dueDate, String? note})?
   created;
+  int? updatedId;
 
   void dispose() => _controller.close();
 
@@ -205,7 +212,9 @@ class _RecordingTodoRepository implements TodoRepository {
     bool clearDueDate = false,
     String? note,
     bool clearNote = false,
-  }) async {}
+  }) async {
+    updatedId = id;
+  }
 
   @override
   Future<void> deleteTodo(int id) => throw UnimplementedError();

@@ -91,6 +91,10 @@
   "@todoNewItemTitle": {
     "description": "App-bar title of the new list-item page."
   },
+  "todoEditItemTitle": "Edit item",
+  "@todoEditItemTitle": {
+    "description": "App-bar title of the list-item page when editing an existing todo."
+  },
   "todoFormTitleLabel": "What do you want to do?",
   "@todoFormTitleLabel": {
     "description": "Section label above the title field on the todo edit form."
@@ -118,6 +122,10 @@
   "todoCreateButton": "Create",
   "@todoCreateButton": {
     "description": "Button that creates the new todo."
+  },
+  "todoSaveButton": "Save",
+  "@todoSaveButton": {
+    "description": "Button that saves changes when editing an existing todo."
   },
   "todoNeedTitle": "Give it a name first ~",
   "@todoNeedTitle": {
