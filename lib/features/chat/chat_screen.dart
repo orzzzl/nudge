@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
 import '../../app/cute_palette.dart';
 import '../../app/duration_format.dart';
@@ -100,6 +101,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
       }
       if (status != null) {
         await controller.checkIn(status);
+        _openLinkedTodo(plan);
       }
     } finally {
       if (mounted) {
@@ -113,6 +115,17 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
     final status = await showCheckInSheet(context, plan: plan);
     if (status != null) {
       await ref.read(chatControllerProvider.notifier).checkIn(status);
+      _openLinkedTodo(plan);
+    }
+  }
+
+  // After checking in a block that came from a todo, drop the user on that
+  // todo's detail (read-only) so they see the progress just logged. Manual
+  // blocks (no todoId) stay in the chat.
+  void _openLinkedTodo(Plan plan) {
+    final todoId = plan.todoId;
+    if (todoId != null && mounted) {
+      context.push('/todos/$todoId');
     }
   }
 }
@@ -217,7 +230,7 @@ class _MessageBubble extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.end,
         children: [
           if (!isUser) ...[
-            PetView(mood: mood, size: 22),
+            PetView(mood: mood, size: 26),
             const SizedBox(width: 8),
           ],
           Flexible(child: bubble),
