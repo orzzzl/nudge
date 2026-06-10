@@ -39,7 +39,7 @@ const _legacyChannelIds = <String>[
 /// silent/vibrate, at the system alarm volume, and passes the default "alarms"
 /// exception of system DND. Time-up is the product's one promise, so it
 /// intentionally outranks ringer silence (owner decision 2026-06-09,
-/// superseding the #30 "OS silent always wins" contract). The in-app 勿扰
+/// superseding the #30 "OS silent always wins" contract). The in-app DND
 /// switch still routes to [_silentChannel] instead.
 const _reminderChannel = AndroidNotificationChannel(
   _channelId,
