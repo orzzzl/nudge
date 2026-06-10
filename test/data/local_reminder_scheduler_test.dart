@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
@@ -225,6 +227,22 @@ void main() {
     },
   );
 
+  test('declares exact-alarm permissions for Android 12+ devices', () {
+    final manifest = File(
+      'android/app/src/main/AndroidManifest.xml',
+    ).readAsStringSync();
+    final android12Permission = _findPermission(
+      manifest,
+      'android.permission.SCHEDULE_EXACT_ALARM',
+    );
+    expect(android12Permission, isNotNull);
+    expect(android12Permission, contains('android:maxSdkVersion="32"'));
+    expect(
+      _findPermission(manifest, 'android.permission.USE_EXACT_ALARM'),
+      isNotNull,
+    );
+  });
+
   test('creates both a loud and a silent channel on init', () async {
     final scheduler = LocalReminderScheduler();
     await scheduler.initialize();
@@ -361,4 +379,15 @@ void main() {
     final ios = callTo('zonedSchedule').arguments['platformSpecifics'] as Map;
     expect(ios['presentSound'], isTrue);
   });
+}
+
+String? _findPermission(String manifest, String name) {
+  final permissionTag = RegExp(r'<uses-permission\b[^>]*/>');
+  for (final match in permissionTag.allMatches(manifest)) {
+    final tag = match.group(0)!;
+    if (tag.contains('android:name="$name"')) {
+      return tag;
+    }
+  }
+  return null;
 }
