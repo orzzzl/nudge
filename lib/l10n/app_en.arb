@@ -176,7 +176,7 @@
     "description": "Auto update-log entry written after a check-in on a linked todo.",
     "placeholders": {
       "duration": { "type": "String", "example": "1 hr" },
-      "result": { "type": "String", "example": "✅ Done" }
+      "result": { "type": "String", "example": "✅ Good" }
     }
   },
   "todoAutoResultDone": "✅ Good",
