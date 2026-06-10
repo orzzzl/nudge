@@ -6,10 +6,18 @@
          than bundling .ttf.) -->
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+    <!-- The time-up reminder is the app's core promise, which is exactly the
+         app class USE_EXACT_ALARM exists for (alarm clocks / timers). It is
+         granted at install and cannot be revoked, unlike the revocable
+         SCHEDULE_EXACT_ALARM. Without either permission,
+         canScheduleExactAlarms() is false on Android 12+ and the plugin
+         rejects AndroidScheduleMode.alarmClock with exact_alarms_not_permitted
+         — no reminder gets scheduled at all (the third silent-reminder
+         incident, found by the device-verify gate; CI's API-30 emulator
+         predates the check and cannot catch it). -->
+    <uses-permission android:name="android.permission.USE_EXACT_ALARM" />
     <!-- RECEIVE_BOOT_COMPLETED lets the boot receiver re-arm a pending reminder
-         after a reboot. We intentionally do NOT request SCHEDULE_EXACT_ALARM:
-         the reminder uses AlarmManager.setAlarmClock (AndroidScheduleMode.alarmClock),
-         which fires exactly on time without that restricted permission. -->
+         after a reboot. -->
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
 
     <application

@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:flutter/services.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:flutter_timezone/flutter_timezone.dart';
 import 'package:timezone/data/latest.dart' as timezone_data;
@@ -161,18 +162,52 @@ class LocalReminderScheduler implements ReminderScheduler {
       return;
     }
 
-    await _plugin.zonedSchedule(
+    try {
+      // alarmClock routes through AlarmManager.setAlarmClock: exact delivery
+      // even in Doze, surfaced to the OS as a user-visible alarm. The plugin
+      // gates EVERY exact mode (alarmClock included) behind
+      // canScheduleExactAlarms() on Android 12+, so this needs USE_EXACT_ALARM
+      // (manifest) — without it the call throws and NO reminder exists. That
+      // happened on every Android 12+ device until the device-verify gate
+      // caught it: the third silent-reminder incident.
+      await _zonedSchedule(
+        planId: planId,
+        title: title,
+        at: at,
+        silent: silent,
+        androidScheduleMode: AndroidScheduleMode.alarmClock,
+      );
+    } on PlatformException catch (exception) {
+      if (exception.code != 'exact_alarms_not_permitted') {
+        rethrow;
+      }
+      // Defence in depth: if some device still denies exact alarms (e.g. an
+      // OEM revoking USE_EXACT_ALARM), degrade to an inexact alarm instead of
+      // dying. A reminder that is minutes late beats one that never fires.
+      await _zonedSchedule(
+        planId: planId,
+        title: title,
+        at: at,
+        silent: silent,
+        androidScheduleMode: AndroidScheduleMode.inexactAllowWhileIdle,
+      );
+    }
+  }
+
+  Future<void> _zonedSchedule({
+    required int planId,
+    required String title,
+    required DateTime at,
+    required bool silent,
+    required AndroidScheduleMode androidScheduleMode,
+  }) {
+    return _plugin.zonedSchedule(
       planId,
       title,
       null,
       timezone.TZDateTime.from(at, timezone.local),
       _notificationDetails(silent: silent),
-      // alarmClock routes through AlarmManager.setAlarmClock: exact delivery
-      // even in Doze, and — unlike exactAllowWhileIdle — exempt from the
-      // SCHEDULE_EXACT_ALARM permission, so the reminder fires on time for
-      // every user with no extra setup. Fits the "nudge you right at time-up"
-      // promise without the permission gate that used to drop notifications.
-      androidScheduleMode: AndroidScheduleMode.alarmClock,
+      androidScheduleMode: androidScheduleMode,
       payload: planId.toString(),
     );
   }

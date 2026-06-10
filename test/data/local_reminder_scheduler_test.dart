@@ -160,6 +160,68 @@ void main() {
         AudioAttributesUsage.alarm.value,
         reason: 'pre-8 devices take audio attributes per notification',
       );
+      expect(
+        android['scheduleMode'],
+        AndroidScheduleMode.alarmClock.name,
+        reason: 'setAlarmClock is what delivers exactly at time-up',
+      );
+    },
+  );
+
+  test(
+    'falls back to an inexact alarm when exact alarms are not permitted',
+    () async {
+      // Regression guard for the third silent-reminder incident: the plugin
+      // gates alarmClock behind canScheduleExactAlarms() on Android 12+ and
+      // throws exact_alarms_not_permitted when the app holds neither
+      // USE_EXACT_ALARM nor SCHEDULE_EXACT_ALARM. The pre-fix scheduler let
+      // that exception escape, so NO reminder existed at all. A late reminder
+      // must win over a missing one.
+      messenger.setMockMethodCallHandler(localNotifChannel, (call) async {
+        calls.add(call);
+        switch (call.method) {
+          case 'initialize':
+            return true;
+          case 'getNotificationAppLaunchDetails':
+            return null;
+          case 'requestNotificationsPermission':
+            return true;
+          case 'zonedSchedule':
+            final android = call.arguments['platformSpecifics'] as Map;
+            if (android['scheduleMode'] ==
+                AndroidScheduleMode.alarmClock.name) {
+              throw PlatformException(code: 'exact_alarms_not_permitted');
+            }
+            return null;
+          default:
+            return null;
+        }
+      });
+
+      final scheduler = LocalReminderScheduler();
+      await scheduler.scheduleCheckInReminder(
+        planId: 11,
+        title: 'smoke',
+        at: DateTime.now().add(const Duration(minutes: 5)),
+      );
+
+      final schedules = calls
+          .where((c) => c.method == 'zonedSchedule')
+          .map((c) => c.arguments as Map)
+          .toList();
+      expect(schedules, hasLength(2));
+
+      final fallback = schedules.last['platformSpecifics'] as Map;
+      expect(
+        fallback['scheduleMode'],
+        AndroidScheduleMode.inexactAllowWhileIdle.name,
+      );
+      expect(schedules.last['id'], 11);
+      expect(
+        fallback['channelId'],
+        expectedChannelId,
+        reason: 'the fallback must keep the loud alarm-stream channel',
+      );
     },
   );
 
