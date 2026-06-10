@@ -179,7 +179,7 @@
       "result": { "type": "String", "example": "✅ Done" }
     }
   },
-  "todoAutoResultDone": "✅ Done",
+  "todoAutoResultDone": "✅ Good",
   "@todoAutoResultDone": {
     "description": "Check-in result shown in an auto log entry (completed)."
   },
