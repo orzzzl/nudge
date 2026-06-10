@@ -127,7 +127,7 @@ class _TodoEditScreenState extends ConsumerState<TodoEditScreen> {
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         title: Text(
-          l10n.todoNewItemTitle,
+          _isEdit ? l10n.todoEditItemTitle : l10n.todoNewItemTitle,
           style: const TextStyle(
             color: CuteColors.matcha,
             fontWeight: FontWeight.w900,
@@ -209,7 +209,9 @@ class _TodoEditScreenState extends ConsumerState<TodoEditScreen> {
             Padding(
               padding: const EdgeInsets.fromLTRB(20, 4, 20, 16),
               child: CandyButton(
-                label: '＋ ${l10n.todoCreateButton}',
+                label: _isEdit
+                    ? l10n.todoSaveButton
+                    : '＋ ${l10n.todoCreateButton}',
                 onPressed: _save,
               ),
             ),

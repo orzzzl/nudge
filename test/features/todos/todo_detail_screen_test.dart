@@ -222,7 +222,7 @@ void main() {
       find.byKey(const Key('todoTitleField')),
       'New title',
     );
-    await tester.tap(find.text('＋ ${l10n.todoCreateButton}'));
+    await tester.tap(find.text(l10n.todoSaveButton));
     await tester.pumpAndSettle();
 
     // Back on the detail — it must reflect the edit, not the stale future.
