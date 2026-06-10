@@ -16,7 +16,7 @@ import '../../domain/reminder_scheduler.dart';
 // delete the stale ones so the user isn't left with a dead channel in settings.
 // If the channel definition below ever changes again, bump the suffix and add
 // the previous id to [_legacyChannelIds].
-const _channelId = 'plan_check_in_reminders_v2';
+const _channelId = 'plan_check_in_reminders_v3';
 const _channelName = 'Nudge';
 
 // Channel sound/importance is IMMUTABLE per channel, so "loud" and "silent" must
@@ -26,16 +26,27 @@ const _silentChannelId = 'plan_check_in_reminders_silent';
 const _silentChannelName = 'Nudge (quiet)';
 
 /// Old channel ids to delete on init so their stale (silent) settings can't
-/// linger on updated installs.
-const _legacyChannelIds = <String>['plan_check_in_reminders'];
+/// linger on updated installs. v2 was the notification-stream channel,
+/// superseded by the alarm-stream v3.
+const _legacyChannelIds = <String>[
+  'plan_check_in_reminders',
+  'plan_check_in_reminders_v2',
+];
 
 /// The loud reminder channel — high importance so it makes a heads-up sound,
-/// with sound explicitly on (don't rely on the default).
+/// with sound explicitly on (don't rely on the default). The sound plays on the
+/// ALARM audio stream, like a clock alarm: it rings even when the ringer is on
+/// silent/vibrate, at the system alarm volume, and passes the default "alarms"
+/// exception of system DND. Time-up is the product's one promise, so it
+/// intentionally outranks ringer silence (owner decision 2026-06-09,
+/// superseding the #30 "OS silent always wins" contract). The in-app 勿扰
+/// switch still routes to [_silentChannel] instead.
 const _reminderChannel = AndroidNotificationChannel(
   _channelId,
   _channelName,
   importance: Importance.high,
   playSound: true,
+  audioAttributesUsage: AudioAttributesUsage.alarm,
 );
 
 /// The quiet channel for in-app DND — still shows in the shade, but low
@@ -256,6 +267,9 @@ class LocalReminderScheduler implements ReminderScheduler {
         // Sound is a channel-level setting on Android 8+, but set it here too so
         // pre-8 devices (and the test contract) get an audible notification.
         playSound: true,
+        // Mirror the channel's alarm-stream usage for pre-8 devices, where
+        // audio attributes are per-notification rather than per-channel.
+        audioAttributesUsage: AudioAttributesUsage.alarm,
       ),
       // presentSound: true makes the notification audible in the foreground on
       // iOS/macOS (the default, pinned so a future edit can't silence it).

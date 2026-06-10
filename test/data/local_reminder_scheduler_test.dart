@@ -14,9 +14,14 @@ void main() {
 
   // Channel contract — must match LocalReminderScheduler. Bumping the id is the
   // fix for Android's immutable channels: an updated install gets a fresh
-  // high-importance + sound channel instead of inheriting the old silent one.
-  const expectedChannelId = 'plan_check_in_reminders_v2';
-  const legacyChannelId = 'plan_check_in_reminders';
+  // channel with the new settings instead of inheriting the old ones. v3 moved
+  // the reminder sound to the ALARM audio stream so it rings on a silenced
+  // ringer.
+  const expectedChannelId = 'plan_check_in_reminders_v3';
+  const legacyChannelIds = [
+    'plan_check_in_reminders',
+    'plan_check_in_reminders_v2',
+  ];
 
   const localNotifChannel = MethodChannel(
     'dexterous.com/flutter/local_notifications',
@@ -89,9 +94,13 @@ void main() {
       expect(
         called('deleteNotificationChannel'),
         isTrue,
-        reason: 'the stale (possibly silent) channel must be deleted',
+        reason: 'the stale (possibly silent) channels must be deleted',
       );
-      expect(callTo('deleteNotificationChannel').arguments, legacyChannelId);
+      final deleted = calls
+          .where((c) => c.method == 'deleteNotificationChannel')
+          .map((c) => c.arguments)
+          .toList();
+      expect(deleted, containsAll(legacyChannelIds));
 
       final channel = callTo('createNotificationChannel').arguments as Map;
       expect(channel['id'], expectedChannelId);
@@ -104,6 +113,13 @@ void main() {
         channel['playSound'],
         isTrue,
         reason: 'sound must be explicit, not left to the default',
+      );
+      expect(
+        channel['audioAttributesUsage'],
+        AudioAttributesUsage.alarm.value,
+        reason:
+            'the alarm stream is what makes the reminder ring on a silenced '
+            'ringer, like a clock alarm',
       );
     },
   );
@@ -139,6 +155,11 @@ void main() {
       expect(android['importance'], Importance.high.value);
       expect(android['priority'], Priority.high.value);
       expect(android['playSound'], isTrue);
+      expect(
+        android['audioAttributesUsage'],
+        AudioAttributesUsage.alarm.value,
+        reason: 'pre-8 devices take audio attributes per notification',
+      );
     },
   );
 
@@ -184,6 +205,13 @@ void main() {
       expect(android['channelId'], 'plan_check_in_reminders_silent');
       expect(android['importance'], Importance.low.value);
       expect(android['playSound'], isFalse);
+      expect(
+        android['audioAttributesUsage'],
+        AudioAttributesUsage.notification.value,
+        reason:
+            'in-app DND must stay on the notification stream — the alarm '
+            'stream is only for the loud channel',
+      );
     },
   );
 
